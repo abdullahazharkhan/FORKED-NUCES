@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #171717;
+  --foreground: #ffffffde;
 }
 
 @theme inline {
@@ -16,6 +16,7 @@
   --font-mono: var(--font-geist-mono);
   --color-primaryblue: #04B2D9;
   --color-primaryyellow: #F2B705;
+  --color-primarybackground: #121212;
 }
 
 /* @media (prefers-color-scheme: dark) {

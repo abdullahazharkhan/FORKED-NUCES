@@ -1,18 +1,7 @@
 "use client";
 
-import {
-    Navbar,
-    NavbarBrand,
-    NavbarContent,
-    NavbarItem,
-    Link,
-    Button,
-    NavbarMenuToggle,
-    NavbarMenu,
-    NavbarMenuItem,
-} from "@heroui/react";
-import React from "react";
-import { usePathname } from "next/navigation";
+import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@heroui/react";
+import { useEffect, useState } from "react";
 
 export const AcmeLogo = () => {
     return (
@@ -28,11 +17,15 @@ export const AcmeLogo = () => {
 };
 
 export default function App() {
-    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const [isScrolled, setIsScrolled] = React.useState(false);
-    const pathname = usePathname();
+    const navLinks = [
+        { name: "Home", href: "/" },
+        { name: "About", href: "/about" },
+    ]
 
-    React.useEffect(() => {
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 0);
         };
@@ -41,32 +34,9 @@ export default function App() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    const handleSmoothScroll = (id: string) => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-    };
-
-    const isActive = (href: string) => {
-        return pathname === href;
-    };
-
-    const activeClass = "text-[#04B2D9]";
-    const baseLinkClass = "text-black hover:text-black/70 transition-colors duration-200";
-
     return (
-        <Navbar
-            shouldHideOnScroll
-            onMenuOpenChange={setIsMenuOpen}
-            className={
-                isScrolled
-                    ? "backdrop-blur-sm bg-white/70"
-                    : isMenuOpen
-                        ? "bg-white/70 backdrop-blur-sm"
-                        : "bg-transparent"
-            }
-        >
+        // <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isScrolled ? "bg-black/10 backdrop-blur-lg" : "bg-transparent"} transition-colors duration-300`}>
+        <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isMenuOpen ? "bg-primarybackground backdrop-blur-lg" : (isScrolled ? "bg-black/10 backdrop-blur-lg" : "bg-transparent")} transition-colors duration-300`}>
             <NavbarContent>
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -77,100 +47,38 @@ export default function App() {
                     <p className="font-bold text-inherit">FORKED NUCES</p>
                 </NavbarBrand>
             </NavbarContent>
-
-            {/* Desktop nav */}
             <NavbarContent className="hidden sm:flex gap-4" justify="center">
-                <NavbarItem isActive={isActive("/")}>
-                    <Link
-                        href="/"
-                        className={`${baseLinkClass} ${isActive("/") ? activeClass : ""}`}
-                    >
-                        Home
-                    </Link>
-                </NavbarItem>
-                <NavbarItem isActive={isActive("/about")}>
-                    <Link
-                        href="/about"
-                        className={`${baseLinkClass} ${isActive("/about") ? activeClass : ""}`}
-                    >
-                        About
-                    </Link>
-                </NavbarItem>
+                {navLinks.map((link) => (
+                    <NavbarItem key={link.name}>
+                        <Link color="foreground" href={link.href}>
+                            {link.name}
+                        </Link>
+                    </NavbarItem>
+                ))}
             </NavbarContent>
-
-            {/* Right actions */}
-            <NavbarContent className="hidden sm:flex" justify="end">
-                <NavbarItem>
-                    <Button
-                        as={Link}
-                        className="bg-transparent text-black"
-                        href="/login"
-                        variant="bordered"
-                    >
-                        Login
-                    </Button>
+            <NavbarContent justify="end">
+                <NavbarItem className="hidden sm:flex">
+                    <Link href="/login" className="text-primaryblue hover:text-primaryblue transition-colors duration-200">Login</Link>
                 </NavbarItem>
                 <NavbarItem>
-                    <Button
-                        as={Link}
-                        className="bg-primaryblue text-white"
-                        href="/signup"
-                        variant="solid"
-                    >
-                        Sign Up
+                    <Button as={Link} className="bg-primaryblue/80" href="/signup" variant="flat">
+                        Get Started
                     </Button>
                 </NavbarItem>
             </NavbarContent>
 
-            {/* Mobile menu */}
-            <NavbarMenu className="border-t border-gray-300">
-                <NavbarMenuItem>
-                    <Link
-                        className={`w-full ${baseLinkClass} ${isActive("/") ? activeClass : ""
-                            }`}
-                        href="/"
-                        size="lg"
-                        onClick={() => setIsMenuOpen(false)}
-                    >
-                        Home
-                    </Link>
-                </NavbarMenuItem>
-                <NavbarMenuItem>
-                    <Link
-                        className={`w-full ${baseLinkClass} ${isActive("/about") ? activeClass : ""
-                            }`}
-                        href="/about"
-                        size="lg"
-                        onClick={() => setIsMenuOpen(false)}
-                    >
-                        About
-                    </Link>
-                </NavbarMenuItem>
-
-                <div className="flex w-full gap-4 mt-2">
-                    <NavbarMenuItem className="flex-1">
-                        <Button
-                            as={Link}
-                            className="bg-transparent text-black w-full"
-                            href="/login"
-                            variant="ghost"
-                            onClick={() => setIsMenuOpen(false)}
+            <NavbarMenu className="bg-primarybackground">
+                {navLinks.map((item, index) => (
+                    <NavbarMenuItem key={`${item}-${index}`}>
+                        <Link
+                            className="w-full text-foreground"
+                            href={item.href}
+                            size="lg"
                         >
-                            Login
-                        </Button>
+                            {item.name}
+                        </Link>
                     </NavbarMenuItem>
-                    <NavbarMenuItem className="flex-1">
-                        <Button
-                            as={Link}
-                            className="bg-primaryblue text-white w-full"
-                            href="/signup"
-                            variant="solid"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Sign Up
-                        </Button>
-                    </NavbarMenuItem>
-                </div>
+                ))}
             </NavbarMenu>
         </Navbar>
     );

@@ -26,15 +26,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[radial-gradient(60%_120%_at_50%_50%,hsla(0,0%,100%,0)_0,rgba(4,178,217,.18)_100%)]`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-neutral-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(4,178,217,0.2),rgba(255,255,255,0))]`}
       >
         <Providers>
           <Navbar />
           {children}
         </Providers>
       </body>
-    </html>
+    </html >
   );
 }
