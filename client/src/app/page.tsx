@@ -1,8 +1,7 @@
 export default function Home() {
   return (
-    <div>
+    <div className="font-anton">
       FORKED NUCES
-      lorem10000
     </div>
   );
 }

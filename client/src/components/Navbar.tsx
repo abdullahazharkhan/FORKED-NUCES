@@ -35,8 +35,7 @@ export default function App() {
     }, []);
 
     return (
-        // <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isScrolled ? "bg-black/10 backdrop-blur-lg" : "bg-transparent"} transition-colors duration-300`}>
-        <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isMenuOpen ? "bg-primarybackground backdrop-blur-lg" : (isScrolled ? "bg-black/10 backdrop-blur-lg" : "bg-transparent")} transition-colors duration-300`}>
+        <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isMenuOpen ? "bg-white/50 backdrop-blur-lg" : (isScrolled ? "bg-white/50 backdrop-blur-lg" : "bg-transparent")} transition-colors duration-300`}>
             <NavbarContent>
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -58,10 +57,10 @@ export default function App() {
             </NavbarContent>
             <NavbarContent justify="end">
                 <NavbarItem className="hidden sm:flex">
-                    <Link href="/login" className="text-primaryblue hover:text-primaryblue transition-colors duration-200">Login</Link>
+                    <Link href="/login" className="text-primaryblue hover:text-primaryblue/80 transition-colors duration-300">Login</Link>
                 </NavbarItem>
                 <NavbarItem>
-                    <Button as={Link} className="bg-primaryblue/80" href="/signup" variant="flat">
+                    <Button as={Link} className="bg-primaryblue text-white" href="/signup" variant="flat">
                         Get Started
                     </Button>
                 </NavbarItem>
