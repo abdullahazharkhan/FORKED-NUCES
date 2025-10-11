@@ -35,21 +35,21 @@ export default function App() {
     }, []);
 
     return (
-        <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isMenuOpen ? "bg-white/50 backdrop-blur-lg" : (isScrolled ? "bg-white/50 backdrop-blur-lg" : "bg-transparent")} transition-colors duration-300`}>
+        <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isMenuOpen ? "backdrop-blur-lg" : (isScrolled ? "bg-white/50 backdrop-blur-lg" : "bg-transparent")} transition-colors duration-300`}>
             <NavbarContent>
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                     className="sm:hidden"
                 />
                 <NavbarBrand>
-                    <AcmeLogo />
-                    <p className="font-bold text-inherit">FORKED NUCES</p>
+                    {/* <AcmeLogo /> */}
+                    <p className="font-bold text-3xl text-primaryblue">FORKED NUCES</p>
                 </NavbarBrand>
             </NavbarContent>
             <NavbarContent className="hidden sm:flex gap-4" justify="center">
                 {navLinks.map((link) => (
                     <NavbarItem key={link.name}>
-                        <Link color="foreground" href={link.href}>
+                        <Link className="text-primaryblue text-lg" href={link.href}>
                             {link.name}
                         </Link>
                     </NavbarItem>
@@ -57,20 +57,20 @@ export default function App() {
             </NavbarContent>
             <NavbarContent justify="end">
                 <NavbarItem className="hidden sm:flex">
-                    <Link href="/login" className="text-primaryblue hover:text-primaryblue/80 transition-colors duration-300">Login</Link>
+                    <Link href="/login" className="text-primaryblue hover:text-primaryblue/80 transition-colors duration-300 text-lg">Login</Link>
                 </NavbarItem>
-                <NavbarItem>
-                    <Button as={Link} className="bg-primaryblue text-white" href="/signup" variant="flat">
+                <NavbarItem className="hidden sm:flex">
+                    <Button as={Link} className="bg-primaryblue text-white text-lg" href="/signup" variant="flat">
                         Get Started
                     </Button>
                 </NavbarItem>
             </NavbarContent>
 
-            <NavbarMenu className="bg-primarybackground">
+            <NavbarMenu className="">
                 {navLinks.map((item, index) => (
                     <NavbarMenuItem key={`${item}-${index}`}>
                         <Link
-                            className="w-full text-foreground"
+                            className="w-full text-primaryblue text-lg"
                             href={item.href}
                             size="lg"
                         >
@@ -78,6 +78,15 @@ export default function App() {
                         </Link>
                     </NavbarMenuItem>
                 ))}
+
+                <NavbarMenuItem className="w-full flex gap-4 mt-2">
+                    <Button as={Link} className="text-primaryblue w-1/2 border-primaryblue hover:bg-primaryblue/10 bg-transparent border-2 text-lg" href="/login">
+                        Login
+                    </Button>
+                    <Button as={Link} className="bg-primaryblue text-white w-1/2 text-lg" href="/signup" variant="flat">
+                        Sign Up
+                    </Button>
+                </NavbarMenuItem>
             </NavbarMenu>
         </Navbar>
     );
