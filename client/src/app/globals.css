@@ -20,6 +20,7 @@
   --font-poppins: var(--font-poppins);
   --color-primaryblue: #04B2D9;
   --color-primaryyellow: #F2B705;
+  --color-primarygreen: #C3FF00;
 }
 
 /* @media (prefers-color-scheme: dark) {

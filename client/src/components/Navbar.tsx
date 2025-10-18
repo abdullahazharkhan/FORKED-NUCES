@@ -1,92 +1,154 @@
 "use client";
 
-import Image from "next/image";
-import { Navbar, NavbarContent, NavbarItem, Button, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@heroui/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 
-export const Logo = () => {
+const Navbar = () => {
+    const [scrolled, setScrolled] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    // Header scroll state
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 10);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+
+    const navLinks = [
+        { name: "Features", href: "#features" },
+        { name: "Use Cases", href: "#usecases" },
+        { name: "About", href: "#about" },
+    ];
+
     return (
-        <Link href="/" className="cursor-pointer">
-            <Image src="/logos/forkednuces-logo.png" alt="FORKED NUCES" width={600} height={600} className="w-10 h-10 rounded-md" />
-        </Link>
+        <>
+            <nav
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 flex justify-between items-center px-6 py-4 font-poppins tracking-er er
+        ${scrolled ? "bg-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/50 shadow-sm" : "bg-transparent"}`}
+            >
+                <div className="flex items-center gap-8">
+                    <Link href="/" className="flex items-center gap-4">
+                        <Image
+                            src="/logos/forkednuces-logo-bw-invert.png"
+                            alt="Logo"
+                            width={200}
+                            height={200}
+                            className="w-14 h-14 rounded-xl"
+                        />
+                        <h1 className="font-bold text-white text-2xl md:hidden">FORKED NUCES</h1>
+                    </Link>
+
+                    {/* Desktop nav */}
+                    <div className="gap-8 hidden md:flex">
+                        {navLinks.map((link) => (
+                            <Link
+                                href={link.href}
+                                key={link.href}
+                                className="text-lg md:text-xl lg:text-2xl font-bold text-white hover:text-white/80 transition-colors"
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Desktop buttons */}
+                <div className="hidden md:flex items-center gap-2">
+                    <Link
+                        href="/login"
+                        className="text-lg md:text-xl lg:text-2xl font-bold text-white bg-black hover:bg-black/80 transition-all rounded-xl px-8 h-14 flex items-center justify-center"
+                    >
+                        Login
+                    </Link>
+                    <Link
+                        href="/get-started"
+                        className="text-lg md:text-xl lg:text-2xl font-bold text-white bg-black hover:bg-black/80 transition-all rounded-xl px-8 h-14 flex items-center justify-center"
+                    >
+                        Get Started
+                    </Link>
+                </div>
+
+                {/* Mobile menu toggle */}
+                <button
+                    aria-label="Toggle menu"
+                    aria-expanded={isMenuOpen}
+                    aria-controls="mobile-drawer"
+                    className="flex md:hidden h-14 place-items-center cursor-pointer"
+                    onClick={() => setIsMenuOpen((p) => !p)}
+                >
+                    <Menu strokeWidth={4} className="text-white" size={35} />
+                </button>
+            </nav>
+
+            {/* Backdrop */}
+            <button
+                className={`fixed inset-0 z-40 bg-black/50 transition-opacity md:hidden ${isMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                    }`}
+                aria-hidden={!isMenuOpen}
+                onClick={() => setIsMenuOpen(false)}
+            />
+
+            {/* Right slide-in drawer */}
+            <aside
+                id="mobile-drawer"
+                className={`fixed right-0 top-0 z-50 h-screen w-[80vw] max-w-[360px]
+                    bg-white/90 backdrop-blur-xl shadow-2xl border-l border-white/30
+                    transition-transform duration-300 md:hidden
+                    ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+                role="dialog"
+                aria-modal="true"
+            >
+                <div className="flex items-center justify-between px-5 h-16 mt-3">
+                    <div className="flex items-center gap-3">
+                        <span className="font-bold tracking-tighter text-2xl">Menu</span>
+                    </div>
+                    <button
+                        aria-label="Toggle menu"
+                        aria-expanded={isMenuOpen}
+                        aria-controls="mobile-drawer"
+                        className="flex md:hidden h-14 place-items-center cursor-pointer"
+                        onClick={() => setIsMenuOpen((p) => !p)}
+                    >
+                        <X strokeWidth={4} className="text-black" size={35} />
+                    </button>
+                </div>
+
+                <div className="px-5 py-4">
+                    <nav className="flex flex-col gap-4">
+                        {navLinks.map((link) => (
+                            <Link
+                                href={link.href}
+                                key={link.href}
+                                className="text-lg md:text-xl lg:text-2xl font-bold text-black hover:text-black/80 tracking-tighter transition-colors"
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                    </nav>
+
+                    <div className="mt-6 h-px bg-black" />
+
+                    <div className="mt-6 flex flex-col gap-3">
+                        <Link
+                            href="/login"
+                            className="text-lg md:text-xl lg:text-2xl font-bold text-white bg-black hover:bg-black/80 transition-all rounded-xl px-8 h-14 flex items-center justify-center"
+                        >
+                            Login
+                        </Link>
+                        <Link
+                            href="/get-started"
+                            className="text-lg md:text-xl lg:text-2xl font-bold text-white bg-black hover:bg-black/80 transition-all rounded-xl px-8 h-14 flex items-center justify-center"
+                        >
+                            Get Started
+                        </Link>
+                    </div>
+                </div>
+            </aside>
+        </>
     );
 };
 
-export default function App() {
-    const navLinks = [
-        { name: "Home", href: "/" },
-        { name: "About", href: "/about" },
-    ]
-
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 0);
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    return (
-        <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isMenuOpen ? "backdrop-blur-lg" : (isScrolled ? "bg-white/50 backdrop-blur-lg" : "bg-transparent")} transition-colors duration-300`}>
-            <NavbarContent className="">
-                <NavbarMenuToggle
-                    aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                    className="sm:hidden"
-                />
-                <div className="hidden sm:block">
-                    <Logo />
-                </div>
-                {/* <p className="font-bold text-3xl text-primaryblue">FORKED NUCES</p> */}
-                <div className="hidden sm:flex gap-4">
-                    {navLinks.map((link) => (
-                        <NavbarItem key={link.name}>
-                            <Link className="text-primaryblue text-lg" href={link.href}>
-                                {link.name}
-                            </Link>
-                        </NavbarItem>
-                    ))}
-                </div>
-            </NavbarContent>
-            <NavbarContent justify="end">
-                <div className="block sm:hidden">
-                    <Logo />
-                </div>
-                <NavbarItem className="hidden sm:flex">
-                    <Link href="/login" className="text-primaryblue hover:text-primaryblue/80 transition-colors duration-300 text-lg">Login</Link>
-                </NavbarItem>
-                <NavbarItem className="hidden sm:flex">
-                    <Button as={Link} className="bg-primaryblue text-white text-lg rounded-md" href="/signup" variant="flat">
-                        Get Started
-                    </Button>
-                </NavbarItem>
-            </NavbarContent>
-
-            <NavbarMenu className="">
-                {navLinks.map((item, index) => (
-                    <NavbarMenuItem key={`${item}-${index}`}>
-                        <Link
-                            className="w-full text-primaryblue text-lg"
-                            href={item.href}
-                        >
-                            {item.name}
-                        </Link>
-                    </NavbarMenuItem>
-                ))}
-
-                <NavbarMenuItem className="w-full flex gap-4 mt-2">
-                    <Button as={Link} className="text-primaryblue w-1/2 border-primaryblue rounded-md hover:bg-primaryblue/10 bg-transparent border-2 text-lg" href="/login">
-                        Login
-                    </Button>
-                    <Button as={Link} className="bg-primaryblue rounded-md text-white w-1/2 text-lg" href="/signup" variant="flat">
-                        Sign Up
-                    </Button>
-                </NavbarMenuItem>
-            </NavbarMenu>
-        </Navbar>
-    );
-}
+export default Navbar;

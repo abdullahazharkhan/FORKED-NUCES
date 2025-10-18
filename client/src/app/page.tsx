@@ -1,7 +1,6 @@
 export default function Home() {
   return (
-    <div className="font-anton">
-      forkednuces
+    <div className="bg-primaryblue min-h-screen w-full">
     </div>
   );
 }
