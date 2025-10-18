@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 export const Logo = () => {
     return (
         <Link href="/" className="cursor-pointer">
-            <Image src="/logos/forkednuces-logo.png" alt="FORKED NUCES" width={600} height={600} className="w-10 h-10 rounded-lg" />
+            <Image src="/logos/forkednuces-logo.png" alt="FORKED NUCES" width={600} height={600} className="w-10 h-10 rounded-md" />
         </Link>
     );
 };
@@ -33,7 +33,7 @@ export default function App() {
 
     return (
         <Navbar onMenuOpenChange={setIsMenuOpen} shouldHideOnScroll className={`${isMenuOpen ? "backdrop-blur-lg" : (isScrolled ? "bg-white/50 backdrop-blur-lg" : "bg-transparent")} transition-colors duration-300`}>
-            <NavbarContent>
+            <NavbarContent className="">
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                     className="sm:hidden"
@@ -60,7 +60,7 @@ export default function App() {
                     <Link href="/login" className="text-primaryblue hover:text-primaryblue/80 transition-colors duration-300 text-lg">Login</Link>
                 </NavbarItem>
                 <NavbarItem className="hidden sm:flex">
-                    <Button as={Link} className="bg-primaryblue text-white text-lg" href="/signup" variant="flat">
+                    <Button as={Link} className="bg-primaryblue text-white text-lg rounded-md" href="/signup" variant="flat">
                         Get Started
                     </Button>
                 </NavbarItem>
@@ -79,10 +79,10 @@ export default function App() {
                 ))}
 
                 <NavbarMenuItem className="w-full flex gap-4 mt-2">
-                    <Button as={Link} className="text-primaryblue w-1/2 border-primaryblue hover:bg-primaryblue/10 bg-transparent border-2 text-lg" href="/login">
+                    <Button as={Link} className="text-primaryblue w-1/2 border-primaryblue rounded-md hover:bg-primaryblue/10 bg-transparent border-2 text-lg" href="/login">
                         Login
                     </Button>
-                    <Button as={Link} className="bg-primaryblue text-white w-1/2 text-lg" href="/signup" variant="flat">
+                    <Button as={Link} className="bg-primaryblue rounded-md text-white w-1/2 text-lg" href="/signup" variant="flat">
                         Sign Up
                     </Button>
                 </NavbarMenuItem>
