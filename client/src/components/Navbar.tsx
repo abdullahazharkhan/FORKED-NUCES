@@ -1,18 +1,15 @@
 "use client";
 
-import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@heroui/react";
+import Image from "next/image";
+import { Navbar, NavbarContent, NavbarItem, Button, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@heroui/react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export const AcmeLogo = () => {
+export const Logo = () => {
     return (
-        <svg fill="none" height="36" viewBox="0 0 32 32" width="36">
-            <path
-                clipRule="evenodd"
-                d="M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z"
-                fill="currentColor"
-                fillRule="evenodd"
-            />
-        </svg>
+        <Link href="/" className="cursor-pointer">
+            <Image src="/logos/forkednuces-logo.png" alt="FORKED NUCES" width={600} height={600} className="w-10 h-10 rounded-lg" />
+        </Link>
     );
 };
 
@@ -41,21 +38,24 @@ export default function App() {
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                     className="sm:hidden"
                 />
-                <NavbarBrand>
-                    {/* <AcmeLogo /> */}
-                    <p className="font-bold text-3xl text-primaryblue">FORKED NUCES</p>
-                </NavbarBrand>
-            </NavbarContent>
-            <NavbarContent className="hidden sm:flex gap-4" justify="center">
-                {navLinks.map((link) => (
-                    <NavbarItem key={link.name}>
-                        <Link className="text-primaryblue text-lg" href={link.href}>
-                            {link.name}
-                        </Link>
-                    </NavbarItem>
-                ))}
+                <div className="hidden sm:block">
+                    <Logo />
+                </div>
+                {/* <p className="font-bold text-3xl text-primaryblue">FORKED NUCES</p> */}
+                <div className="hidden sm:flex gap-4">
+                    {navLinks.map((link) => (
+                        <NavbarItem key={link.name}>
+                            <Link className="text-primaryblue text-lg" href={link.href}>
+                                {link.name}
+                            </Link>
+                        </NavbarItem>
+                    ))}
+                </div>
             </NavbarContent>
             <NavbarContent justify="end">
+                <div className="block sm:hidden">
+                    <Logo />
+                </div>
                 <NavbarItem className="hidden sm:flex">
                     <Link href="/login" className="text-primaryblue hover:text-primaryblue/80 transition-colors duration-300 text-lg">Login</Link>
                 </NavbarItem>
@@ -72,7 +72,6 @@ export default function App() {
                         <Link
                             className="w-full text-primaryblue text-lg"
                             href={item.href}
-                            size="lg"
                         >
                             {item.name}
                         </Link>
