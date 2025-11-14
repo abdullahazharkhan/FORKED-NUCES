@@ -1,13 +1,32 @@
-// import { Highlighter } from "@/components/ui/highlighter"
+import About from "@/components/Home/About";
+import Features from "@/components/Home/Features";
+import Hero from "@/components/Home/Hero";
+import UseCases from "@/components/Home/UseCases";
 
 export default function Home() {
   return (
-    <div className="bg-[#6F43FE] min-h-screen w-full flex items-center justify-center flex-col relative space-y-12">
-      <div className="flex flex-col">
-        <h1 className="font-jaro bold text-6xl min-[400px]:text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] text-white text-center">FORK'D NUCES</h1>
-        <h3 className="text-lg min-[400px]:text-xl sm:text-2xl text-white text-center">FASTians Build Better Together.</h3>
+    <div className="space-y-16">
+      <Hero />
+
+      <div className="w-full px-8 max-w-4xl mx-auto">
+        <p className="text-center font-bold text-3xl">
+          Open-source your projects within FAST.
+          <br />
+          Get help where you're stuck, and help others where you shine.
+        </p>
       </div>
-      <button className="bg-primarygreen text-black p-0 uppercase font-[900] text-2xl sm:text-4xl tracking-tighter cursor-pointer italic pr-2">Start Contributing Now!</button>
+
+      <section id="usecases">
+        <UseCases />
+      </section>
+
+      <section id="features">
+        <Features />
+      </section>
+
+      <section id="about">
+        <About />
+      </section>
     </div>
   );
 }

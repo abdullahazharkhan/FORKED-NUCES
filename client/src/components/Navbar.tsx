@@ -9,7 +9,6 @@ const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Header scroll state
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 10);
         onScroll();
@@ -18,16 +17,25 @@ const Navbar = () => {
     }, []);
 
     const navLinks = [
-        { name: "Features", href: "#features" },
         { name: "Use Cases", href: "#usecases" },
+        { name: "Features", href: "#features" },
         { name: "About", href: "#about" },
     ];
+
+    const handleNavClick = (href: string) => {
+        const id = href.replace("#", "");
+        const el = document.getElementById(id);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        setIsMenuOpen(false);
+    };
 
     return (
         <>
             <nav
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 flex justify-between items-center px-6 py-4 font-poppins tracking-er er
-        ${scrolled ? "bg-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/50 shadow-sm" : "bg-transparent"}`}
+        ${scrolled ? "bg-primarypurple/50 backdrop-blur-lg supports-[backdrop-filter]:bg-primarypurple/50 shadow-sm" : "bg-transparent"}`}
             >
                 <div className="flex items-center gap-8">
                     <Link href="/" className="flex items-center gap-4">
@@ -47,6 +55,10 @@ const Navbar = () => {
                             <Link
                                 href={link.href}
                                 key={link.href}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleNavClick(link.href);
+                                }}
                                 className="text-lg md:text-xl lg:text-2xl font-bold text-white hover:text-white/80 transition-colors"
                             >
                                 {link.name}
@@ -122,6 +134,10 @@ const Navbar = () => {
                             <Link
                                 href={link.href}
                                 key={link.href}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleNavClick(link.href);
+                                }}
                                 className="text-lg md:text-xl lg:text-2xl font-bold text-black hover:text-black/80 tracking-tighter transition-colors"
                             >
                                 {link.name}

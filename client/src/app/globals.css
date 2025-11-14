@@ -8,7 +8,7 @@
   /* --background: #171717;
   --foreground: #ffffffde; */
 
-  --background: #ffffff;
+  --background: #E8EAEC;
   --foreground: #000000de;
 }
 
@@ -19,7 +19,7 @@
   --font-mono: var(--font-geist-mono);
   --font-poppins: var(--font-poppins);
   --font-jaro: var(--font-jaro);
-  --color-primaryblue: #04B2D9;
+  --color-primarypurple: #6F43FE;
   --color-primaryyellow: #F2B705;
   --color-primarygreen: #C3FF00;
 }
@@ -32,7 +32,7 @@
 } */
 
 body {
-  /* background: var(--background); */
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-poppins);
 }
