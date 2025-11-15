@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins, Jaro } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,9 +40,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${jaro.variable} font-poppins antialiased min-h-screen bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(4,178,217,0.3),rgba(255,255,255,0))]`}
       >
         <Providers>
-          <Navbar />
           {children}
-          <Footer />
         </Providers>
       </body>
     </html >
