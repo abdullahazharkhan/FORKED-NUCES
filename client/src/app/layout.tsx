@@ -35,14 +35,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light bg-[#E8EAEC]">
+    <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${jaro.variable} font-poppins antialiased min-h-screen bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(4,178,217,0.3),rgba(255,255,255,0))]`}
+        className={`light bg-[#E8EAEC] ${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${jaro.variable} font-poppins antialiased min-h-screen bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(4,178,217,0.3),rgba(255,255,255,0))]`}
       >
         <Providers>
           {children}
         </Providers>
       </body>
-    </html >
+    </html>
   );
 }
