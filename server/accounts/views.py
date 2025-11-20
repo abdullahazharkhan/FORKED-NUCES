@@ -1,3 +1,87 @@
 from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
 
-# Create your views here.
+from .models import User
+from .serializers import (
+    RegisterSerializer,
+    UserSerializer,
+    EmailVerificationSerializer,
+    ResendVerificationSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+)
+
+
+class RegisterView(generics.CreateAPIView):
+    permission_classes = [AllowAny]
+    
+    serializer_class = RegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Optional: if you want to return the token for testing (remove in production)
+        token_value = getattr(user, "_verification_token", None)
+
+        data = {
+            "message": "Registration successful. Please check your NU email to verify your account.",
+            "user": UserSerializer(user).data,
+            "debug_verification_token": token_value.token if token_value else None,
+        }
+        return Response(data, status=status.HTTP_201_CREATED)
+
+
+class VerifyEmailView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request, *args, **kwargs):
+        serializer = EmailVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            {
+                "message": "Email successfully verified.",
+                "user": UserSerializer(user).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class ResendVerificationEmailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ResendVerificationSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            {
+                "message": "Verification email sent.",
+                "nu_email": user.nu_email,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tokens_and_user = serializer.save()
+        return Response(tokens_and_user, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Successfully logged out."}, status=status.HTTP_205_RESET_CONTENT)
