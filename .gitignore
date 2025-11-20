@@ -64,3 +64,9 @@ client/node_modules/
 # OS files
 .DS_Store
 Thumbs.db
+
+*.dump
+
+*.sql
+
+.env

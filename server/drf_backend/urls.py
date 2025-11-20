@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -23,6 +24,16 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # basic root route so visiting http://127.0.0.1:8000/ doesn't 404
+    path('', lambda request: JsonResponse({
+        'message': 'drf_backend: API running',
+        'routes': {
+            'admin': '/admin/',
+            'token_obtain': '/api/token/',
+            'token_refresh': '/api/token/refresh/',
+            'auth': '/api/auth/'
+        }
+    })),
     
     # jwt urls
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
