@@ -7,20 +7,18 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { registerUser } from "@/lib/authClient"
+import { registerUser, resendVerificationEmail } from "@/lib/authClient";
 
-const getStartedSchema = z.object({
-    fullName: z.string().min(1, "Full Name is required"),
+const resendEmailSchema = z.object({
     nuemail: z
         .string()
         .regex(
             /^[klmfp][0-9]{6}@nu\.edu\.pk$/,
-            "NU Email must be a valid NU email address"
+            "Please enter a valid NU email address"
         ),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
-type GetStartedForm = z.infer<typeof getStartedSchema>;
+type ResendEmailForm = z.infer<typeof resendEmailSchema>;
 
 type ApiError = {
     body?: string;
@@ -57,25 +55,23 @@ const getErrorMessage = (err: unknown): string => {
     return "Registration failed";
 };
 
-const GetStarted = () => {
+const ResendEmail = () => {
     const {
         register,
         handleSubmit,
         reset,
-        formState: { errors, isValid },
-    } = useForm<GetStartedForm>({
-        resolver: zodResolver(getStartedSchema),
+        formState: { errors, isValid, isSubmitting },
+    } = useForm<ResendEmailForm>({
+        resolver: zodResolver(resendEmailSchema),
         mode: "onChange",
     });
 
     const mutation = useMutation({
-        mutationFn: async (data: GetStartedForm) => {
+        mutationFn: async (data: ResendEmailForm) => {
             const payload = {
-                full_name: data.fullName,
                 nu_email: data.nuemail,
-                password: data.password,
             };
-            return await registerUser(payload);
+            return await resendVerificationEmail(payload);
         },
         onSuccess: () => {
             reset();
@@ -85,15 +81,9 @@ const GetStarted = () => {
         },
     });
 
-    const onSubmit = (data: GetStartedForm) => {
+    const onSubmit = (data: ResendEmailForm) => {
         mutation.mutate(data);
     };
-
-    const baseInputClasses =
-        "p-2 rounded border-2 focus:border-primarypurple/80 focus:ring-0 outline-none transition-colors duration-200";
-
-    const getInputClass = (fieldError?: unknown) =>
-        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-gray-300"}`;
 
     const [message, setMessage] = React.useState<string | null>(null);
     const [isError, setIsError] = React.useState(false);
@@ -112,30 +102,19 @@ const GetStarted = () => {
     }, [mutation.isError, mutation.isSuccess, mutation.error, mutation.data]);
 
 
+    const baseInputClasses =
+        "p-2 rounded border-2 focus:border-primarypurple/80 focus:ring-0 outline-none transition-colors duration-200";
+
+    const getInputClass = (fieldError?: unknown) =>
+        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-gray-300"}`;
+
     return (
-        <div className="sm:w-2/3 mx-auto space-y-8">
+        <div className=" sm:w-2/3 mx-auto space-y-8">
             <h1 className="text-left text-4xl font-black italic tracking-[-0.20rem] uppercase underline underline-offset-2 decoration-primarygreen bg-primarygreen/20 w-fit">
-                Get Started
+                RESEND VERIFICATION EMAIL
             </h1>
 
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                {/* Full Name */}
-                <div className="flex flex-col">
-                    <label htmlFor="fullName" className="font-semibold text-lg">
-                        Full Name
-                    </label>
-                    <input
-                        type="text"
-                        id="fullName"
-                        {...register("fullName")}
-                        className={getInputClass(errors.fullName)}
-                    />
-                    {errors.fullName && (
-                        <p className="text-sm text-red-500 mt-1">
-                            {errors.fullName.message}
-                        </p>
-                    )}
-                </div>
 
                 {/* NU Email */}
                 <div className="flex flex-col">
@@ -155,41 +134,13 @@ const GetStarted = () => {
                     )}
                 </div>
 
-                {/* Password */}
-                <div className="flex flex-col">
-                    <label htmlFor="password" className="font-semibold text-lg">
-                        Password
-                    </label>
-                    <input
-                        type="password"
-                        id="password"
-                        {...register("password")}
-                        className={getInputClass(errors.password)}
-                    />
-                    {errors.password && (
-                        <p className="text-sm text-red-500 mt-1">
-                            {errors.password.message}
-                        </p>
-                    )}
-                </div>
-
-                <div>
-                    already have an account?{" "}
-                    <Link
-                        href="/login"
-                        className="text-primarypurple font-semibold underline"
-                    >
-                        Login
-                    </Link>
-                </div>
-
                 <div className="flex w-full justify-end">
                     <Button
                         className="bg-primarygreen text-black font-bold"
                         type="submit"
-                        isDisabled={!isValid || mutation.isPending || mutation.isSuccess}
+                        isDisabled={!isValid || isSubmitting}
                     >
-                        {mutation.isPending ? "Creating..." : "Create Account"}
+                        {isSubmitting ? "Submitting..." : "Resend Verification Email"}
                     </Button>
                 </div>
 
@@ -208,4 +159,4 @@ const GetStarted = () => {
     );
 };
 
-export default GetStarted;
+export default ResendEmail;
