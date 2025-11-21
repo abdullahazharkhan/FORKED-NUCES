@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.urls import reverse
 
 from .models import User, VerificationToken
+from .utils import generate_random_avatar_url
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -53,7 +54,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop("password")
-        user = User.objects.create_user(password=password, **validated_data)
+        user = User.objects.create_user(
+            password=password, 
+            avatar_url=generate_random_avatar_url(),
+            **validated_data
+        )
 
         token_obj = VerificationToken.create_for_user(user)
 

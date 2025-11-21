@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { registerUser } from "@/lib/authClient"
+import { useRouter } from "next/navigation";
 
 const getStartedSchema = z.object({
     fullName: z.string().min(1, "Full Name is required"),
@@ -58,6 +59,8 @@ const getErrorMessage = (err: unknown): string => {
 };
 
 const GetStarted = () => {
+    const router = useRouter();
+
     const {
         register,
         handleSubmit,
@@ -79,6 +82,7 @@ const GetStarted = () => {
         },
         onSuccess: () => {
             reset();
+            router.push("/login");
         },
         onError: (err) => {
             console.error("Registration error", err);

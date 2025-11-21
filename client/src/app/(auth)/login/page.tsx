@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
     nuemail: z
@@ -61,6 +62,8 @@ const getErrorMessage = (err: unknown): string => {
 };
 
 const Login = () => {
+    const router = useRouter();
+
     const {
         register,
         handleSubmit,
@@ -92,6 +95,9 @@ const Login = () => {
             }
 
             return body;
+        },
+        onSuccess: () => {
+            router.push("/platform");
         },
         onError: (err) => {
             console.error("Login error", err);
