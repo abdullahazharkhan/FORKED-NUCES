@@ -6,8 +6,8 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 
-// zod schema
 const loginSchema = z.object({
     nuemail: z
         .string()
@@ -20,19 +20,86 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+type ApiError = {
+    body?: unknown;
+    detail?: string;
+    message?: string;
+    status?: string | number;
+    statusText?: string;
+};
+
+const getErrorMessage = (err: unknown): string => {
+    const e = err as ApiError | undefined;
+
+    if (!e) return "Login failed";
+
+    // DRF-style body object
+    if (e.body && typeof e.body === "object" && !Array.isArray(e.body)) {
+        const body = e.body as Record<string, unknown>;
+        const firstKey = Object.keys(body)[0];
+
+        if (firstKey) {
+            const value = body[firstKey];
+            if (Array.isArray(value) && value.length > 0) {
+                return String(value[0]);
+            }
+            if (typeof value === "string") {
+                return value;
+            }
+        }
+    }
+
+    if (typeof e.body === "string") return e.body;
+    if (e.detail) return e.detail;
+    if (e.message) return e.message;
+
+    if (e.status) {
+        return `${e.status} ${e.statusText || ""}`.trim();
+    }
+
+    return "Login failed";
+};
+
 const Login = () => {
     const {
         register,
         handleSubmit,
-        formState: { errors, isValid, isSubmitting },
+        formState: { errors, isValid },
     } = useForm<LoginForm>({
         resolver: zodResolver(loginSchema),
         mode: "onChange",
     });
 
+    const loginMutation = useMutation({
+        mutationFn: async (data: LoginForm) => {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nu_email: data.nuemail,
+                    password: data.password,
+                }),
+            });
+
+            const body = await res.json().catch(() => null);
+
+            if (!res.ok) {
+                throw {
+                    status: res.status,
+                    statusText: res.statusText,
+                    body,
+                } as ApiError;
+            }
+
+            return body;
+        },
+        onError: (err) => {
+            console.error("Login error", err);
+        },
+    });
+
     const onSubmit = (data: LoginForm) => {
-        console.log("Form is valid, sending data:", data);
-        // TODO: call your API here
+        loginMutation.mutate(data);
     };
 
     const baseInputClasses =
@@ -41,14 +108,25 @@ const Login = () => {
     const getInputClass = (fieldError?: unknown) =>
         `${baseInputClasses} ${fieldError ? "border-red-500" : "border-gray-300"}`;
 
+    let message: string | null = null;
+    let isError = false;
+
+    if (loginMutation.isError) {
+        message = getErrorMessage(loginMutation.error);
+        isError = true;
+    } else if (loginMutation.isSuccess) {
+        const result = loginMutation.data as { message?: string } | undefined;
+        message = result?.message || "Login successful.";
+        isError = false;
+    }
+
     return (
-        <div className=" sm:w-2/3 mx-auto space-y-8">
+        <div className="sm:w-2/3 mx-auto space-y-8">
             <h1 className="text-left text-4xl font-black italic tracking-[-0.20rem] uppercase underline underline-offset-2 decoration-primarygreen bg-primarygreen/20 w-fit">
                 Login
             </h1>
 
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-
                 {/* NU Email */}
                 <div className="flex flex-col">
                     <label htmlFor="nuemail" className="font-semibold text-lg">
@@ -86,7 +164,7 @@ const Login = () => {
                 </div>
 
                 <div>
-                    don't have an account?{" "}
+                    don&apos;t have an account?{" "}
                     <Link
                         href="/get-started"
                         className="text-primarypurple font-semibold underline"
@@ -99,11 +177,22 @@ const Login = () => {
                     <Button
                         className="bg-primarygreen text-black font-bold"
                         type="submit"
-                        isDisabled={!isValid || isSubmitting}
+                        isDisabled={!isValid || loginMutation.isPending}
                     >
-                        Login
+                        {loginMutation.isPending ? "Logging in..." : "Login"}
                     </Button>
                 </div>
+
+                {message && (
+                    <div
+                        className={`mt-4 p-3 rounded text-sm ${isError
+                            ? "bg-red-100 text-red-700"
+                            : "bg-green-100 text-green-700"
+                            }`}
+                    >
+                        {message}
+                    </div>
+                )}
             </form>
         </div>
     );
