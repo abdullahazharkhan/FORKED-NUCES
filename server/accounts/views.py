@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .models import User
 from .serializers import (
@@ -17,7 +17,7 @@ from .serializers import (
 
 class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
-    
+
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
@@ -38,7 +38,7 @@ class RegisterView(generics.CreateAPIView):
 
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
-    
+
     def post(self, request, *args, **kwargs):
         serializer = EmailVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -50,6 +50,7 @@ class VerifyEmailView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
 
 class ResendVerificationEmailView(APIView):
     permission_classes = [AllowAny]
@@ -84,4 +85,16 @@ class LogoutView(APIView):
         serializer = LogoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"message": "Successfully logged out."}, status=status.HTTP_205_RESET_CONTENT)
+        return Response(
+            {"message": "Successfully logged out."},
+            status=status.HTTP_205_RESET_CONTENT,
+        )
+
+
+class UserProfileView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return self.request.user

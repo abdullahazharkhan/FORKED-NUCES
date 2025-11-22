@@ -5,9 +5,13 @@ import Image from "next/image";
 import React, { useEffect, useState, useRef } from "react";
 import { Menu, X, User, LogOut, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-    
+import { useAuthStore } from "@/stores";
+
 const Navbar = () => {
     const router = useRouter();
+    const authStore = useAuthStore.getState();
+
+
     const [scrolled, setScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -44,6 +48,7 @@ const Navbar = () => {
                 if (res.ok) {
                     setIsProfileOpen(false);
                     setIsMenuOpen(false);
+                    authStore.clearUser();
                     router.push("/login");
                 }
             })

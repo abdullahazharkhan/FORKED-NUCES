@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores";
 
 const loginSchema = z.object({
     nuemail: z
@@ -63,6 +64,7 @@ const getErrorMessage = (err: unknown): string => {
 
 const Login = () => {
     const router = useRouter();
+    const authStore = useAuthStore.getState();
 
     const {
         register,
@@ -96,7 +98,8 @@ const Login = () => {
 
             return body;
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
+            authStore.setUser(data.user);
             router.push("/platform");
         },
         onError: (err) => {

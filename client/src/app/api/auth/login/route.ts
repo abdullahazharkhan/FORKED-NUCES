@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
     const data = await drfRes.json();
 
-    const res = NextResponse.json({ success: true, message: "Login successful" });
+    const res = NextResponse.json({ user: data.user, success: true, message: "Login successful" });
 
     // Set cookies
     res.cookies.set("access_token", data.access, {
