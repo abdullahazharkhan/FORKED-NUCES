@@ -33,7 +33,6 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"project_id",
 			"title",
 			"description",
-			"thumbnail_url",
 			"github_url",
 			"created_at",
 			"updated_at",
@@ -53,7 +52,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Project
-		fields = ["title", "description", "thumbnail_url", "github_url", "tags"]
+		fields = ["title", "description", "github_url", "tags"]
 
 	def create(self, validated_data):
 		tag_list = validated_data.pop("tags", [])

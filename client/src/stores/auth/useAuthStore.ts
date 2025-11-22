@@ -12,6 +12,7 @@ export interface UserType {
     avatar_url: string | null;
     bio: string | null;
     is_email_verified: boolean;
+    skills: string[] | null;
     created_at: string;
     updated_at: string;
 }

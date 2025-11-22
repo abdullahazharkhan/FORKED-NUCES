@@ -1,9 +1,25 @@
 "use client";
 import React, { useContext } from 'react'
+import YourProjects from './YourProjects';
+import EditProfile from './EditProfile';
+import AddProject from './AddProject';
 
 const UserOperations = () => {
     const operations = ["Your Projects", "Edit Profile", "Add Project"];
     const [selectedOperation, setSelectedOperation] = React.useState<string>(operations[0]);
+
+    const renderOperation = () => {
+        switch (selectedOperation) {
+            case "Your Projects":
+                return <YourProjects />;
+            case "Edit Profile":
+                return <EditProfile />;
+            case "Add Project":
+                return <AddProject />;
+            default:
+                return null;
+        }
+    };
 
     return (
         <div>
@@ -15,6 +31,9 @@ const UserOperations = () => {
                         cursor-pointer`}
                         onClick={() => setSelectedOperation(operation)}>{operation}</div>
                 ))}
+            </div>
+            <div>
+                {renderOperation()}
             </div>
         </div>
     )

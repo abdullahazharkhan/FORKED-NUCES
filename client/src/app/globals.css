@@ -36,3 +36,14 @@ body {
   color: var(--foreground);
   font-family: var(--font-poppins);
 }
+
+.md-editor {
+  --md-color: var(--color-primarypurple) !important;
+  --md-hover-color: blue !important;
+  --md-bk-color: transparent !important;
+  --md-border-color: var(--color-primarypurple) !important;
+}
+
+.md-editor-custom-scrollbar__track {
+  background-color: var(--color-primarypurple) !important;
+}
