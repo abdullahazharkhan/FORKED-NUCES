@@ -102,23 +102,32 @@ const Navbar = () => {
                 <div className="relative" ref={profileRef}>
                     <button
                         onClick={() => setIsProfileOpen(!isProfileOpen)}
-                        className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity"
+                        className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity cursor-pointer"
                     >
                         <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
-                            <User className="text-white w-6 h-6" />
+                            {
+                                authStore.user?.avatar_url ?
+                                    (<img src={authStore.user.avatar_url} alt="User Avatar" className="w-10 h-10 rounded-full" />)
+                                    : (
+                                        <User className="text-white w-6 h-6" />
+                                    )
+                            }
                         </div>
+                        <p className="text-lg font-bold">
+                            {authStore.user?.full_name.split(" ")[0] || "User"}
+                        </p>
                         <ChevronDown className={`w-4 h-4 transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
                     </button>
 
                     {isProfileOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 animate-in fade-in slide-in-from-top-2">
-                            <Link href="/profile" className="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors">
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl p-2 animate-in fade-in slide-in-from-top-2">
+                            <Link href="/profile" className="flex items-center gap-2 px-4 py-2 text-gray-800 rounded-xl hover:bg-gray-100 transition-colors">
                                 <User className="w-4 h-4" />
                                 <span>Profile</span>
                             </Link>
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-left">
+                                className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-left rounded-xl">
                                 <LogOut className="w-4 h-4" />
                                 <span>Logout</span>
                             </button>
