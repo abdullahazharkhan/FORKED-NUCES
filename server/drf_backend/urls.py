@@ -41,4 +41,7 @@ urlpatterns = [
 
     # auth urls
     path('api/auth/', include('accounts.urls')),
+
+    # project urls
+    path('api/projects/', include('projects.urls')),
 ]

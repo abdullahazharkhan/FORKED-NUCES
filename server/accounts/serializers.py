@@ -5,13 +5,18 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
 
-from .models import User, VerificationToken
+from .models import User, VerificationToken, Skill
 from .utils import generate_random_avatar_url
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserSerializer(serializers.ModelSerializer):
+    skills = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="skill",
+    )
     class Meta:
         model = User
         fields = [
@@ -25,6 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_email_verified",
             "created_at",
             "updated_at",
+            "skills",
         ]
         read_only_fields = [
             "user_id",
@@ -39,10 +45,16 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, min_length=8, style={"input_type": "password"}
     )
+    skills = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        allow_empty=True,
+        write_only=True,
+        required=False,
+    )
 
     class Meta:
         model = User
-        fields = ["full_name", "nu_email", "password"]
+        fields = ["full_name", "nu_email", "password", "skills"]
 
     def validate_nu_email(self, value):
         value = value.lower()
@@ -53,11 +65,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        skill_list = validated_data.pop("skills", [])
         password = validated_data.pop("password")
         user = User.objects.create_user(
-            password=password, 
+            password=password,
             avatar_url=generate_random_avatar_url(),
-            **validated_data
+            **validated_data,
+        )
+        unique_skills = set([s.strip() for s in skill_list if s.strip()])
+        Skill.objects.bulk_create(
+            [Skill(user=user, skill=skill) for skill in unique_skills],
+            ignore_conflicts=True,
         )
 
         token_obj = VerificationToken.create_for_user(user)

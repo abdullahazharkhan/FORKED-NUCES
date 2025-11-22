@@ -94,6 +94,24 @@ class User(AbstractBaseUser, PermissionsMixin):
     def id(self):
         # for simplejwt compatibility
         return self.user_id
+
+
+class Skill(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="skills",
+    )
+    skill = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ("user", "skill")
+        indexes = [
+            models.Index(fields=["user", "skill"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user_id} - {self.skill}"
     
 class VerificationToken(models.Model):
     token_id = models.UUIDField(
