@@ -222,3 +222,45 @@ class LogoutSerializer(serializers.Serializer):
             token.blacklist()
         except Exception:
             raise serializers.ValidationError("Token is invalid or has already been blacklisted.")
+
+
+class UserUpdateSerializer(serializers.Serializer):
+    full_name = serializers.CharField(required=False, allow_blank=False, max_length=255)
+    bio = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    skills = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        required=False,
+        allow_empty=True,
+    )
+
+    def validate(self, attrs):
+        if not attrs:
+            raise serializers.ValidationError("No data provided to update.")
+        return attrs
+
+    def update(self, instance: User, validated_data):
+        full_name = validated_data.get("full_name")
+        bio = validated_data.get("bio")
+        skills_list = validated_data.get("skills", None)
+
+        if full_name is not None:
+            instance.full_name = full_name
+
+        if bio is not None:
+            instance.bio = bio
+
+        instance.save(update_fields=["full_name", "bio", "updated_at"])
+
+        if skills_list is not None:
+            cleaned = [s.strip() for s in skills_list if s and s.strip()]
+            unique_skills = sorted(set(cleaned))
+
+            Skill.objects.filter(user=instance).delete()
+            Skill.objects.bulk_create(
+                [Skill(user=instance, skill=skill) for skill in unique_skills]
+            )
+
+        return instance
+
+    def create(self, validated_data):  # not used
+        raise NotImplementedError

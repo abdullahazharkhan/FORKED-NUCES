@@ -117,11 +117,28 @@ const Login = () => {
     const getInputClass = (fieldError?: unknown) =>
         `${baseInputClasses} ${fieldError ? "border-red-500" : "border-gray-300"}`;
 
-    let message: string | null = null;
+    let message: React.ReactNode | string | null = null;
     let isError = false;
 
     if (loginMutation.isError) {
-        message = getErrorMessage(loginMutation.error);
+        const rawMessage = getErrorMessage(loginMutation.error);
+
+        if (rawMessage === "Email is not verified.") {
+            message = (
+                <span>
+                    Your email is not verified.{" "}
+                    <Link
+                        href="/verify-email/resend"
+                        className="text-primarypurple font-semibold underline"
+                    >
+                        Resend verification email
+                    </Link>
+                </span>
+            );
+        } else {
+            message = rawMessage;
+        }
+
         isError = true;
     } else if (loginMutation.isSuccess) {
         const result = loginMutation.data as { message?: string } | undefined;
@@ -194,9 +211,7 @@ const Login = () => {
 
                 {message && (
                     <div
-                        className={`mt-4 p-3 rounded text-sm ${isError
-                            ? "bg-red-100 text-red-700"
-                            : "bg-green-100 text-green-700"
+                        className={`mt-4 p-3 rounded text-sm ${isError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
                             }`}
                     >
                         {message}

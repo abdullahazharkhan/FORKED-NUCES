@@ -6,7 +6,6 @@ import { Check } from "lucide-react";
 
 const UserDetails = () => {
     const { user } = useAuthStore();
-    const userSampleSkills = ["JavaScript", "React", "Node.js", "CSS", "HTML"];
 
     const displayName =
         user?.full_name?.trim().split(/\s+/).slice(0, 2).join(" ") || "John Doe";
@@ -62,14 +61,18 @@ const UserDetails = () => {
                 <div className="flex-1 border-t border-primarypurple/20 pt-4 md:border-l-2 md:border-t-0 md:pl-6 md:pt-0">
                     <h3 className="text-lg font-semibold">Skills</h3>
                     <div className="mt-2 flex flex-wrap gap-2">
-                        {userSampleSkills.map((skill, index) => (
-                            <span
-                                key={index}
-                                className="rounded bg-primarypurple/20 px-3 py-1 text-xs text-gray-800"
-                            >
-                                {skill}
-                            </span>
-                        ))}
+                        {user?.skills && user?.skills.length > 0 ? (
+                            user?.skills?.map((skill, index) => (
+                                <span
+                                    key={index}
+                                    className="rounded bg-primarypurple/20 px-3 py-1 text-xs text-gray-800"
+                                >
+                                    {skill}
+                                </span>
+                            ))
+                        ) : (
+                            <span className="text-sm text-gray-600">Update the profile to set the skills.</span>
+                        )}
                     </div>
                 </div>
             </div>

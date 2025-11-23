@@ -21,6 +21,7 @@ interface AuthState {
     user: UserType | null;
 
     setUser: (userData: UserType) => void;
+    updateUser: (partial: Partial<UserType>) => void;
     clearUser: () => void;
     getUser: () => UserType | null;
 }
@@ -32,12 +33,19 @@ export const useAuthStore = create<AuthState>()(
 
             setUser: (userData) => set({ user: userData }),
 
+            updateUser: (partial) =>
+                set((state) =>
+                    state.user
+                        ? { user: { ...state.user, ...partial } }
+                        : state
+                ),
+
             clearUser: () => set({ user: null }),
 
             getUser: () => get().user,
         }),
         {
-            name: "auth-user-storage",  // stored in localStorage
+            name: "auth-user-storage", // stored in localStorage
         }
     )
 );

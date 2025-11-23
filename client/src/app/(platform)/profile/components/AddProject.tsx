@@ -38,13 +38,6 @@ const AVAILABLE_TAGS = [
     "mobile",
 ];
 
-type ApiError = {
-    body?: unknown;
-    detail?: string;
-    message?: string;
-    status?: string | number;
-    statusText?: string;
-};
 
 const getErrorMessage = (err: unknown): string => {
     const e = err as ApiError | undefined;
