@@ -15,7 +15,7 @@ const getStartedSchema = z.object({
     nuemail: z
         .string()
         .regex(
-            /^[klmfp][0-9]{6}@nu\.edu\.pk$/,
+            /^[klmfpi][0-9]{6}@nu\.edu\.pk$/,
             "NU Email must be a valid NU email address"
         ),
     password: z.string().min(8, "Password must be at least 8 characters long"),

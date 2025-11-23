@@ -14,7 +14,7 @@ const loginSchema = z.object({
     nuemail: z
         .string()
         .regex(
-            /^[klmfp][0-9]{6}@nu\.edu\.pk$/,
+            /^[klmfpi][0-9]{6}@nu\.edu\.pk$/,
             "Please enter a valid NU email address"
         ),
     password: z.string().min(1, "Password is required"),
