@@ -5,11 +5,13 @@ from .views import (
 	ProjectDetailView,
 	IssueCreateView,
 	IssueStatusUpdateView,
+	AllProjectsListView,
 )
 
 
 urlpatterns = [
 	path("", ProjectListCreateView.as_view(), name="project-list-create"),
+	path("all/", AllProjectsListView.as_view(), name="project-list-all"),
 	path("<int:project_id>/", ProjectDetailView.as_view(), name="project-detail"),
 	path("issues/", IssueCreateView.as_view(), name="issue-create"),
 	path("issues/<int:issue_id>/status/", IssueStatusUpdateView.as_view(), name="issue-status-update"),

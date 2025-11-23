@@ -30,6 +30,14 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Project.objects.filter(user=self.request.user)
 
 
+class AllProjectsListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ProjectSerializer
+
+    def get_queryset(self):
+        return Project.objects.select_related("user").all()
+
+
 class IssueCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = IssueCreateSerializer

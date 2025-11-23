@@ -6,6 +6,7 @@ const DRF_BASE = process.env.DRF_API_BASE_URL || "http://localhost:8000";
 export async function POST() {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refresh_token")?.value;
+    const accessToken = cookieStore.get("access_token")?.value;
 
     if (refreshToken) {
         try {
@@ -13,6 +14,7 @@ export async function POST() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({ refresh: refreshToken }),
             });

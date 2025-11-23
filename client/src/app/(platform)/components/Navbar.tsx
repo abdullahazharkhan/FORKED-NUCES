@@ -6,6 +6,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Menu, X, User, LogOut, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores";
+import { authFetch } from "@/lib/authFetch";
 
 const Navbar = () => {
     const router = useRouter();
@@ -35,33 +36,36 @@ const Navbar = () => {
     }, []);
 
     const navLinks = [
-        { name: "Explore", href: "/explore" },
-        { name: "Users", href: "/users" },
-        { name: "Recommended Projects", href: "/recommended" },
+        { name: "Explore", href: "/platform" },
+        { name: "Users", href: "/platform/users" },
+        { name: "Recommended Projects", href: "/platform/recommended" },
     ];
 
-    const handleLogout = () => {
-        fetch("/api/auth/logout", {
-            method: "POST",
-        })
-            .then((res) => {
-                if (res.ok) {
-                    setIsProfileOpen(false);
-                    setIsMenuOpen(false);
-                    authStore.clearUser();
-                    router.push("/login");
-                }
-            })
-            .catch((error) => {
-                console.error("Logout error:", error);
+    const handleLogout = async () => {
+        try {
+            const res = await authFetch("/api/auth/logout/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
             });
+            if (!res.ok) {
+                throw new Error("Failed to logout");
+            }
+            setIsProfileOpen(false);
+            setIsMenuOpen(false);
+            authStore.clearUser();
+            router.push("/login");
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
     }
 
     return (
         <>
             <nav
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 flex justify-between items-center px-6 py-4 font-poppins tracking-er
-        ${scrolled ? "bg-primarypurple/50 backdrop-blur-lg supports-[backdrop-filter]:bg-primarypurple/50 shadow-sm" : "bg-black"}`}
+        ${scrolled ? "bg-primarypurple/90 backdrop-blur-lg supports-[backdrop-filter]:bg-primarypurple/90 shadow-sm" : "bg-black"}`}
             >
                 <div className="flex items-center gap-8">
 

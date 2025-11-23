@@ -115,3 +115,19 @@ class UserUpdateView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+
+class UserListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return User.objects.exclude(pk=user.pk)
+
+
+class UserDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+    lookup_field = "user_id"
+    queryset = User.objects.all()

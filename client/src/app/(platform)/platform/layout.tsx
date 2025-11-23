@@ -15,7 +15,9 @@ export default function PlatformLayout({
     return (
         <>
             <Navbar />
-            {children}
+            <div className="mt-24 min-h-[calc(100vh-128px)]">
+                {children}
+            </div>
         </>
     );
 }

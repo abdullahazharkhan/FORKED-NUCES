@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Project, Tag, Issue
+from accounts.models import User
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -26,6 +27,8 @@ class IssueSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
 	tags = TagSerializer(many=True, read_only=True)
 	issues = IssueSerializer(many=True, read_only=True)
+	owner_full_name = serializers.CharField(source="user.full_name", read_only=True)
+	owner_nu_email = serializers.EmailField(source="user.nu_email", read_only=True)
 
 	class Meta:
 		model = Project
@@ -38,8 +41,18 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"updated_at",
 			"tags",
 			"issues",
+			"owner_full_name",
+			"owner_nu_email",
 		]
-		read_only_fields = ["project_id", "created_at", "updated_at", "tags", "issues"]
+		read_only_fields = [
+			"project_id",
+			"created_at",
+			"updated_at",
+			"tags",
+			"issues",
+			"owner_full_name",
+			"owner_nu_email",
+		]
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
