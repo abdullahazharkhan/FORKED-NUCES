@@ -80,6 +80,36 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 		return project
 
 
+class ProjectUpdateSerializer(serializers.ModelSerializer):
+	tags = serializers.ListField(
+		child=serializers.CharField(max_length=100),
+		allow_empty=True,
+		write_only=True,
+		required=False,
+	)
+
+	class Meta:
+		model = Project
+		fields = ["title", "description", "github_url", "tags"]
+
+	def update(self, instance, validated_data):
+		tag_list = validated_data.pop("tags", None)
+
+		for attr, value in validated_data.items():
+			setattr(instance, attr, value)
+		instance.save()
+
+		if tag_list is not None:
+			Tag.objects.filter(project=instance).delete()
+			unique_tags = set([t.strip() for t in tag_list if t.strip()])
+			Tag.objects.bulk_create(
+				[Tag(project=instance, tag=tag) for tag in unique_tags],
+				ignore_conflicts=True,
+			)
+
+		return instance
+
+
 class IssueCreateSerializer(serializers.ModelSerializer):
 	project_id = serializers.IntegerField(write_only=True)
 

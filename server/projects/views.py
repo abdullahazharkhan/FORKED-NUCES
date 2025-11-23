@@ -4,6 +4,7 @@ from .models import Project, Issue
 from .serializers import (
     ProjectSerializer,
     ProjectCreateSerializer,
+    ProjectUpdateSerializer,
     IssueSerializer,
     IssueCreateSerializer,
 )
@@ -24,7 +25,11 @@ class ProjectListCreateView(generics.ListCreateAPIView):
 class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = "project_id"
-    serializer_class = ProjectSerializer
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT", "PATCH"]:
+            return ProjectUpdateSerializer
+        return ProjectSerializer
 
     def get_queryset(self):
         return Project.objects.filter(user=self.request.user)

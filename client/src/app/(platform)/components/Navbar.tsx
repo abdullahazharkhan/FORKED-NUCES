@@ -65,7 +65,7 @@ const Navbar = () => {
         <>
             <nav
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 flex justify-between items-center px-6 py-4 font-poppins tracking-er
-        ${scrolled ? "bg-primarypurple/90 backdrop-blur-lg supports-[backdrop-filter]:bg-primarypurple/90 shadow-sm" : "bg-black"}`}
+        ${scrolled ? "bg-black/90 backdrop-blur-lg supports-[backdrop-filter]:bg-black/90 shadow-sm" : "bg-black"}`}
             >
                 <div className="flex items-center gap-8">
 

@@ -10,6 +10,15 @@ import "md-editor-rt/lib/style.css";
 import { useMutation } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
 
+const AVAILABLE_TAGS = [
+    "frontend",
+    "backend",
+    "fullstack",
+    "machine-learning",
+    "devops",
+    "mobile",
+];
+
 const projectSchema = z.object({
     title: z.string().min(1, "Project title is required"),
     description: z.string().min(1, "Description is required"),
@@ -24,20 +33,20 @@ const projectSchema = z.object({
                 value.startsWith("http://github.com/"),
             "URL must be a GitHub repository or profile link"
         ),
-    tag: z.string().min(1, "Please select a tag"),
+    tags: z
+        .array(z.enum(AVAILABLE_TAGS as [string, ...string[]]))
+        .min(1, "Please select at least one tag"),
 });
 
 type ProjectForm = z.infer<typeof projectSchema>;
 
-const AVAILABLE_TAGS = [
-    "frontend",
-    "backend",
-    "fullstack",
-    "machine-learning",
-    "devops",
-    "mobile",
-];
-
+type ApiError = {
+    body?: unknown;
+    detail?: string;
+    message?: string;
+    status?: string | number;
+    statusText?: string;
+};
 
 const getErrorMessage = (err: unknown): string => {
     const e = err as ApiError | undefined;
@@ -79,6 +88,12 @@ const AddProject = () => {
     } = useForm<ProjectForm>({
         resolver: zodResolver(projectSchema),
         mode: "onChange",
+        defaultValues: {
+            title: "",
+            description: "",
+            github_url: "",
+            tags: [],
+        },
     });
 
     const baseInputClasses =
@@ -99,7 +114,7 @@ const AddProject = () => {
                     title: data.title,
                     description: data.description,
                     github_url: data.github_url,
-                    tags: [data.tag],
+                    tags: data.tags, // now an array of strings
                 }),
             });
 
@@ -207,26 +222,53 @@ const AddProject = () => {
                     )}
                 </div>
 
-                {/* Tag */}
+                {/* Tags (multi-select, design only changed here) */}
                 <div className="flex flex-col">
-                    <label htmlFor="tag" className="font-semibold text-lg">
-                        Tag
-                    </label>
-                    <select
-                        id="tag"
-                        {...register("tag")}
-                        className={getInputClass(errors.tag)}
-                    >
-                        <option value="">Select a tag</option>
-                        {AVAILABLE_TAGS.map((tag) => (
-                            <option key={tag} value={tag}>
-                                {tag}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.tag && (
+                    <label className="font-semibold text-lg">Tags</label>
+                    <Controller
+                        control={control}
+                        name="tags"
+                        render={({ field }) => {
+                            const value: string[] = field.value || [];
+                            const toggleTag = (tag: string, checked: boolean) => {
+                                if (checked) {
+                                    field.onChange([...value, tag]);
+                                } else {
+                                    field.onChange(value.filter((t) => t !== tag));
+                                }
+                            };
+
+                            return (
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {AVAILABLE_TAGS.map((tag) => {
+                                        const checked = value.includes(tag);
+                                        return (
+                                            <label
+                                                key={tag}
+                                                className={`flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs ${checked
+                                                    ? "border-primarypurple bg-primarypurple/15 text-primarypurple"
+                                                    : "border-gray-300 text-gray-700"
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    className="h-3 w-3 accent-primarypurple"
+                                                    checked={checked}
+                                                    onChange={(e) =>
+                                                        toggleTag(tag, e.target.checked)
+                                                    }
+                                                />
+                                                <span>{tag}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        }}
+                    />
+                    {errors.tags && (
                         <p className="text-sm text-red-500 mt-1">
-                            {errors.tag.message}
+                            {errors.tags.message as string}
                         </p>
                     )}
                 </div>
@@ -237,17 +279,15 @@ const AddProject = () => {
                         type="submit"
                         isDisabled={!isValid || createProjectMutation.isPending}
                     >
-                        {createProjectMutation.isPending
-                            ? "Adding..."
-                            : "Add Project"}
+                        {createProjectMutation.isPending ? "Adding..." : "Add Project"}
                     </Button>
                 </div>
 
                 {message && (
                     <div
                         className={`mt-4 p-3 rounded text-sm ${isError
-                                ? "bg-red-100 text-red-700"
-                                : "bg-green-100 text-green-700"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-green-100 text-green-700"
                             }`}
                     >
                         {message}
