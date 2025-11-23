@@ -4,7 +4,7 @@ const Footer = () => {
     return (
         <footer className="bg-black text-white py-4 px-6 text-sm">
             <div className="mx-auto flex max-w-6xl items-center justify-between">
-                <p className="font-semibold tracking-wide text-primarygreen">
+                <p className="font-semibold tracking-wide">
                     FORK'd NUCES
                 </p>
                 <p className="text-gray-300">All Rights Reserved</p>

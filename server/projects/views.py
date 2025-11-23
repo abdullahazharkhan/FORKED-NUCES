@@ -37,6 +37,11 @@ class AllProjectsListView(generics.ListAPIView):
     def get_queryset(self):
         return Project.objects.select_related("user").all()
 
+class PublicProjectDetailView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ProjectSerializer
+    lookup_field = "project_id"
+    queryset = Project.objects.select_related("user").prefetch_related("tags", "issues")
 
 class IssueCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
