@@ -4,8 +4,13 @@ import React from "react";
 import { useAuthStore } from "@/stores";
 import { Check } from "lucide-react";
 
-const UserDetails = () => {
-    const { user } = useAuthStore();
+interface UserDetailsProps {
+    user?: any;
+}
+
+const UserDetails: React.FC<{ user?: any; page: string }> = ({ user: propUser, page }) => {
+    const storeUser = useAuthStore((s) => s.user);
+    const user = propUser ?? storeUser;
 
     const displayName =
         user?.full_name?.trim().split(/\s+/).slice(0, 2).join(" ") || "John Doe";
@@ -34,7 +39,9 @@ const UserDetails = () => {
                     </div>
 
                     <div className="flex flex-col justify-center gap-2">
-                        <h2 className="text-3xl font-semibold md:text-4xl">{displayName}</h2>
+                        <h2 className="text-3xl font-semibold md:text-4xl">
+                            {displayName}
+                        </h2>
                         <p className="text-sm text-gray-600 md:text-base">{email}</p>
 
                         {user?.is_github_connected && user.github_username && (
@@ -45,12 +52,12 @@ const UserDetails = () => {
 
                         <div className="mt-2">
                             {user?.is_email_verified ? (
-                                <span className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium text-white bg-primarypurple">
+                                <span className="inline-flex items-center rounded bg-primarypurple px-2 py-0.5 text-xs font-medium text-white">
                                     Verified
                                     <Check className="ml-1 h-4 w-4" />
                                 </span>
                             ) : (
-                                <span className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium text-white bg-red-500">
+                                <span className="inline-flex items-center rounded bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
                                     Email Not Verified
                                 </span>
                             )}
@@ -61,8 +68,8 @@ const UserDetails = () => {
                 <div className="flex-1 border-t border-primarypurple/20 pt-4 md:border-l-2 md:border-t-0 md:pl-6 md:pt-0">
                     <h3 className="text-lg font-semibold">Skills</h3>
                     <div className="mt-2 flex flex-wrap gap-2">
-                        {user?.skills && user?.skills.length > 0 ? (
-                            user?.skills?.map((skill, index) => (
+                        {user?.skills && user.skills.length > 0 ? (
+                            user.skills.map((skill: string, index: number) => (
                                 <span
                                     key={index}
                                     className="rounded bg-primarypurple/20 px-3 py-1 text-xs text-gray-800"
@@ -71,7 +78,9 @@ const UserDetails = () => {
                                 </span>
                             ))
                         ) : (
-                            <span className="text-sm text-gray-600">Update the profile to set the skills.</span>
+                            <span className="text-sm text-gray-600">
+                                {page === "profile" ? "Update the profile to set the skills." : "User has not added any skills yet."}
+                            </span>
                         )}
                     </div>
                 </div>
@@ -87,6 +96,7 @@ const UserDetails = () => {
                     </>
                 ) : (
                     <p className="text-sm leading-relaxed text-gray-700 md:text-base">
+                        {page === "profile" ? "You dont have a bio yet." : "User has not added their bio."}
                         You don&apos;t have a bio yet.
                     </p>
                 )}

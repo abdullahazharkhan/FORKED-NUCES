@@ -71,3 +71,11 @@ class IssueStatusUpdateView(generics.UpdateAPIView):
         serializer.fields.pop("title", None)
         serializer.fields.pop("description", None)
         return serializer
+    
+class UserProjectsListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ProjectSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs.get("user_id")
+        return Project.objects.select_related("user").filter(user__user_id=user_id)

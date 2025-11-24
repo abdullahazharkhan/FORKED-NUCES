@@ -7,6 +7,7 @@ from .views import (
 	IssueStatusUpdateView,
 	AllProjectsListView,
 	PublicProjectDetailView,
+ 	UserProjectsListView,
 )
 
 
@@ -19,6 +20,7 @@ urlpatterns = [
         PublicProjectDetailView.as_view(),
         name="project-detail-public",
     ),
+  	path("by-user/<int:user_id>/", UserProjectsListView.as_view(), name="user-projects"),
 	path("issues/", IssueCreateView.as_view(), name="issue-create"),
 	path("issues/<int:issue_id>/status/", IssueStatusUpdateView.as_view(), name="issue-status-update"),
 ]

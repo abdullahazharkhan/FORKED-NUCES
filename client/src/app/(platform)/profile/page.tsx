@@ -5,7 +5,7 @@ import UserOperations from './components/UserOperations'
 const Profile = () => {
     return (
         <div className='mt-6 flex flex-col gap-6'>
-            <UserDetails />
+            <UserDetails page="profile" />
             <div className="border-t-2 border-primarypurple/20"></div>
             <UserOperations />
         </div>
