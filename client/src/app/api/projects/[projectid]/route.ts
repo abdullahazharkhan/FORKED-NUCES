@@ -92,3 +92,56 @@ export async function PUT(req: NextRequest,
 
     return res;
 }
+
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: Promise<{ projectid: string }> }
+) {
+    const cookieStore = await cookies();
+    const access = cookieStore.get("access_token")?.value;
+
+    const { projectid } = await params;
+
+    if (!access) {
+        return NextResponse.json(
+            { detail: "Unauthenticated. Access token missing." },
+            { status: 401 }
+        );
+    }
+
+    const drfRes = await fetch(`${DRF_BASE}/api/projects/${projectid}/`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${access}`,
+        },
+    });
+
+    // DRF often returns 204 No Content on successful delete
+    if (!drfRes.ok) {
+        const error = await drfRes.json().catch(() => null);
+        return NextResponse.json(
+            error || { detail: "Failed to delete project" },
+            { status: drfRes.status }
+        );
+    }
+
+    // If 204, there is no body to parse
+    if (drfRes.status === 204) {
+        return NextResponse.json(
+            { success: true, message: "Project deleted successfully" },
+            { status: 200 }
+        );
+    }
+
+    const data = await drfRes.json().catch(() => null);
+
+    return NextResponse.json(
+        {
+            data,
+            success: true,
+            message: "Project deleted successfully",
+        },
+        { status: 200 }
+    );
+}
