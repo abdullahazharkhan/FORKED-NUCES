@@ -86,11 +86,9 @@ export async function PUT(req: NextRequest,
         return NextResponse.json(error, { status: drfRes.status });
     }
 
-    const data = await drfRes.json();
+    const updatedProject = await drfRes.json();
 
-    const res = NextResponse.json({ data, success: true, message: "Profile updated successfully" });
-
-    return res;
+    return NextResponse.json(updatedProject, { status: 200 });
 }
 
 export async function DELETE(

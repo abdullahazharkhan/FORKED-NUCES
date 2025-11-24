@@ -1,12 +1,18 @@
-import React from 'react'
+"use client";
+
+import React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { MdPreview } from "md-editor-rt";
-import "md-editor-rt/lib/style.css";
 import { useRouter } from "next/navigation";
 import { authFetch } from "@/lib/authFetch";
 import { useAuthStore } from "@/stores";
 import EditProjectForm from "../../../components/EditProjectForm";
+import { motion, AnimatePresence } from "framer-motion";
+import { MdPreview, MdEditor } from "md-editor-rt";
+import "md-editor-rt/lib/style.css";
+import { z } from "zod";
+import IssuesDetails from "./IssuesDetails";
+
 
 
 const ProjectDetails = ({ project }: { project: any }) => {
@@ -29,6 +35,13 @@ const ProjectDetails = ({ project }: { project: any }) => {
     const router = useRouter();
     const queryClient = useQueryClient();
 
+    const createdAt = project.created_at
+        ? new Date(project.created_at).toLocaleDateString()
+        : null;
+    const updatedAt = project.updated_at
+        ? new Date(project.updated_at).toLocaleDateString()
+        : null;
+
     // DELETE mutation
     const deleteMutation = useMutation({
         mutationFn: async () => {
@@ -49,9 +62,10 @@ const ProjectDetails = ({ project }: { project: any }) => {
             return body;
         },
         onSuccess: () => {
-            // Invalidate relevant lists
             queryClient.invalidateQueries({ queryKey: ["projects"] });
-            queryClient.invalidateQueries({ queryKey: ["my-projects"] });
+            queryClient.invalidateQueries({
+                queryKey: ["project", project.project_id],
+            });
 
             setIsDeleteOpen(false);
             router.push("/platform");
@@ -65,6 +79,7 @@ const ProjectDetails = ({ project }: { project: any }) => {
         },
     });
 
+
     const handleDeleteClick = () => {
         if (!isOwner) return;
         setDeleteError(null);
@@ -76,16 +91,17 @@ const ProjectDetails = ({ project }: { project: any }) => {
         deleteMutation.mutate();
     };
 
+
     return (
         <>
-            <div className="my-6 grid gap-8 rounded-xl border border-gray-200 bg-primarypurple/5 p-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)]">
-                {/* LEFT: Project + author + description */}
-                <div className="relative space-y-4">
+            <div className="space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6">
+                {/* HEADER: Title + actions */}
+                <div className="relative">
                     {isOwner && (
                         <div className="absolute right-0 -top-2 flex gap-2">
                             <button
                                 onClick={() => setIsEditOpen(true)}
-                                className="rounded-lg border border-primarypurple/30 bg-primarypurple/20 px-3 py-1 text-sm font-semibold text-primarypurple transition hover:bg-primarypurple/30"
+                                className="rounded-lg border border-primarypurple/30 bg-primarypurple/10 px-3 py-1 text-sm font-semibold text-primarypurple transition hover:bg-primarypurple/30"
                             >
                                 Edit
                             </button>
@@ -94,61 +110,76 @@ const ProjectDetails = ({ project }: { project: any }) => {
                                 disabled={deleteMutation.isPending}
                                 className="rounded-lg border border-red-200 bg-red-100 px-3 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-200 disabled:opacity-60"
                             >
-                                {deleteMutation.isPending
-                                    ? "Deleting..."
-                                    : "Delete"}
+                                {deleteMutation.isPending ? "Deleting..." : "Delete"}
                             </button>
                         </div>
                     )}
 
-                    {/* Title + author */}
-                    <div>
-                        <h1 className="text-3xl font-bold uppercase md:text-4xl">
-                            {project.title}
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-700">
-                            by{" "}
-                            <span className="font-semibold">
-                                {project.owner_full_name}
-                            </span>{" "}
-                            —{" "}
-                            <Link
-                                href={`mailto:${project.owner_nu_email}`}
-                                className="text-primarypurple underline"
-                            >
-                                {project.owner_nu_email}
-                            </Link>
-                        </p>
-                    </div>
+                    <h1 className="pr-32 text-3xl font-bold uppercase md:text-4xl">
+                        {project.title}
+                    </h1>
 
-                    {/* Tags + GitHub */}
-                    <div className="space-y-2">
-                        <div className="flex flex-wrap gap-2">
-                            {project.tags?.map((tagObj: any) => (
+                    <p className="mt-1 text-sm text-gray-700">
+                        by{" "}
+                        <span className="font-semibold">
+                            {project.owner_full_name}
+                        </span>{" "}
+                        —{" "}
+                        <Link
+                            href={`mailto:${project.owner_nu_email}`}
+                            className="text-primarypurple underline"
+                        >
+                            {project.owner_nu_email}
+                        </Link>
+                    </p>
+
+                    {/* Meta row */}
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
+                        {createdAt && <span>Created: {createdAt}</span>}
+                        {updatedAt && <span>Updated: {updatedAt}</span>}
+                        <span>
+                            Issues: {issues.length} (Open {openIssues.length} /
+                            Closed {closedIssues.length})
+                        </span>
+                    </div>
+                </div>
+
+                {/* TAGS + GITHUB */}
+                <div className="flex flex-wrap items-center justify-between gap-4 border-y border-primarypurple/15 py-3">
+                    <div className="flex flex-wrap gap-2">
+                        {project.tags && project.tags.length > 0 ? (
+                            project.tags.map((tagObj: any) => (
                                 <span
                                     key={tagObj.tag}
                                     className="rounded bg-primarypurple/15 px-2 py-1 text-xs text-primarypurple"
                                 >
                                     {tagObj.tag}
                                 </span>
-                            ))}
-                        </div>
-
-                        {project.github_url && (
-                            <Link
-                                href={project.github_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-primarypurple underline"
-                            >
-                                {project.github_url.substring(0, 60)}
-                                {project.github_url.length > 60 ? "..." : ""}
-                            </Link>
+                            ))
+                        ) : (
+                            <span className="text-xs text-gray-500">
+                                No tags added to this project yet.
+                            </span>
                         )}
                     </div>
 
-                    {/* Project description */}
-                    <div className="mt-4">
+                    {project.github_url && (
+                        <Link
+                            href={project.github_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primarypurple underline md:text-sm"
+                        >
+                            {project.github_url.substring(0, 60)}
+                            {project.github_url.length > 60 ? "..." : ""}
+                        </Link>
+                    )}
+                </div>
+
+                {/* DESCRIPTION */}
+                <div className="space-y-3">
+                    <h2 className="text-lg font-semibold">Description</h2>
+                    <div className="rounded-xl border border-gray-200 p-3">
                         <MdPreview
                             editorId={`project-description-${project.project_id ?? "preview"}`}
                             modelValue={project.description || ""}
@@ -158,77 +189,27 @@ const ProjectDetails = ({ project }: { project: any }) => {
                     </div>
                 </div>
 
-                {/* RIGHT: Issues */}
-                <div className="space-y-4">
-                    <div className="flex items-baseline justify-between">
-                        <h2 className="text-lg font-semibold">Issues</h2>
-                        <div className="flex gap-3 text-xs text-gray-700">
-                            <span className="font-semibold text-primarypurple">
-                                Open: {openIssues.length}
-                            </span>
-                            <span>Closed: {closedIssues.length}</span>
-                        </div>
-                    </div>
-
-                    {issues.length === 0 && (
-                        <p className="text-sm text-gray-600">
-                            No issues have been created for this project yet.
-                        </p>
-                    )}
-
-                    <div className="space-y-3">
-                        {issues.map((issue: any, index: number) => (
-                            <div
-                                key={index}
-                                className="space-y-2 rounded-xl border border-gray-200 bg-white p-3"
-                            >
-                                <div className="flex items-start justify-between gap-2">
-                                    <h3 className="text-sm font-semibold">
-                                        {issue.title}
-                                    </h3>
-                                    <span
-                                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${issue.status === "OPEN" ||
-                                            issue.status === "open"
-                                            ? "bg-primarypurple/15 text-primarypurple"
-                                            : "bg-gray-200 text-gray-700"
-                                            }`}
-                                    >
-                                        {issue.status === "OPEN" ||
-                                            issue.status === "open"
-                                            ? "Open"
-                                            : "Closed"}
-                                    </span>
-                                </div>
-
-                                <div className="rounded-md border border-gray-100 bg-gray-50 p-2">
-                                    <MdPreview
-                                        editorId={`issue-${project.project_id ?? "p"}-${index}`}
-                                        modelValue={issue.description || ""}
-                                        previewTheme="github"
-                                        language="en-US"
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                {/* ISSUES SECTION AT BOTTOM */}
+                <IssuesDetails
+                    project={project}
+                    issues={issues}
+                    openIssues={openIssues}
+                    closedIssues={closedIssues}
+                    isOwner={isOwner}
+                />
             </div>
 
             {/* Edit Modal */}
             {isEditOpen && (
                 <>
-                    {/* Backdrop */}
                     <div
                         className="fixed inset-0 z-40 bg-black/40"
                         onClick={() => setIsEditOpen(false)}
                     />
-                    {/* Modal */}
-                    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+                    <div className="fixed inset-0 z-50 my-8 flex items-center justify-center px-4">
                         <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
                             <div className="mb-4 flex items-center justify-between">
-                                <h2 className="text-lg font-semibold">
-                                    Edit Project
-                                </h2>
+                                <h2 className="text-lg font-semibold">Edit Project</h2>
                                 <button
                                     onClick={() => setIsEditOpen(false)}
                                     className="text-sm text-gray-500 hover:text-gray-800"
@@ -250,16 +231,18 @@ const ProjectDetails = ({ project }: { project: any }) => {
                 <>
                     <div
                         className="fixed inset-0 z-40 bg-black/40"
-                        onClick={() => !deleteMutation.isPending && setIsDeleteOpen(false)}
+                        onClick={() =>
+                            !deleteMutation.isPending && setIsDeleteOpen(false)
+                        }
                     />
                     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
                         <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                            <h2 className="text-lg font-semibold mb-2">
+                            <h2 className="mb-2 text-lg font-semibold">
                                 Delete Project
                             </h2>
-                            <p className="text-sm text-gray-700 mb-4">
-                                Are you sure you want to delete this project? This action
-                                cannot be undone.
+                            <p className="mb-4 text-sm text-gray-700">
+                                Are you sure you want to delete this project? This
+                                action cannot be undone.
                             </p>
 
                             {deleteError && (
@@ -273,7 +256,7 @@ const ProjectDetails = ({ project }: { project: any }) => {
                                     type="button"
                                     disabled={deleteMutation.isPending}
                                     onClick={() => setIsDeleteOpen(false)}
-                                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition disabled:opacity-60"
+                                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-60"
                                 >
                                     Cancel
                                 </button>
@@ -281,7 +264,7 @@ const ProjectDetails = ({ project }: { project: any }) => {
                                     type="button"
                                     onClick={handleConfirmDelete}
                                     disabled={deleteMutation.isPending}
-                                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-60"
+                                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
                                 >
                                     {deleteMutation.isPending
                                         ? "Deleting..."
@@ -296,4 +279,4 @@ const ProjectDetails = ({ project }: { project: any }) => {
     );
 };
 
-export default ProjectDetails
+export default ProjectDetails;

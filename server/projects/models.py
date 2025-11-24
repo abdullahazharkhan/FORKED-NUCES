@@ -57,7 +57,7 @@ class Issue(models.Model):
 	status = models.CharField(
 		max_length=6,
 		choices=STATUS_CHOICES,
-		default=STATUS_CLOSED,
+		default=STATUS_OPEN,
 	)
 	title = models.CharField(max_length=255)
 	description = models.TextField()

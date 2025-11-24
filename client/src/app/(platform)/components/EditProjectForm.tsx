@@ -88,17 +88,12 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
                 throw new Error(body?.detail || "Failed to update project");
             }
 
-            return body; // updated project
+            return body;
         },
-        onSuccess: (updatedProject) => {
-            // Update cache for this project
-            queryClient.setQueryData(
-                ["project", String(project.project_id)],
-                updatedProject
-            );
-
-            // Optionally revalidate if parent is server component
-            router.refresh();
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ["project", String(project.project_id)],
+            });
 
             onClose();
         },
@@ -146,7 +141,7 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
                                 modelValue={field.value}
                                 onChange={field.onChange}
                                 previewTheme="github"
-                                style={{ height: "260px" }}
+                                style={{ height: "160px" }}
                             />
                         </div>
                     )}
