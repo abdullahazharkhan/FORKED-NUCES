@@ -4,8 +4,16 @@ import React from 'react'
 import Link from 'next/link'
 import { Heart } from "lucide-react";   // <-- NEW
 
-const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjects }:
-    { isError: boolean; error: unknown; isLoading: boolean; showEmptyState: boolean; filteredProjects: any[] }
+type ProjectCardProps = {
+    isError: boolean
+    error: unknown
+    isLoading: boolean
+    showEmptyState: boolean
+    filteredProjects: any[]
+    basePath?: string
+}
+
+const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjects, basePath = "/platform/projects" }: ProjectCardProps
 ) => {
 
     return (
@@ -49,7 +57,7 @@ const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjec
                     {filteredProjects.map((project: any) => (
                         <Link
                             key={project.project_id}
-                            href={`/platform/projects/${project.project_id}`}
+                            href={`${basePath}/${project.project_id}`}
                             className="flex flex-col rounded border border-primarypurple/20 bg-primarypurple/5 p-4 transition-all duration-200 hover:border-primarypurple/60 hover:bg-primarypurple/10 min-h-[200px]"
                         >
                             {/* Title */}
