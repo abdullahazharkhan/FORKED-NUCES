@@ -11,6 +11,7 @@ import { MdPreview } from "md-editor-rt";
 import "md-editor-rt/lib/style.css";
 import IssuesDetails from "./IssuesDetails";
 import ProjectCollaborators from "./ProjectCollaborators";
+import ProjectComments from "./ProjectComments";
 
 const ProjectDetails = ({ project }: { project: any }) => {
     const issues = Array.isArray(project.issues) ? project.issues : [];
@@ -195,7 +196,13 @@ const ProjectDetails = ({ project }: { project: any }) => {
                     isOwner={isOwner}
                 />
 
-                <ProjectCollaborators projectid={project.project_id} />
+                <ProjectCollaborators
+                    projectid={project.project_id}
+                />
+
+                <ProjectComments
+                    projectid={project.project_id}
+                />
             </div>
 
             {/* Edit Modal */}

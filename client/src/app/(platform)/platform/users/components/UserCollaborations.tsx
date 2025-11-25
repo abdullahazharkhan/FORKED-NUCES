@@ -99,12 +99,11 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
                                     {project.owner_full_name}
                                 </span>
                                 <br />
-                                <Link
-                                    href={`mailto:${project.owner_nu_email}`}
+                                <div
                                     className="text-primarypurple underline"
                                 >
                                     {project.owner_nu_email}
-                                </Link>
+                                </div>
                             </p>
                         </Link>
                     ))}

@@ -44,4 +44,7 @@ urlpatterns = [
 
     # project urls
     path('api/projects/', include('projects.urls')),
+    
+	# interactions urls
+	path('api/interactions/', include('interactions.urls')),
 ]

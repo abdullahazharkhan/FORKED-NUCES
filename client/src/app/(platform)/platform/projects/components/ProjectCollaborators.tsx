@@ -60,7 +60,7 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
     const collaborators: Collaborator[] = data || [];
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-3 border-t border-primarypurple/20 pt-4">
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
                     <h2 className="text-lg font-semibold">Collaborators</h2>
