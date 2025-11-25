@@ -1,5 +1,8 @@
+"use client";
+
 import React from 'react'
 import Link from 'next/link'
+import { Heart } from "lucide-react";   // <-- NEW
 
 const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjects }:
     { isError: boolean; error: unknown; isLoading: boolean; showEmptyState: boolean; filteredProjects: any[] }
@@ -57,18 +60,28 @@ const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjec
                                 Updated on {new Date(project.updated_at).toLocaleDateString()}
                             </p>
 
-                            {/* Tags */}
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                {project.tags.map((tagObj: any) => (
-                                    <span
-                                        key={tagObj.tag}
-                                        className="rounded bg-primarypurple/20 px-2 py-1 text-xs text-primarypurple"
-                                    >
-                                        {tagObj.tag}
-                                    </span>
-                                ))}
+                            {/* Tags + Likes */}
+                            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                                {/* Tags */}
+                                <div className="flex flex-wrap gap-2">
+                                    {project.tags.map((tagObj: any) => (
+                                        <span
+                                            key={tagObj.tag}
+                                            className="rounded bg-primarypurple/20 px-2 py-1 text-xs text-primarypurple"
+                                        >
+                                            {tagObj.tag}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                {/* Likes */}
+                                <div className="flex items-center gap-1 text-primarypurple text-sm font-semibold">
+                                    <Heart size={16} className="fill-primarypurple/20" />
+                                    {project.likes_count ?? 0}
+                                </div>
                             </div>
 
+                            {/* Owner + Issues Count */}
                             <div className="mt-auto pt-3 flex items-start justify-between border-t border-primarypurple/20">
                                 <div className="text-sm text-gray-700">
                                     <p className="font-semibold">{project.owner_full_name}</p>
@@ -101,4 +114,4 @@ const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjec
     )
 }
 
-export default ProjectCard
+export default ProjectCard;

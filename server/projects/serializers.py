@@ -29,6 +29,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 	issues = IssueSerializer(many=True, read_only=True)
 	owner_full_name = serializers.CharField(source="user.full_name", read_only=True)
 	owner_nu_email = serializers.EmailField(source="user.nu_email", read_only=True)
+	likes_count = serializers.IntegerField(source="likes.count", read_only=True)
 
 	class Meta:
 		model = Project
@@ -43,6 +44,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"issues",
 			"owner_full_name",
 			"owner_nu_email",
+			"likes_count",
 		]
 		read_only_fields = [
 			"project_id",
@@ -52,6 +54,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"issues",
 			"owner_full_name",
 			"owner_nu_email",
+			"likes_count",
 		]
 
 

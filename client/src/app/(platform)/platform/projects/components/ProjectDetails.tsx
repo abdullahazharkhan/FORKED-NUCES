@@ -12,6 +12,7 @@ import "md-editor-rt/lib/style.css";
 import IssuesDetails from "./IssuesDetails";
 import ProjectCollaborators from "./ProjectCollaborators";
 import ProjectComments from "./ProjectComments";
+import { Heart } from "lucide-react";
 
 const ProjectDetails = ({ project }: { project: any }) => {
     const issues = Array.isArray(project.issues) ? project.issues : [];
@@ -29,6 +30,15 @@ const ProjectDetails = ({ project }: { project: any }) => {
     const [isEditOpen, setIsEditOpen] = React.useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
     const [deleteError, setDeleteError] = React.useState<string | null>(null);
+
+    // Likes state
+    const [likeCount, setLikeCount] = React.useState<number>(
+        project.likes_count ?? 0
+    );
+    const [hasLiked, setHasLiked] = React.useState<boolean>(
+        project.user_has_liked ?? false
+    );
+    const [likeError, setLikeError] = React.useState<string | null>(null);
 
     const router = useRouter();
     const queryClient = useQueryClient();
@@ -77,7 +87,6 @@ const ProjectDetails = ({ project }: { project: any }) => {
         },
     });
 
-
     const handleDeleteClick = () => {
         if (!isOwner) return;
         setDeleteError(null);
@@ -89,6 +98,61 @@ const ProjectDetails = ({ project }: { project: any }) => {
         deleteMutation.mutate();
     };
 
+    // LIKE mutation
+    const likeMutation = useMutation({
+        mutationFn: async () => {
+            const res = await authFetch(`/api/likes/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    project_id: project.project_id,
+                }),
+            });
+
+            const body = await res.json().catch(() => null);
+
+            if (!res.ok) {
+                throw new Error(
+                    (body && (body.detail || body.message)) ||
+                    "Failed to like project"
+                );
+            }
+
+            return body;
+        },
+        onMutate: async () => {
+            setLikeError(null);
+
+            // Optimistic update
+            setHasLiked(true);
+            setLikeCount((prev) => prev + 1);
+        },
+        onError: (err) => {
+            console.error("Like project error", err);
+            setHasLiked(false);
+            setLikeCount((prev) => (prev > 0 ? prev - 1 : 0));
+            setLikeError(
+                (err as Error).message ||
+                "Failed to like this project. Please try again."
+            );
+        },
+        onSuccess: () => {
+            // Refresh project + projects list
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            queryClient.invalidateQueries({
+                queryKey: ["project", project.project_id],
+            });
+        },
+    });
+
+    const handleLikeClick = () => {
+        if (!loggedInUser) {
+            setLikeError("Please log in to like this project.");
+            return;
+        }
+        if (hasLiked || likeMutation.isPending) return;
+        likeMutation.mutate();
+    };
 
     return (
         <>
@@ -132,14 +196,44 @@ const ProjectDetails = ({ project }: { project: any }) => {
                     </p>
 
                     {/* Meta row */}
-                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
+                    <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-gray-600">
                         {createdAt && <span>Created: {createdAt}</span>}
                         {updatedAt && <span>Updated: {updatedAt}</span>}
                         <span>
-                            Issues: {issues.length} (Open {openIssues.length} /
-                            Closed {closedIssues.length})
+                            Issues: {issues.length} (Open {openIssues.length} / Closed{" "}
+                            {closedIssues.length})
                         </span>
+
+                        {/* Likes display + button */}
+                        <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <span className="inline-flex items-center gap-1 text-primarypurple font-semibold">
+                                <Heart
+                                    size={16}
+                                    className={
+                                        hasLiked
+                                            ? "fill-primarypurple text-primarypurple"
+                                            : "text-primarypurple"
+                                    }
+                                />
+                                {likeCount} {likeCount === 1 ? "like" : "likes"}
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={handleLikeClick}
+                                disabled={
+                                    likeMutation.isPending || hasLiked || !loggedInUser
+                                }
+                                className="rounded-full border border-primarypurple/40 bg-white px-3 py-1 text-xs font-semibold text-primarypurple transition hover:bg-primarypurple/10 disabled:opacity-60"
+                            >
+                                {hasLiked ? "Liked" : "Like"}
+                            </button>
+                        </div>
                     </div>
+
+                    {likeError && (
+                        <p className="mt-1 text-[11px] text-red-600">{likeError}</p>
+                    )}
                 </div>
 
                 {/* TAGS + GITHUB */}
@@ -187,7 +281,7 @@ const ProjectDetails = ({ project }: { project: any }) => {
                     </div>
                 </div>
 
-                {/* ISSUES SECTION AT BOTTOM */}
+                {/* ISSUES SECTION */}
                 <IssuesDetails
                     project={project}
                     issues={issues}
@@ -196,13 +290,11 @@ const ProjectDetails = ({ project }: { project: any }) => {
                     isOwner={isOwner}
                 />
 
-                <ProjectCollaborators
-                    projectid={project.project_id}
-                />
+                {/* Collaborators */}
+                <ProjectCollaborators projectid={project.project_id} />
 
-                <ProjectComments
-                    projectid={project.project_id}
-                />
+                {/* Comments */}
+                <ProjectComments projectid={project.project_id} />
             </div>
 
             {/* Edit Modal */}
