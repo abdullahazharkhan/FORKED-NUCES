@@ -9,6 +9,7 @@ from .views import (
     UserUpdateView,
     UserListView,
     UserDetailView,
+    UserSearchView,
 )
 
 urlpatterns = [
@@ -25,4 +26,5 @@ urlpatterns = [
     path("me/update/", UserUpdateView.as_view(), name="user-update"),
     path("users/", UserListView.as_view(), name="user-list"),
     path("users/<int:user_id>/", UserDetailView.as_view(), name="user-detail"),
+    path("users/search/", UserSearchView.as_view(), name="user-search"),
 ]

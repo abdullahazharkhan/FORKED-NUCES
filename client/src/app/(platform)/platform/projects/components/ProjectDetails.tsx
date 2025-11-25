@@ -7,13 +7,9 @@ import { useRouter } from "next/navigation";
 import { authFetch } from "@/lib/authFetch";
 import { useAuthStore } from "@/stores";
 import EditProjectForm from "../../../components/EditProjectForm";
-import { motion, AnimatePresence } from "framer-motion";
-import { MdPreview, MdEditor } from "md-editor-rt";
+import { MdPreview } from "md-editor-rt";
 import "md-editor-rt/lib/style.css";
-import { z } from "zod";
 import IssuesDetails from "./IssuesDetails";
-
-
 
 const ProjectDetails = ({ project }: { project: any }) => {
     const issues = Array.isArray(project.issues) ? project.issues : [];

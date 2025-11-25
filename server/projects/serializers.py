@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Project, Tag, Issue
+from .models import Project, Tag, Issue, Collaborator
 from accounts.models import User
 
 
@@ -136,5 +136,67 @@ class IssueUpdateSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Issue
 		fields = ["title", "description"]
+
+
+class CloseIssueInputSerializer(serializers.Serializer):
+	issue_id = serializers.IntegerField()
+	user_id = serializers.IntegerField()
+
+
+class CollaboratorUserIssueSerializer(serializers.ModelSerializer):
+	issues = serializers.SerializerMethodField()
+
+	class Meta:
+		model = User
+		fields = ["user_id", "full_name", "nu_email", "avatar_url", "issues"]
+
+	def get_issues(self, obj):
+		# All issues this user has collaborated on
+		issues = (
+			Issue.objects.filter(collaborators__user=obj)
+			.select_related("project")
+			.distinct()
+		)
+		return [
+			{
+				"issue_id": issue.issue_id,
+				"title": issue.title,
+				"status": issue.status,
+				"project_id": issue.project.project_id,
+				"project_title": issue.project.title,
+			}
+			for issue in issues
+		]
+
+
+class IssueWithCollaboratorsSerializer(serializers.ModelSerializer):
+	collaborators = serializers.SerializerMethodField()
+
+	class Meta:
+		model = Issue
+		fields = [
+			"issue_id",
+			"status",
+			"title",
+			"description",
+			"created_at",
+			"updated_at",
+			"collaborators",
+		]
+
+	def get_collaborators(self, obj):
+		users = (
+			User.objects.filter(issue_collaborations__issue=obj)
+			.distinct()
+		)
+		return [
+			{
+				"user_id": user.user_id,
+				"full_name": user.full_name,
+				"nu_email": user.nu_email,
+				"avatar_url": user.avatar_url,
+			}
+			for user in users
+		]
 
 

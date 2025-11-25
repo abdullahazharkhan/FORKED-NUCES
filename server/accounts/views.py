@@ -131,3 +131,16 @@ class UserDetailView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     lookup_field = "user_id"
     queryset = User.objects.all()
+
+
+class UserSearchView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        current_user = self.request.user
+        query = self.request.query_params.get("nu_email", "").strip().lower()
+        qs = User.objects.exclude(pk=current_user.pk)
+        if query:
+            qs = qs.filter(nu_email__icontains=query)
+        return qs

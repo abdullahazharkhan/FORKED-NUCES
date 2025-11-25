@@ -1,6 +1,9 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
 
-from .models import Project, Issue
+from accounts.models import User
+
+from .models import Project, Issue, Collaborator
 from .serializers import (
     ProjectSerializer,
     ProjectCreateSerializer,
@@ -8,6 +11,9 @@ from .serializers import (
     IssueSerializer,
     IssueCreateSerializer,
     IssueUpdateSerializer,
+    CollaboratorUserIssueSerializer,
+    IssueWithCollaboratorsSerializer,
+    CloseIssueInputSerializer,
 )
 
 
@@ -82,7 +88,77 @@ class IssueUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         # Only issues belonging to projects owned by the current user
         return Issue.objects.filter(project__user=self.request.user)
-    
+
+
+class CloseIssueAndAddCollaboratorView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    serializer_class = CloseIssueInputSerializer
+    queryset = Issue.objects.none()
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        issue_id = serializer.validated_data["issue_id"]
+        user_id = serializer.validated_data["user_id"]
+
+        try:
+            issue = Issue.objects.select_related("project").get(issue_id=issue_id)
+        except Issue.DoesNotExist:
+            return Response(
+                {"detail": "Issue not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Only the owner of the issue's project can close it and add collaborators
+        if issue.project.user != request.user:
+            return Response(
+                {"detail": "You do not have permission to modify this issue."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            collaborator_user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Close the issue
+        issue.status = Issue.STATUS_CLOSED
+        issue.save(update_fields=["status", "updated_at"])
+
+        # Create collaborator entry (idempotent via unique_together)
+        Collaborator.objects.get_or_create(user=collaborator_user, issue=issue)
+
+        return Response(
+            {
+                "detail": "Issue closed and collaborator recorded.",
+                "issue_id": issue.issue_id,
+                "status": issue.status,
+                "collaborator_user_id": collaborator_user.user_id,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def get(self, request, *args, **kwargs):
+        mode = request.query_params.get("mode", "issues")
+
+        if mode == "users":
+            # Users with their collaborated issues
+            users = (
+                User.objects.filter(issue_collaborations__isnull=False)
+                .distinct()
+            )
+            serializer = CollaboratorUserIssueSerializer(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Default: issues with their collaborators
+        issues = Issue.objects.filter(collaborators__isnull=False).distinct()
+        serializer = IssueWithCollaboratorsSerializer(issues, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class UserProjectsListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer

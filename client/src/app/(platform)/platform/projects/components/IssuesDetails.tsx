@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
 import EditIssueForm from "@/app/(platform)/components/EditIssueForm";
+import CloseIssueForm from "@/app/(platform)/components/CloseIssueForm";
 
 const issueSchema = z.object({
     title: z.string().min(1, "Issue title is required"),
@@ -38,6 +39,10 @@ const IssuesDetails = ({
         form?: string;
     }>({});
 
+    // Close issue modal state
+    const [isCloseIssueOpen, setIsCloseIssueOpen] = React.useState(false);
+    const [issueToClose, setIssueToClose] = React.useState<number | null>(null);
+
     // Edit issue modal state
     const [isEditIssueOpen, setIsEditIssueOpen] = React.useState(false);
     const [issueBeingEdited, setIssueBeingEdited] = React.useState<any | null>(null);
@@ -64,8 +69,8 @@ const IssuesDetails = ({
 
 
     const handleMarkDoneIssue = (issueId: number) => {
-        console.log("Mark issue as done", issueId);
-        // TODO: PATCH /api/issues/:id { status: "CLOSED" }
+        setIssueToClose(issueId);
+        setIsCloseIssueOpen(true);
     };
 
     const createIssueMutation = useMutation({
@@ -567,6 +572,37 @@ const IssuesDetails = ({
                     })}
                 </div>
             </div>
+
+            {/* Close Issue with Collaborator Modal */}
+            {isCloseIssueOpen && issueToClose && (
+                <>
+                    <div
+                        className="fixed inset-0 z-40 bg-black/40"
+                        onClick={() => setIsCloseIssueOpen(false)}
+                    />
+                    <div className="fixed inset-0 z-50 my-8 flex items-center justify-center px-4">
+                        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-lg font-semibold">
+                                    Close Issue with Collaborator
+                                </h2>
+                                <button
+                                    onClick={() => setIsCloseIssueOpen(false)}
+                                    className="text-sm text-gray-500 hover:text-gray-800"
+                                >
+                                    Close
+                                </button>
+                            </div>
+
+                            <CloseIssueForm
+                                issueId={issueToClose}
+                                projectId={project.project_id}
+                                onClose={() => setIsCloseIssueOpen(false)}
+                            />
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* Edit Issue Modal */}
             {isEditIssueOpen && issueBeingEdited && (
