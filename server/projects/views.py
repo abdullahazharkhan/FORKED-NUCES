@@ -7,6 +7,7 @@ from .serializers import (
     ProjectUpdateSerializer,
     IssueSerializer,
     IssueCreateSerializer,
+    IssueUpdateSerializer,
 )
 
 
@@ -71,6 +72,16 @@ class IssueStatusUpdateView(generics.UpdateAPIView):
         serializer.fields.pop("title", None)
         serializer.fields.pop("description", None)
         return serializer
+
+
+class IssueUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = IssueUpdateSerializer
+    lookup_field = "issue_id"
+
+    def get_queryset(self):
+        # Only issues belonging to projects owned by the current user
+        return Issue.objects.filter(project__user=self.request.user)
     
 class UserProjectsListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]

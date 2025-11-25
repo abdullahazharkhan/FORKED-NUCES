@@ -131,3 +131,10 @@ class IssueCreateSerializer(serializers.ModelSerializer):
 		project = self.context["project"]
 		return Issue.objects.create(project=project, **validated_data)
 
+
+class IssueUpdateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Issue
+		fields = ["title", "description"]
+
+

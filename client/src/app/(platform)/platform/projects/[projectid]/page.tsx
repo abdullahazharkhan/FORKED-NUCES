@@ -5,10 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
 import ProjectDetails from "../components/ProjectDetails";
 
-const Project = ({ params }: { params: { projectid: string } }) => {
-    const { projectid } = params;
+type ProjectPageProps = {
+    params: Promise<{ projectid: string }>;
+};
 
-    // Normalise project id to a number so it matches project.project_id
+const Project = ({ params }: ProjectPageProps) => {
+    const { projectid } = React.use(params);
+
     const projectIdNumber = Number(projectid);
 
     const {
