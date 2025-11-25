@@ -159,6 +159,42 @@ class CloseIssueAndAddCollaboratorView(generics.GenericAPIView):
         serializer = IssueWithCollaboratorsSerializer(issues, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class ProjectCollaboratorsView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CollaboratorUserIssueSerializer
+
+    def get_queryset(self):
+        project_id = self.kwargs.get("project_id")
+        # All users who have collaborated on any issue under this project
+        return (
+            User.objects.filter(issue_collaborations__issue__project__project_id=project_id)
+            .distinct()
+        )
+
+
+class UserCollaboratedProjectsView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Project.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        user_id = self.kwargs.get("user_id")
+        projects = (
+            Project.objects.filter(issues__collaborators__user__user_id=user_id)
+            .select_related("user")
+            .distinct()
+        )
+        data = [
+            {
+                "project_id": project.project_id,
+                "title": project.title,
+                "owner_full_name": project.user.full_name,
+                "owner_nu_email": project.user.nu_email,
+            }
+            for project in projects
+        ]
+        return Response(data)
+
 class UserProjectsListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer

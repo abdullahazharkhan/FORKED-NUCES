@@ -10,6 +10,7 @@ import EditProjectForm from "../../../components/EditProjectForm";
 import { MdPreview } from "md-editor-rt";
 import "md-editor-rt/lib/style.css";
 import IssuesDetails from "./IssuesDetails";
+import ProjectCollaborators from "./ProjectCollaborators";
 
 const ProjectDetails = ({ project }: { project: any }) => {
     const issues = Array.isArray(project.issues) ? project.issues : [];
@@ -193,6 +194,8 @@ const ProjectDetails = ({ project }: { project: any }) => {
                     closedIssues={closedIssues}
                     isOwner={isOwner}
                 />
+
+                <ProjectCollaborators projectid={project.project_id} />
             </div>
 
             {/* Edit Modal */}

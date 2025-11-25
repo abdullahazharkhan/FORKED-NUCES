@@ -10,6 +10,8 @@ from .views import (
 	AllProjectsListView,
 	PublicProjectDetailView,
  	UserProjectsListView,
+	ProjectCollaboratorsView,
+	UserCollaboratedProjectsView,
 )
 
 
@@ -30,6 +32,16 @@ urlpatterns = [
 		"issues/close-with-collaborator/",
 		CloseIssueAndAddCollaboratorView.as_view(),
 		name="issue-close-with-collaborator",
+	),
+	path(
+		"<int:project_id>/collaborators/",
+		ProjectCollaboratorsView.as_view(),
+		name="project-collaborators",
+	),
+	path(
+		"collaborated/by-user/<int:user_id>/",
+		UserCollaboratedProjectsView.as_view(),
+		name="user-collaborated-projects",
 	),
 ]
 

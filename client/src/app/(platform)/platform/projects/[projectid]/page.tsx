@@ -4,6 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
 import ProjectDetails from "../components/ProjectDetails";
+import ProjectCollaborators from "../components/ProjectCollaborators";
 
 type ProjectPageProps = {
     params: Promise<{ projectid: string }>;
@@ -106,7 +107,9 @@ const Project = ({ params }: ProjectPageProps) => {
 
             {/* Content */}
             {!isLoading && !isError && project && (
-                <ProjectDetails project={project} />
+                <>
+                    <ProjectDetails project={project} />
+                </>
             )}
         </div>
     );

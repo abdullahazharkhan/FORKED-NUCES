@@ -6,6 +6,7 @@ import "md-editor-rt/lib/style.css";
 import { authFetch } from "@/lib/authFetch";
 import UserProjects from "../components/UserProjects";
 import UserDetails from "@/app/(platform)/profile/components/UserDetails";
+import UserCollaborations from "../components/UserCollaborations";
 
 const User = ({ params }: { params: Promise<{ userid: string }> }) => {
     const { userid } = React.use(params);
@@ -74,6 +75,8 @@ const User = ({ params }: { params: Promise<{ userid: string }> }) => {
                     <UserDetails user={user} page="userDetails" />
                     <div className="border-t-2 border-primarypurple/20"></div>
                     <UserProjects userid={userid} />
+                    <div className="border-t-2 border-primarypurple/20"></div>
+                    <UserCollaborations userid={userid} />
                 </>
             )
             }

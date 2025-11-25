@@ -110,7 +110,12 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
             await queryClient.invalidateQueries({
                 queryKey: ["project", projectId],
             });
+
             queryClient.invalidateQueries({ queryKey: ["projects"] });
+
+            queryClient.invalidateQueries({
+                queryKey: ["project-collaborators", projectId],
+            });
 
             onClose();
         },
