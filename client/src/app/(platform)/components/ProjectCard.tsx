@@ -4,6 +4,7 @@ import Link from 'next/link'
 const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjects }:
     { isError: boolean; error: unknown; isLoading: boolean; showEmptyState: boolean; filteredProjects: any[] }
 ) => {
+
     return (
         <div>
             {isError && (
@@ -78,7 +79,7 @@ const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjec
                                     <p className="font-semibold text-primarypurple">
                                         Open:{" "}
                                         {
-                                            project.issues.filter((issue: any) => issue.status === "OPEN")
+                                            project.issues.filter((issue: any) => issue.status === "open")
                                                 .length
                                         }
                                     </p>
@@ -86,7 +87,7 @@ const ProjectCard = ({ isError, error, isLoading, showEmptyState, filteredProjec
                                     <p className="text-gray-700">
                                         Closed:{" "}
                                         {
-                                            project.issues.filter((issue: any) => issue.status === "CLOSED")
+                                            project.issues.filter((issue: any) => issue.status === "closed")
                                                 .length
                                         }
                                     </p>

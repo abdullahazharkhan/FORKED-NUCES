@@ -69,3 +69,25 @@ class Issue(models.Model):
 
 	def __str__(self) -> str:
 		return f"Issue #{self.issue_id} - {self.title}"
+
+
+class Collaborator(models.Model):
+	user = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.CASCADE,
+		related_name="issue_collaborations",
+	)
+	issue = models.ForeignKey(
+		Issue,
+		on_delete=models.CASCADE,
+		related_name="collaborators",
+	)
+
+	class Meta:
+		unique_together = ("user", "issue")
+		indexes = [
+			models.Index(fields=["user", "issue"]),
+		]
+
+	def __str__(self) -> str:
+		return f"User {self.user_id} on Issue {self.issue_id}"

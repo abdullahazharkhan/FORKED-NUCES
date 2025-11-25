@@ -6,6 +6,7 @@ import "md-editor-rt/lib/style.css";
 import { z } from "zod";
 import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
+import EditIssueForm from "@/app/(platform)/components/EditIssueForm";
 
 const issueSchema = z.object({
     title: z.string().min(1, "Issue title is required"),
@@ -37,6 +38,10 @@ const IssuesDetails = ({
         form?: string;
     }>({});
 
+    // Edit issue modal state
+    const [isEditIssueOpen, setIsEditIssueOpen] = React.useState(false);
+    const [issueBeingEdited, setIssueBeingEdited] = React.useState<any | null>(null);
+
     // Delete issue modal state
     const [isIssueDeleteOpen, setIsIssueDeleteOpen] = React.useState(false);
     const [issueToDelete, setIssueToDelete] = React.useState<number | null>(null);
@@ -53,9 +58,10 @@ const IssuesDetails = ({
     };
 
     const handleEditIssue = (issue: any) => {
-        console.log("Edit issue", issue);
-        // TODO: open edit modal
+        setIssueBeingEdited(issue);
+        setIsEditIssueOpen(true);
     };
+
 
     const handleMarkDoneIssue = (issueId: number) => {
         console.log("Mark issue as done", issueId);
@@ -561,6 +567,35 @@ const IssuesDetails = ({
                     })}
                 </div>
             </div>
+
+            {/* Edit Issue Modal */}
+            {isEditIssueOpen && issueBeingEdited && (
+                <>
+                    <div
+                        className="fixed inset-0 z-40 bg-black/40"
+                        onClick={() => setIsEditIssueOpen(false)}
+                    />
+                    <div className="fixed inset-0 z-50 my-8 flex items-center justify-center px-4">
+                        <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-lg font-semibold">Edit Issue</h2>
+                                <button
+                                    onClick={() => setIsEditIssueOpen(false)}
+                                    className="text-sm text-gray-500 hover:text-gray-800"
+                                >
+                                    Close
+                                </button>
+                            </div>
+
+                            <EditIssueForm
+                                issue={issueBeingEdited}
+                                projectId={project.project_id}
+                                onClose={() => setIsEditIssueOpen(false)}
+                            />
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* Delete Issue Confirmation Modal */}
             {isIssueDeleteOpen && (
