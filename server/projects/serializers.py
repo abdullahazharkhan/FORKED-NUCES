@@ -31,6 +31,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 	owner_nu_email = serializers.EmailField(source="user.nu_email", read_only=True)
 	likes_count = serializers.IntegerField(source="likes.count", read_only=True)
 	user_has_liked = serializers.SerializerMethodField()
+	user_has_collaborated = serializers.SerializerMethodField()
 
 	class Meta:
 		model = Project
@@ -47,6 +48,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"owner_nu_email",
 			"likes_count",
 			"user_has_liked",
+			"user_has_collaborated",
 		]
 		read_only_fields = [
 			"project_id",
@@ -58,6 +60,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"owner_nu_email",
 			"likes_count",
 			"user_has_liked",
+			"user_has_collaborated",
 		]
 
 	def get_user_has_liked(self, obj):
@@ -66,6 +69,14 @@ class ProjectSerializer(serializers.ModelSerializer):
 		if not user or not user.is_authenticated:
 			return False
 		return obj.likes.filter(user=user).exists()
+
+	def get_user_has_collaborated(self, obj):
+		request = self.context.get("request")
+		user = getattr(request, "user", None)
+		if not user or not user.is_authenticated:
+			return False
+		# Check if user is a collaborator on any issue in this project
+		return Collaborator.objects.filter(issue__project=obj, user=user).exists()
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
@@ -153,7 +164,20 @@ class IssueUpdateSerializer(serializers.ModelSerializer):
 
 class CloseIssueInputSerializer(serializers.Serializer):
 	issue_id = serializers.IntegerField()
-	user_id = serializers.IntegerField()
+	user_id = serializers.IntegerField(required=False)
+	user_ids = serializers.ListField(
+		child=serializers.IntegerField(), required=False, allow_empty=True
+	)
+
+	def validate(self, attrs):
+		user_ids = attrs.get("user_ids")
+		user_id = attrs.get("user_id")
+		if user_ids is None:
+			if user_id is not None:
+				attrs["user_ids"] = [user_id]
+			else:
+				attrs["user_ids"] = []
+		return attrs
 
 
 class CollaboratorUserIssueSerializer(serializers.ModelSerializer):

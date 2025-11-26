@@ -97,10 +97,16 @@ class CloseIssueAndAddCollaboratorView(generics.GenericAPIView):
     queryset = Issue.objects.none()
 
     def post(self, request, *args, **kwargs):
+        print("=== CloseIssue POST called ===")
+        print(f"Request data: {request.data}")
+        
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         issue_id = serializer.validated_data["issue_id"]
-        user_id = serializer.validated_data["user_id"]
+        user_ids = serializer.validated_data.get("user_ids", [])
+        
+        print(f"Validated issue_id: {issue_id}")
+        print(f"Validated user_ids: {user_ids}")
 
         try:
             issue = Issue.objects.select_related("project").get(issue_id=issue_id)
@@ -117,27 +123,43 @@ class CloseIssueAndAddCollaboratorView(generics.GenericAPIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        try:
-            collaborator_user = User.objects.get(user_id=user_id)
-        except User.DoesNotExist:
-            return Response(
-                {"detail": "User not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        collaborator_ids = []
+        collaborator_users = []
+        for user_id in user_ids:
+            print(f"Processing user_id: {user_id}")
+            try:
+                user = User.objects.get(user_id=user_id)
+                print(f"Found user: {user.full_name}")
+            except User.DoesNotExist:
+                return Response(
+                    {"detail": f"User with id {user_id} not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            collaborator_users.append(user)
+            collaborator_ids.append(user.user_id)
 
         # Close the issue
         issue.status = Issue.STATUS_CLOSED
         issue.save(update_fields=["status", "updated_at"])
+        print(f"Issue {issue_id} closed")
 
-        # Create collaborator entry (idempotent via unique_together)
-        Collaborator.objects.get_or_create(user=collaborator_user, issue=issue)
+        # Create collaborator entries (idempotent via unique_together)
+        for collaborator_user in collaborator_users:
+            collab, created = Collaborator.objects.get_or_create(user=collaborator_user, issue=issue)
+            print(f"Collaborator created={created} for user={collaborator_user.full_name}, issue={issue.issue_id}")
+
+        # Verify what's in the database
+        all_collabs = Collaborator.objects.filter(issue=issue)
+        print(f"Total collaborators for issue {issue_id}: {all_collabs.count()}")
+        for c in all_collabs:
+            print(f"  - user_id={c.user_id}, issue_id={c.issue_id}")
 
         return Response(
             {
-                "detail": "Issue closed and collaborator recorded.",
+                "detail": "Issue closed successfully.",
                 "issue_id": issue.issue_id,
                 "status": issue.status,
-                "collaborator_user_id": collaborator_user.user_id,
+                "collaborator_user_ids": collaborator_ids,
             },
             status=status.HTTP_200_OK,
         )

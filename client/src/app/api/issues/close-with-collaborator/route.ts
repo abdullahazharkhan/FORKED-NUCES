@@ -26,9 +26,10 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    const { issue_id, user_id } = body as {
+    const { issue_id, user_id, user_ids } = body as {
         issue_id?: number;
-        user_id?: string;
+        user_id?: number;
+        user_ids?: number[];
     };
 
     const drfRes = await fetch(DRF_CLOSEISSUE_URL, {
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
             issue_id,
             user_id,
+            user_ids,
         }),
     });
 

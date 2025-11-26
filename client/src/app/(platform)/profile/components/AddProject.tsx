@@ -84,7 +84,8 @@ const AddProject = () => {
         control,
         handleSubmit,
         reset,
-        formState: { errors, isValid },
+        clearErrors,
+        formState: { errors, isValid, isDirty, isSubmitted },
     } = useForm<ProjectForm>({
         resolver: zodResolver(projectSchema),
         mode: "onChange",
@@ -95,6 +96,9 @@ const AddProject = () => {
             tags: [],
         },
     });
+
+    const shouldShowError = (field: keyof ProjectForm) =>
+        Boolean(errors[field] && (isDirty || isSubmitted));
 
     const baseInputClasses =
         "p-2 rounded border-2 focus:border-primarypurple/80 focus:ring-0 outline-none transition-colors duration-200";
@@ -131,7 +135,23 @@ const AddProject = () => {
             return body;
         },
         onSuccess: () => {
-            reset();
+            reset(
+                {
+                    title: "",
+                    description: "",
+                    github_url: "",
+                    tags: [],
+                },
+                {
+                    keepErrors: false,
+                    keepDirty: false,
+                    keepTouched: false,
+                    keepIsSubmitted: false,
+                    keepSubmitCount: false,
+                    keepIsValid: false,
+                }
+            );
+            clearErrors();
         },
         onError: (err) => {
             console.error("Create project error", err);
@@ -172,7 +192,7 @@ const AddProject = () => {
                         {...register("title")}
                         className={getInputClass(errors.title)}
                     />
-                    {errors.title && (
+                    {shouldShowError("title") && errors.title && (
                         <p className="text-sm text-red-500 mt-1">
                             {errors.title.message}
                         </p>
@@ -197,7 +217,7 @@ const AddProject = () => {
                             />
                         )}
                     />
-                    {errors.description && (
+                    {shouldShowError("description") && errors.description && (
                         <p className="text-sm text-red-500 mt-1">
                             {errors.description.message}
                         </p>
@@ -215,7 +235,7 @@ const AddProject = () => {
                         {...register("github_url")}
                         className={getInputClass(errors.github_url)}
                     />
-                    {errors.github_url && (
+                    {shouldShowError("github_url") && errors.github_url && (
                         <p className="text-sm text-red-500 mt-1">
                             {errors.github_url.message}
                         </p>
@@ -266,7 +286,7 @@ const AddProject = () => {
                             );
                         }}
                     />
-                    {errors.tags && (
+                    {shouldShowError("tags") && errors.tags && (
                         <p className="text-sm text-red-500 mt-1">
                             {errors.tags.message as string}
                         </p>

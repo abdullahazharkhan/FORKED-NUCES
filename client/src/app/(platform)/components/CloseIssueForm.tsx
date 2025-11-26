@@ -26,9 +26,7 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
 
     const [searchTerm, setSearchTerm] = React.useState("");
     const [debouncedTerm, setDebouncedTerm] = React.useState("");
-    const [selectedUserId, setSelectedUserId] = React.useState<number | null>(
-        null
-    );
+    const [selectedUserIds, setSelectedUserIds] = React.useState<number[]>([]);
     const [formError, setFormError] = React.useState<string | null>(null);
 
     // Debounce search input (for client-side filtering only)
@@ -78,11 +76,8 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
     }, [allUsers, debouncedTerm]);
 
     const closeIssueMutation = useMutation({
-        mutationFn: async () => {
-            if (!selectedUserId) {
-                throw new Error("Please select a collaborator.");
-            }
-
+        mutationFn: async (userIds: number[]) => {
+            console.log("mutationFn received userIds:", userIds);
             const res = await authFetch(
                 `/api/issues/close-with-collaborator/`,
                 {
@@ -90,12 +85,13 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         issue_id: issueId,
-                        user_id: selectedUserId,
+                        user_ids: userIds,
                     }),
                 }
             );
 
             const body = await res.json().catch(() => null);
+            console.log("Response body:", body);
 
             if (!res.ok) {
                 throw new Error(
@@ -129,13 +125,20 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setFormError(null);
+        console.log("handleSubmit - selectedUserIds:", selectedUserIds);
+        console.log("handleSubmit - selectedUserIds length:", selectedUserIds.length);
+        closeIssueMutation.mutate(selectedUserIds);
+    };
 
-        if (!selectedUserId) {
-            setFormError("Please select a collaborator before closing.");
-            return;
-        }
-
-        closeIssueMutation.mutate();
+    const toggleUser = (userId: number) => {
+        console.log("toggleUser called with userId:", userId);
+        setSelectedUserIds((prev) => {
+            const newValue = prev.includes(userId)
+                ? prev.filter((id) => id !== userId)
+                : [...prev, userId];
+            console.log("toggleUser - prev:", prev, "-> new:", newValue);
+            return newValue;
+        });
     };
 
     const isSubmitting = closeIssueMutation.isPending;
@@ -143,8 +146,8 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
     return (
         <form className="space-y-4" onSubmit={handleSubmit}>
             <p className="text-sm text-gray-700">
-                Select a collaborator who helped resolve this issue. The issue
-                will be marked as <span className="font-semibold">Closed</span>.
+                Optionally select collaborators who helped resolve this issue.
+                The issue will be marked as <span className="font-semibold">Closed</span>.
             </p>
 
             {/* Search input */}
@@ -201,12 +204,12 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
                     !isError &&
                     debouncedTerm.length >= 2 &&
                     filteredUsers.map((user) => {
-                        const isSelected = selectedUserId === user.user_id;
+                        const isSelected = selectedUserIds.includes(user.user_id);
                         return (
                             <button
                                 key={user.user_id}
                                 type="button"
-                                onClick={() => setSelectedUserId(user.user_id)}
+                                onClick={() => toggleUser(user.user_id)}
                                 className={`flex w-full flex-col items-start rounded-lg px-3 py-2 text-left text-xs transition ${isSelected
                                     ? "bg-primarypurple/10 border border-primarypurple text-primarypurple"
                                     : "bg-white border border-transparent hover:bg-gray-100"
@@ -222,6 +225,36 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
                         );
                     })}
             </div>
+
+            {/* Selected collaborators */}
+            {selectedUserIds.length > 0 && (
+                <div className="space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Selected Collaborators ({selectedUserIds.length})
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        {selectedUserIds.map((id) => {
+                            const user = allUsers.find((u) => u.user_id === id);
+                            if (!user) return null;
+                            return (
+                                <span
+                                    key={id}
+                                    className="inline-flex items-center gap-1 rounded-full bg-primarypurple/10 px-2 py-1 text-xs text-primarypurple"
+                                >
+                                    {user.full_name}
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleUser(id)}
+                                        className="ml-1 text-primarypurple/60 hover:text-primarypurple"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Error */}
             {formError && (
@@ -240,7 +273,7 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
                 </button>
                 <button
                     type="submit"
-                    disabled={isSubmitting || !selectedUserId}
+                    disabled={isSubmitting}
                     className="rounded-lg bg-primarypurple px-4 py-2 text-sm font-semibold text-white hover:bg-primarypurple/90 disabled:opacity-60 transition"
                 >
                     {isSubmitting ? "Closing..." : "Close Issue"}
