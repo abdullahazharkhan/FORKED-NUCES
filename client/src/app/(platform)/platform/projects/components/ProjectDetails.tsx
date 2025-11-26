@@ -100,7 +100,7 @@ const ProjectDetails = ({ project }: { project: any }) => {
 
     // LIKE mutation
     const likeMutation = useMutation({
-        mutationFn: async () => {
+        mutationFn: async (currentlyLiked: boolean) => {
             const res = await authFetch(`/api/likes/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -120,23 +120,28 @@ const ProjectDetails = ({ project }: { project: any }) => {
 
             return body;
         },
-        onMutate: async () => {
+        onMutate: async (currentlyLiked) => {
             setLikeError(null);
 
-            // Optimistic update
-            setHasLiked(true);
-            setLikeCount((prev) => prev + 1);
+            // Optimistic toggle
+            const delta = currentlyLiked ? -1 : 1;
+            setHasLiked(!currentlyLiked);
+            setLikeCount((prev) => Math.max(0, prev + delta));
         },
-        onError: (err) => {
+        onError: (err, currentlyLiked) => {
             console.error("Like project error", err);
-            setHasLiked(false);
-            setLikeCount((prev) => (prev > 0 ? prev - 1 : 0));
+            const delta = currentlyLiked ? -1 : 1;
+            setHasLiked(currentlyLiked);
+            setLikeCount((prev) => Math.max(0, prev - delta));
             setLikeError(
                 (err as Error).message ||
                 "Failed to like this project. Please try again."
             );
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
+            if (typeof data?.liked === "boolean") {
+                setHasLiked(data.liked);
+            }
             // Refresh project + projects list
             queryClient.invalidateQueries({ queryKey: ["projects"] });
             queryClient.invalidateQueries({
@@ -150,8 +155,8 @@ const ProjectDetails = ({ project }: { project: any }) => {
             setLikeError("Please log in to like this project.");
             return;
         }
-        if (hasLiked || likeMutation.isPending) return;
-        likeMutation.mutate();
+        if (likeMutation.isPending) return;
+        likeMutation.mutate(hasLiked);
     };
 
     return (
@@ -222,11 +227,11 @@ const ProjectDetails = ({ project }: { project: any }) => {
                                 type="button"
                                 onClick={handleLikeClick}
                                 disabled={
-                                    likeMutation.isPending || hasLiked || !loggedInUser
+                                    likeMutation.isPending || !loggedInUser
                                 }
                                 className="rounded-full border border-primarypurple/40 bg-white px-3 py-1 text-xs font-semibold text-primarypurple transition hover:bg-primarypurple/10 disabled:opacity-60"
                             >
-                                {hasLiked ? "Liked" : "Like"}
+                                {hasLiked ? "Unlike" : "Like"}
                             </button>
                         </div>
                     </div>

@@ -30,6 +30,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 	owner_full_name = serializers.CharField(source="user.full_name", read_only=True)
 	owner_nu_email = serializers.EmailField(source="user.nu_email", read_only=True)
 	likes_count = serializers.IntegerField(source="likes.count", read_only=True)
+	user_has_liked = serializers.SerializerMethodField()
 
 	class Meta:
 		model = Project
@@ -45,6 +46,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"owner_full_name",
 			"owner_nu_email",
 			"likes_count",
+			"user_has_liked",
 		]
 		read_only_fields = [
 			"project_id",
@@ -55,7 +57,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"owner_full_name",
 			"owner_nu_email",
 			"likes_count",
+			"user_has_liked",
 		]
+
+	def get_user_has_liked(self, obj):
+		request = self.context.get("request")
+		user = getattr(request, "user", None)
+		if not user or not user.is_authenticated:
+			return False
+		return obj.likes.filter(user=user).exists()
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
