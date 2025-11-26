@@ -299,7 +299,10 @@ const ProjectDetails = ({ project }: { project: any }) => {
                 <ProjectCollaborators projectid={project.project_id} />
 
                 {/* Comments */}
-                <ProjectComments projectid={project.project_id} />
+                <ProjectComments 
+                    projectid={project.project_id} 
+                    projectOwnerId={project.owner_user_id}
+                />
             </div>
 
             {/* Edit Modal */}

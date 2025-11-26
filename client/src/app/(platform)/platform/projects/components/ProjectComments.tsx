@@ -3,13 +3,21 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
+import { useAuthStore } from "@/stores";
+import { Trash2 } from "lucide-react";
 
 type Comment = {
     comment_id: number;
     comment_body: string;
     created_at?: string;
+    user_id?: number;
     user_full_name?: string;
     user_nu_email?: string;
+};
+
+type ProjectCommentsProps = {
+    projectid: string;
+    projectOwnerId?: number;
 };
 
 const CommentsSkeleton: React.FC = () => {
@@ -29,9 +37,10 @@ const CommentsSkeleton: React.FC = () => {
     );
 };
 
-const ProjectComments = ({ projectid }: { projectid: string }) => {
+const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) => {
     const queryClient = useQueryClient();
     const projectIdNumber = Number(projectid);
+    const loggedInUser = useAuthStore((state) => state.user);
 
     const [newComment, setNewComment] = React.useState("");
     const [formError, setFormError] = React.useState<string | null>(null);
@@ -132,6 +141,65 @@ const ProjectComments = ({ projectid }: { projectid: string }) => {
         },
     });
 
+    // Delete comment mutation
+    const deleteCommentMutation = useMutation({
+        mutationFn: async (commentId: number) => {
+            const res = await authFetch(`/api/comments/${commentId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            const body = await res.json().catch(() => null);
+
+            if (!res.ok) {
+                throw new Error(
+                    (body && (body.detail || body.message)) ||
+                    "Failed to delete comment"
+                );
+            }
+
+            return body;
+        },
+        onMutate: async (commentId) => {
+            await queryClient.cancelQueries({
+                queryKey: ["project-comments", projectid],
+            });
+
+            const previousComments =
+                queryClient.getQueryData<Comment[]>([
+                    "project-comments",
+                    projectid,
+                ]) || [];
+
+            queryClient.setQueryData<Comment[]>(
+                ["project-comments", projectid],
+                previousComments.filter((c) => c.comment_id !== commentId)
+            );
+
+            return { previousComments };
+        },
+        onError: (_err, _vars, context) => {
+            if (context?.previousComments) {
+                queryClient.setQueryData(
+                    ["project-comments", projectid],
+                    context.previousComments
+                );
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["project-comments", projectid],
+            });
+        },
+    });
+
+    const canDeleteComment = (comment: Comment) => {
+        if (!loggedInUser) return false;
+        const isCommentAuthor = comment.user_id === loggedInUser.user_id;
+        const isProjectOwner = projectOwnerId === loggedInUser.user_id;
+        return isCommentAuthor || isProjectOwner;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const value = newComment.trim();
@@ -217,28 +285,43 @@ const ProjectComments = ({ projectid }: { projectid: string }) => {
                             className="rounded-lg border border-primarypurple/10 bg-white/80 p-3"
                         >
                             {/* Meta (optional user info) */}
-                            {(comment.user_full_name ||
-                                comment.user_nu_email ||
-                                comment.created_at) && (
-                                    <div className="mb-1 flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
-                                        {comment.user_full_name && (
-                                            <span className="font-semibold text-gray-700">
-                                                {comment.user_full_name}
-                                            </span>
-                                        )}
-                                        {comment.user_nu_email && (
-                                            <span>{comment.user_nu_email}</span>
-                                        )}
-                                        {comment.created_at && (
-                                            <span>
-                                                ·{" "}
-                                                {new Date(
-                                                    comment.created_at
-                                                ).toLocaleDateString()}
-                                            </span>
-                                        )}
-                                    </div>
+                            <div className="mb-1 flex items-center justify-between">
+                                <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
+                                    {comment.user_full_name && (
+                                        <span className="font-semibold text-gray-700">
+                                            {comment.user_full_name}
+                                        </span>
+                                    )}
+                                    {comment.user_nu_email && (
+                                        <span>{comment.user_nu_email}</span>
+                                    )}
+                                    {comment.created_at && (
+                                        <span>
+                                            ·{" "}
+                                            {new Date(
+                                                comment.created_at
+                                            ).toLocaleDateString()}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Delete button */}
+                                {canDeleteComment(comment) && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            deleteCommentMutation.mutate(
+                                                comment.comment_id
+                                            )
+                                        }
+                                        disabled={deleteCommentMutation.isPending}
+                                        className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                                        title="Delete comment"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
                                 )}
+                            </div>
 
                             <p className="text-sm text-gray-800 whitespace-pre-wrap">
                                 {comment.comment_body}

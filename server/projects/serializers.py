@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Project, Tag, Issue, Collaborator
 from accounts.models import User
+from interactions.models import Comment
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -27,11 +28,13 @@ class IssueSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
 	tags = TagSerializer(many=True, read_only=True)
 	issues = IssueSerializer(many=True, read_only=True)
+	owner_user_id = serializers.IntegerField(source="user.user_id", read_only=True)
 	owner_full_name = serializers.CharField(source="user.full_name", read_only=True)
 	owner_nu_email = serializers.EmailField(source="user.nu_email", read_only=True)
 	likes_count = serializers.IntegerField(source="likes.count", read_only=True)
 	user_has_liked = serializers.SerializerMethodField()
 	user_has_collaborated = serializers.SerializerMethodField()
+	user_has_commented = serializers.SerializerMethodField()
 
 	class Meta:
 		model = Project
@@ -44,11 +47,13 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"updated_at",
 			"tags",
 			"issues",
+			"owner_user_id",
 			"owner_full_name",
 			"owner_nu_email",
 			"likes_count",
 			"user_has_liked",
 			"user_has_collaborated",
+			"user_has_commented",
 		]
 		read_only_fields = [
 			"project_id",
@@ -56,11 +61,13 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"updated_at",
 			"tags",
 			"issues",
+			"owner_user_id",
 			"owner_full_name",
 			"owner_nu_email",
 			"likes_count",
 			"user_has_liked",
 			"user_has_collaborated",
+			"user_has_commented",
 		]
 
 	def get_user_has_liked(self, obj):
@@ -77,6 +84,14 @@ class ProjectSerializer(serializers.ModelSerializer):
 			return False
 		# Check if user is a collaborator on any issue in this project
 		return Collaborator.objects.filter(issue__project=obj, user=user).exists()
+
+	def get_user_has_commented(self, obj):
+		request = self.context.get("request")
+		user = getattr(request, "user", None)
+		if not user or not user.is_authenticated:
+			return False
+		# Check if user has commented on this project
+		return Comment.objects.filter(project=obj, user=user).exists()
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):

@@ -13,6 +13,40 @@ class CommentCreateView(generics.CreateAPIView):
 		serializer.save()
 
 
+class CommentDeleteView(generics.DestroyAPIView):
+	permission_classes = [permissions.IsAuthenticated]
+	lookup_field = "comment_id"
+
+	def get_queryset(self):
+		return Comment.objects.select_related("user", "project__user").all()
+
+	def destroy(self, request, *args, **kwargs):
+		try:
+			comment = self.get_object()
+		except Comment.DoesNotExist:
+			return Response(
+				{"detail": "Comment not found."},
+				status=status.HTTP_404_NOT_FOUND,
+			)
+
+		user = request.user
+		# Allow deletion if user is the comment author OR the project owner
+		is_comment_author = comment.user == user
+		is_project_owner = comment.project.user == user
+
+		if not is_comment_author and not is_project_owner:
+			return Response(
+				{"detail": "You do not have permission to delete this comment."},
+				status=status.HTTP_403_FORBIDDEN,
+			)
+
+		comment.delete()
+		return Response(
+			{"detail": "Comment deleted successfully."},
+			status=status.HTTP_200_OK,
+		)
+
+
 class ProjectCommentsListView(generics.ListAPIView):
 	permission_classes = [permissions.IsAuthenticated]
 	serializer_class = CommentSerializer
