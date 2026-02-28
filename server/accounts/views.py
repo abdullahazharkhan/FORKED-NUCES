@@ -26,13 +26,9 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        # Optional: if you want to return the token for testing (remove in production)
-        token_value = getattr(user, "_verification_token", None)
-
         data = {
             "message": "Registration successful. Please check your NU email to verify your account.",
             "user": UserSerializer(user).data,
-            "debug_verification_token": token_value.token if token_value else None,
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
