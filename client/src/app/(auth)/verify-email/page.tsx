@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import React, { useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Spinner } from "@heroui/spinner";
 import { useMutation } from "@tanstack/react-query";
@@ -62,7 +62,7 @@ const getErrorMessage = (err: unknown): string => {
     return "Verification failed";
 };
 
-const VerifyEmail = () => {
+const VerifyEmailInner = () => {
     const searchParams = useSearchParams();
 
     const token = searchParams.get("token");
@@ -187,5 +187,11 @@ const VerifyEmail = () => {
         </div>
     );
 };
+
+const VerifyEmail = () => (
+    <Suspense fallback={<div className="sm:w-2/3 mx-auto">Loading...</div>}>
+        <VerifyEmailInner />
+    </Suspense>
+);
 
 export default VerifyEmail;

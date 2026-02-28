@@ -28,7 +28,7 @@ export async function authFetch(
     init?: RequestInit
 ): Promise<Response> {
     // First attempt
-    let res = await fetch(input, {
+    const res = await fetch(input, {
         ...init,
         credentials: "include", 
     });
