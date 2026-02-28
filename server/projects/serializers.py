@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 
 from .models import Project, Tag, Issue, Collaborator
 from accounts.models import User
@@ -106,6 +107,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 		model = Project
 		fields = ["title", "description", "github_url", "tags"]
 
+	@transaction.atomic
 	def create(self, validated_data):
 		tag_list = validated_data.pop("tags", [])
 		user = self.context["request"].user
@@ -131,6 +133,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 		model = Project
 		fields = ["title", "description", "github_url", "tags"]
 
+	@transaction.atomic
 	def update(self, instance, validated_data):
 		tag_list = validated_data.pop("tags", None)
 

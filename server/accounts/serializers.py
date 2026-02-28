@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth import authenticate
 from django.conf import settings
@@ -64,6 +65,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This NU email is already registered.")
         return value
 
+    @transaction.atomic
     def create(self, validated_data):
         skill_list = validated_data.pop("skills", [])
         password = validated_data.pop("password")
@@ -238,6 +240,7 @@ class UserUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError("No data provided to update.")
         return attrs
 
+    @transaction.atomic
     def update(self, instance: User, validated_data):
         full_name = validated_data.get("full_name")
         bio = validated_data.get("bio")

@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from django.db import transaction
 
 from .models import Comment, Like
 from .serializers import CommentCreateSerializer, CommentSerializer
@@ -30,7 +31,6 @@ class CommentDeleteView(generics.DestroyAPIView):
 			)
 
 		user = request.user
-		# Allow deletion if user is the comment author OR the project owner
 		is_comment_author = comment.user == user
 		is_project_owner = comment.project.user == user
 
@@ -68,27 +68,30 @@ class ToggleProjectLikeView(generics.GenericAPIView):
 			)
 
 		user = request.user
-		like = Like.objects.filter(user=user, project__project_id=project_id).first()
 
-		if like:
-			like.delete()
-			return Response(
-				{"detail": "Project unliked.", "liked": False},
-				status=status.HTTP_200_OK,
-			)
+		with transaction.atomic():
+			like = Like.objects.filter(user=user, project__project_id=project_id).first()
 
-		# Ensure project exists before creating like
-		from projects.models import Project
+			if like:
+				like.delete()
+				return Response(
+					{"detail": "Project unliked.", "liked": False},
+					status=status.HTTP_200_OK,
+				)
 
-		try:
-			project = Project.objects.get(project_id=project_id)
-		except Project.DoesNotExist:
-			return Response(
-				{"detail": "Project not found."},
-				status=status.HTTP_404_NOT_FOUND,
-			)
+			# Ensure project exists before creating like
+			from projects.models import Project
 
-		Like.objects.create(user=user, project=project)
+			try:
+				project = Project.objects.get(project_id=project_id)
+			except Project.DoesNotExist:
+				return Response(
+					{"detail": "Project not found."},
+					status=status.HTTP_404_NOT_FOUND,
+				)
+
+			Like.objects.create(user=user, project=project)
+
 		return Response(
 			{"detail": "Project liked.", "liked": True},
 			status=status.HTTP_201_CREATED,
