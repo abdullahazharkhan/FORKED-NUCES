@@ -160,15 +160,15 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-# Email — uses Gmail SMTP with App Password in production
+# Email — uses Outlook SMTP in production
 # For local dev without email, set EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend in .env
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
-EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST = "smtp-mail.outlook.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER", "no-reply@nu.edu.pk")
+DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER", "forked-nuces@outlook.com")
 FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "http://localhost:3000")
 
 # CORS settings
