@@ -1,4 +1,6 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:8000'
+// All auth calls go through Next.js API route proxies (server-side → EC2).
+// This avoids browser mixed-content blocks (HTTPS Vercel → HTTP EC2).
+// The proxy routes live in src/app/api/auth/*/route.ts and use DRF_API_BASE_URL.
 
 export async function registerUser(payload: {
   full_name: string
@@ -7,9 +9,8 @@ export async function registerUser(payload: {
 }) {
   let res: Response
   try {
-    res = await fetch(`${API_BASE}/api/auth/register/`, {
+    res = await fetch(`/api/auth/register/`, {
       method: 'POST',
-      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -29,12 +30,7 @@ export async function registerUser(payload: {
   }
 
   if (!res.ok) {
-    const err = {
-      status: res.status,
-      statusText: res.statusText,
-      body: data,
-    }
-    throw err
+    throw { status: res.status, statusText: res.statusText, body: data }
   }
 
   return data
@@ -43,9 +39,8 @@ export async function registerUser(payload: {
 export async function verifyEmail(payload: { token: string; nu_email: string }) {
   let res: Response
   try {
-    res = await fetch(`${API_BASE}/api/auth/verify-email/`, {
+    res = await fetch(`/api/auth/verify-email/`, {
       method: 'POST',
-      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -65,12 +60,7 @@ export async function verifyEmail(payload: { token: string; nu_email: string }) 
   }
 
   if (!res.ok) {
-    const err = {
-      status: res.status,
-      statusText: res.statusText,
-      body: data,
-    }
-    throw err
+    throw { status: res.status, statusText: res.statusText, body: data }
   }
 
   return data
@@ -79,9 +69,8 @@ export async function verifyEmail(payload: { token: string; nu_email: string }) 
 export async function resendVerificationEmail(payload: { nu_email: string }) {
   let res: Response
   try {
-    res = await fetch(`${API_BASE}/api/auth/resend-verification-email/`, {
+    res = await fetch(`/api/auth/resend-verification-email/`, {
       method: 'POST',
-      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -101,12 +90,7 @@ export async function resendVerificationEmail(payload: { nu_email: string }) {
   }
 
   if (!res.ok) {
-    const err = {
-      status: res.status,
-      statusText: res.statusText,
-      body: data,
-    }
-    throw err
+    throw { status: res.status, statusText: res.statusText, body: data }
   }
 
   return data
