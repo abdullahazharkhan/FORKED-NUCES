@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const PROTECTED_PATHS = ["/platform", "/profile"];
 const AUTH_PAGES = ["/login", "/get-started"];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
     const isProtected = PROTECTED_PATHS.some((path) =>
