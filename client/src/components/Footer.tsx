@@ -11,10 +11,12 @@ const Footer = () => {
                     <p>
                         Contact us at {" "}
                         <Link href="mailto:k230691@nu.edu.pk" className='hover:text-white/80 duration-200 underline'>k230691@nu.edu.pk</Link>
+                        <Link href="mailto:k230667@nu.edu.pk" className='hover:text-white/80 duration-200 underline'>k230667@nu.edu.pk</Link>
+                        <Link href="mailto:k230544@nu.edu.pk" className='hover:text-white/80 duration-200 underline'>k230544@nu.edu.pk</Link>
                     </p>
                 </div>
                 <div className='text-light text-sm'>
-                    © 2025 FORKED NUCES. All rights reserved.
+                    © 2026 FORKED NUCES. All rights reserved.
                 </div>
             </div>
 

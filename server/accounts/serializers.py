@@ -3,7 +3,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth import authenticate
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.urls import reverse
 
 from .models import User, VerificationToken, Skill
@@ -128,30 +128,225 @@ class EmailVerificationSerializer(serializers.Serializer):
 
         return user
 
+
 def send_verification_email(user, token_obj, request=None):
     frontend_base = getattr(settings, "FRONTEND_BASE_URL", "").rstrip("/")
-    
-    # frontend path to verify email
-    verify_path = "/verify-email"
-    
-    verify_url = f"{frontend_base}{verify_path}?token={token_obj.token}&nu_email={user.nu_email}"
-    
-    subject = "Verify your NU email"
-    message = (
+    verify_url = f"{frontend_base}/verify-email?token={token_obj.token}&nu_email={user.nu_email}"
+    first_name = (user.full_name or "there").split()[0]
+
+    subject = "Verify your FORKED NUCES account"
+
+    # ── Plain-text fallback ───────────────────────────────────────────────────
+    plain_text = (
         f"Hi {user.full_name or 'there'},\n\n"
-        f"Please verify your email by clicking the link below:\n"
-        f"{verify_url}\n\n"
-        "If you did not sign up, you can ignore this email."
+        f"Thank you for signing up on FORKED NUCES — a student-driven collaboration "
+        f"platform where FASTians share projects, find teammates, and build better software together.\n\n"
+        f"Please verify your NU email address by visiting:\n{verify_url}\n\n"
+        f"This link expires in 24 hours. If it expires, you can request a new one from the login page.\n\n"
+        f"If you did not create an account on FORKED NUCES, please ignore this email.\n\n"
+        f"FASTians Build Better Together.\n"
+        f"-- The FORKED NUCES Team\n"
+        f"   Abdul Rafay Mughal    k230667@nu.edu.pk\n"
+        f"   Abdullah Azhar Khan   k230691@nu.edu.pk\n"
+        f"   Muhammad Awais        k230544@nu.edu.pk"
     )
-    
-    send_mail(
-        subject,
-        message,
-        getattr(settings, "DEFAULT_FROM_EMAIL", None),
-        [user.nu_email],
-        fail_silently=False,
+
+    # ── HTML email ────────────────────────────────────────────────────────────
+    html_body = (
+        "<!DOCTYPE html>"
+        '<html lang="en">'
+        "<head>"
+        '<meta charset="UTF-8" />'
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0" />'
+        "<title>Verify your FORKED NUCES account</title>"
+        '<link rel="preconnect" href="https://fonts.googleapis.com" />'
+        '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />'
+        '<link href="https://fonts.googleapis.com/css2?family=Jaro&family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet" />'
+        "</head>"
+        '<body style="margin:0;padding:0;background-color:#E8EAEC;font-family:Poppins,Arial,sans-serif;">'
+
+        # Outer wrapper
+        '<table width="100%" cellpadding="0" cellspacing="0" border="0"'
+        ' style="background-color:#E8EAEC;padding:40px 16px;">'
+        "<tr><td align=\"center\">"
+
+        # Card
+        '<table width="600" cellpadding="0" cellspacing="0" border="0"'
+        ' style="max-width:600px;width:100%;background-color:#ffffff;'
+        "border-radius:16px;overflow:hidden;"
+        'box-shadow:0 8px 40px rgba(111,67,254,0.15);">'
+
+        # ── HERO HEADER ──
+        "<tr>"
+        '<td style="background-color:#6F43FE;padding:48px 40px 40px;text-align:center;">'
+        '<h1 style="margin:0;font-family:Jaro,Arial,sans-serif;font-size:62px;'
+        'font-weight:700;color:#ffffff;line-height:1;letter-spacing:-1px;">'
+        "FORK&#39;D NUCES"
+        "</h1>"
+        '<p style="margin:10px 0 0;font-size:14px;font-weight:500;'
+        'color:rgba(255,255,255,0.80);letter-spacing:0.2px;">'
+        "FASTians Build Better Together."
+        "</p>"
+        "</td>"
+        "</tr>"
+
+        # ── VERIFICATION LABEL ──
+        "<tr>"
+        '<td style="background-color:#f9f7ff;padding:14px 48px;'
+        'border-bottom:2px solid #EDE8FF;">'
+        '<p style="margin:0;font-size:11px;font-weight:700;color:#6F43FE;'
+        'text-transform:uppercase;letter-spacing:2px;text-align:center;">'
+        "&#9993; &nbsp; Email Verification"
+        "</p>"
+        "</td>"
+        "</tr>"
+
+        # ── BODY ──
+        "<tr>"
+        '<td style="padding:40px 48px 32px;">'
+
+        # Greeting
+        f'<p style="margin:0 0 20px;font-size:22px;font-weight:700;color:#111111;">Hi, {first_name}!</p>'
+
+        # Description
+        '<p style="margin:0 0 12px;font-size:15px;line-height:1.75;color:#444444;">'
+        "Thank you for signing up on "
+        '<span style="color:#6F43FE;font-weight:700;">FORKED NUCES</span>'
+        " &mdash; a student-driven collaboration platform where FASTians share projects,"
+        " find teammates, and help each other build better software."
+        "</p>"
+        '<p style="margin:0 0 28px;font-size:15px;line-height:1.75;color:#444444;">'
+        "To activate your account, please verify your NU email address by clicking the button below."
+        "</p>"
+
+        # CTA Button
+        '<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px;">'
+        "<tr>"
+        '<td align="center" style="background-color:#C3FF00;border-radius:10px;">'
+        f'<a href="{verify_url}"'
+        ' style="display:inline-block;padding:15px 44px;'
+        "font-family:Poppins,Arial,sans-serif;"
+        "font-size:15px;font-weight:900;color:#000000;"
+        "text-decoration:none;font-style:italic;"
+        'text-transform:uppercase;letter-spacing:0.2px;">'
+        "Verify My Email"
+        "</a>"
+        "</td>"
+        "</tr>"
+        "</table>"
+
+        # Expiry note
+        '<table cellpadding="0" cellspacing="0" border="0" width="100%"'
+        ' style="background-color:#f9f7ff;border-radius:8px;'
+        'border-left:3px solid #6F43FE;margin-bottom:28px;">'
+        "<tr>"
+        '<td style="padding:12px 16px;">'
+        '<p style="margin:0;font-size:13px;color:#555555;line-height:1.6;">'
+        '<strong style="color:#6F43FE;">Note:</strong>'
+        ' This verification link expires in <strong style="color:#111111;">24 hours.</strong>'
+        " If it expires, you can request a new one from the login page."
+        "</p>"
+        "</td>"
+        "</tr>"
+        "</table>"
+
+        # Divider
+        '<hr style="border:none;border-top:1px solid #eeeeee;margin:0 0 20px;" />'
+
+        # Manual link
+        '<p style="margin:0 0 6px;font-size:12px;color:#999999;">'
+        "Button not working? Copy and paste this link into your browser:"
+        "</p>"
+        '<p style="margin:0 0 24px;font-size:11px;'
+        "background-color:#f5f5f5;border-radius:6px;"
+        "padding:12px 14px;word-break:break-all;"
+        'border:1px solid #eeeeee;color:#6F43FE;font-family:Courier New,monospace;">'
+        f"{verify_url}"
+        "</p>"
+
+        # Security note
+        '<p style="margin:0;font-size:12px;color:#bbbbbb;line-height:1.7;">'
+        "If you did not create an account on FORKED NUCES, please ignore this email. Your address will not be used."
+        "</p>"
+
+        "</td>"
+        "</tr>"
+
+        # ── FOOTER ──
+        "<tr>"
+        '<td style="background-color:#000000;padding:36px 48px 0;">'
+
+        # Contact + copyright row
+        '<table cellpadding="0" cellspacing="0" border="0" width="100%">'
+        "<tr>"
+        '<td style="vertical-align:top;padding-bottom:24px;">'
+        '<p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#ffffff;">Contact Us</p>'
+        '<p style="margin:0 0 8px;font-size:12px;color:#888888;">Have feedback or recommendations?</p>'
+
+        # Abdul Rafay Mughal
+        '<p style="margin:0 0 4px;font-size:12px;color:#cccccc;">'
+        "Abdul Rafay Mughal &nbsp;&mdash;&nbsp;"
+        '<a href="mailto:k230667@nu.edu.pk" style="color:#C3FF00;text-decoration:none;font-weight:600;">'
+        "k230667@nu.edu.pk</a>"
+        "</p>"
+
+        # Abdullah Azhar Khan
+        '<p style="margin:0 0 4px;font-size:12px;color:#cccccc;">'
+        "Abdullah Azhar Khan &nbsp;&mdash;&nbsp;"
+        '<a href="mailto:k230691@nu.edu.pk" style="color:#C3FF00;text-decoration:none;font-weight:600;">'
+        "k230691@nu.edu.pk</a>"
+        "</p>"
+
+        # Muhammad Awais
+        '<p style="margin:0;font-size:12px;color:#cccccc;">'
+        "Muhammad Awais &nbsp;&mdash;&nbsp;"
+        '<a href="mailto:k230544@nu.edu.pk" style="color:#C3FF00;text-decoration:none;font-weight:600;">'
+        "k230544@nu.edu.pk</a>"
+        "</p>"
+
+        "</td>"
+        '<td style="text-align:right;vertical-align:top;padding-bottom:24px;white-space:nowrap;padding-left:24px;">'
+        '<p style="margin:0;font-size:11px;color:#555555;line-height:1.8;">'
+        "&copy; 2026 FORKED NUCES.<br/>All rights reserved."
+        "</p>"
+        "</td>"
+        "</tr>"
+        "</table>"
+
+        # Big footer brand
+        '<table cellpadding="0" cellspacing="0" border="0" width="100%">'
+        "<tr>"
+        '<td style="padding:28px 0;text-align:center;border-top:1px solid #1e1e1e;">'
+        '<h2 style="margin:0 0 6px;font-family:Jaro,Arial,sans-serif;'
+        "font-size:50px;font-weight:700;color:#ffffff;"
+        'line-height:1;letter-spacing:-0.5px;">'
+        "FORK&#39;D NUCES"
+        "</h2>"
+        '<p style="margin:0;font-size:13px;color:#666666;">FASTians Build Better Together.</p>'
+        "</td>"
+        "</tr>"
+        "</table>"
+
+        "</td>"
+        "</tr>"
+
+        "</table>"
+        "</td></tr>"
+        "</table>"
+        "</body>"
+        "</html>"
     )
-    
+
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=plain_text,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+        to=[user.nu_email],
+    )
+    msg.attach_alternative(html_body, "text/html")
+    msg.send(fail_silently=False)
+
+
 class ResendVerificationSerializer(serializers.Serializer):
     nu_email = serializers.EmailField()
 
