@@ -54,7 +54,7 @@ User's Browser (HTTPS)
 │  │  ┌──────────────────┐  ┌──────────────────┐    │  │
 │  │  │  db              │  │  redis           │    │  │
 │  │  │  PostgreSQL 16   │  │  Redis 7         │    │  │
-│  │  │  Port 5432       │  │  Port 6379       │    │  │
+        db and redis ports are internal only
 │  │  │  (internal only) │  │  (internal only) │    │  │
 │  │  └──────────────────┘  └──────────────────┘    │  │
 │  └────────────────────────────────────────────────┘  │
@@ -225,17 +225,12 @@ User's Browser (HTTPS)
 | `user_activity_view` | Per-user contribution stats |
 | `recent_activity_view` | `UNION ALL` of recent projects + comments, sorted by date |
 
-### Database Triggers
-| Trigger | Event | Action |
-|---|---|---|
-| `trg_tag_update_project_timestamp` | Tag change | Updates project `updated_at` |
-| `trg_issue_update_project_timestamp` | Issue change | Updates project `updated_at` |
-| `trg_like_update_project_timestamp` | Like change | Updates project `updated_at` |
-| `trg_comment_update_project_timestamp` | Comment change | Updates project `updated_at` |
-| `trg_skill_update_user_timestamp` | Skill change | Updates user `updated_at` |
-| `trg_audit_project_changes` | Project change | Logs to `audit_project_log` |
-| `prevent_self_like` | Like insert | Blocks users from liking own projects |
+### Database Function
+| Function | Purpose |
+|---|---|
+| `get_user_network_projects(user_id)` | Finds projects from nearby collaborators and users with similar liked projects for network recommendations |
 
+> Self-likes are blocked in the API layer before a `Like` record is created.
 ---
 
 ## 🔐 Security
@@ -287,9 +282,7 @@ psql -U postgres -c "CREATE DATABASE forked_nuces;"
 # Apply Django migrations (creates all tables)
 python manage.py migrate
 
-# Load PostgreSQL views and triggers
-psql -U postgres -d forked_nuces -f sql/views.sql
-psql -U postgres -d forked_nuces -f sql/triggers.sql
+# PostgreSQL views/functions are created by Django migration 0007_db_views.py.
 
 # (Optional) Create a superuser for Django admin
 python manage.py createsuperuser
@@ -372,7 +365,7 @@ FORKED-NUCES/
 │   ├── projects/                  # Projects, issues, collaborators
 │   ├── interactions/              # Likes, comments
 │   ├── drf_backend/               # Settings, root URLs, WSGI
-│   └── sql/                       # PostgreSQL views and triggers
+│   └── projects/migrations/0007_db_views.py # PostgreSQL views/function
 │
 └── docker-compose.yml             # 3-container production stack
 ```

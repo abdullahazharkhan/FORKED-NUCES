@@ -90,6 +90,12 @@ class ToggleProjectLikeView(generics.GenericAPIView):
 					status=status.HTTP_404_NOT_FOUND,
 				)
 
+			if project.user_id == user.user_id:
+				return Response(
+					{"detail": "You cannot like your own project."},
+					status=status.HTTP_400_BAD_REQUEST,
+				)
+
 			Like.objects.create(user=user, project=project)
 
 		return Response(

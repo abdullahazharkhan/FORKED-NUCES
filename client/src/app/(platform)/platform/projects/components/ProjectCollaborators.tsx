@@ -100,7 +100,6 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                             {/* Avatar */}
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primarypurple/10 text-xs font-semibold text-primarypurple">
                                 {collab.avatar_url ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                         src={collab.avatar_url}
                                         alt={collab.full_name}
