@@ -2,14 +2,46 @@ from rest_framework import serializers
 from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.password_validation import validate_password
 from django.conf import settings
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import EmailMultiAlternatives
+from django.utils.encoding import force_str
+from django.utils.html import escape
+from django.utils.http import urlsafe_base64_decode
 from django.urls import reverse
+from urllib.parse import urlencode
 
+from drf_backend.fields import EarlyBoundedListField
 from .models import User, VerificationToken, Skill
+from .security import (
+    DELETED_USER_FULL_NAME,
+    SESSION_VERSION_CLAIM,
+    generate_deleted_user_email,
+    has_current_session_version,
+    invalidate_user_sessions,
+    revoke_user_refresh_tokens,
+    scrub_deleted_user_notification_messages,
+    scrub_deleted_user_report_snapshots,
+)
 from .utils import generate_random_avatar_url
 
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer,
+    TokenRefreshSerializer,
+)
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework.exceptions import AuthenticationFailed
+
+
+MAX_USER_SKILLS = 50
+MAX_USER_BIO_LENGTH = 2_000
+MAX_PASSWORD_INPUT_LENGTH = 256
+MAX_AUTH_TOKEN_INPUT_LENGTH = 4_096
+MAX_UID_INPUT_LENGTH = 128
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,28 +74,78 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
+class UserDirectoryQuerySerializer(serializers.Serializer):
+    ORDER_NAME = "name"
+    ORDER_NEWEST = "newest"
+    ORDER_OLDEST = "oldest"
+
+    search = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        trim_whitespace=True,
+        max_length=255,
+    )
+    skill = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        trim_whitespace=True,
+        max_length=100,
+    )
+    ordering = serializers.ChoiceField(
+        choices=(ORDER_NAME, ORDER_NEWEST, ORDER_OLDEST),
+        default=ORDER_NAME,
+    )
+    # Backward-compatible alias for the original email-only search endpoint.
+    nu_email = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        trim_whitespace=True,
+        max_length=255,
+    )
+
+    def validate(self, attrs):
+        if not attrs.get("search") and attrs.get("nu_email"):
+            attrs["search"] = attrs["nu_email"]
+        return attrs
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
-        write_only=True, min_length=8, style={"input_type": "password"}
+        write_only=True,
+        min_length=8,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
     )
-    skills = serializers.ListField(
+    skills = EarlyBoundedListField(
         child=serializers.CharField(max_length=100),
         allow_empty=True,
         write_only=True,
         required=False,
+        max_length=MAX_USER_SKILLS,
     )
 
     class Meta:
         model = User
         fields = ["full_name", "nu_email", "password", "skills"]
+        extra_kwargs = {"nu_email": {"validators": []}}
 
     def validate_nu_email(self, value):
-        value = value.lower()
-        if not value.endswith("@nu.edu.pk"):
+        value = value.strip().lower()
+        _, separator, domain = value.rpartition("@")
+        if not separator or domain != "nu.edu.pk":
             raise serializers.ValidationError("Only NU email addresses are allowed.")
-        if User.objects.filter(nu_email=value).exists():
-            raise serializers.ValidationError("This NU email is already registered.")
         return value
+
+    def validate(self, attrs):
+        candidate_user = User(
+            nu_email=attrs.get("nu_email", ""),
+            full_name=attrs.get("full_name", ""),
+        )
+        try:
+            validate_password(attrs.get("password"), user=candidate_user)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": list(exc.messages)}) from exc
+        return attrs
 
     @transaction.atomic
     def create(self, validated_data):
@@ -81,16 +163,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
         token_obj = VerificationToken.create_for_user(user)
-
-        request = self.context.get("request")
-        send_verification_email(user, token_obj, request=request)
-
         user._verification_token = token_obj
         return user
 
 
 class EmailVerificationSerializer(serializers.Serializer):
-    token = serializers.CharField()
+    token = serializers.CharField(max_length=MAX_AUTH_TOKEN_INPUT_LENGTH)
     nu_email = serializers.EmailField()
 
     def validate(self, attrs):
@@ -132,8 +210,11 @@ class EmailVerificationSerializer(serializers.Serializer):
 
 def send_verification_email(user, token_obj, request=None):
     frontend_base = getattr(settings, "FRONTEND_BASE_URL", "http://localhost:3000").rstrip("/")
-    verify_url = f"{frontend_base}/verify-email?token={token_obj.token}&nu_email={user.nu_email}"
+    query = urlencode({"token": token_obj.token, "nu_email": user.nu_email})
+    verify_url = f"{frontend_base}/verify-email?{query}"
     display_name = user.full_name or "there"
+    html_display_name = escape(display_name)
+    html_verify_url = escape(verify_url)
 
     subject = "Verify your FORKED NUCES account"
 
@@ -193,7 +274,7 @@ def send_verification_email(user, token_obj, request=None):
         # BODY
         "<tr>"
         '<td style="padding:40px 48px 32px;">'
-        f'<p style="margin:0 0 20px;font-size:22px;font-weight:700;color:#111111;">Hi, {display_name}!</p>'
+        f'<p style="margin:0 0 20px;font-size:22px;font-weight:700;color:#111111;">Hi, {html_display_name}!</p>'
         '<p style="margin:0 0 12px;font-size:15px;line-height:1.75;color:#444444;">'
         "Thank you for signing up on "
         '<span style="color:#6F43FE;font-weight:700;">FORKED NUCES</span>'
@@ -207,7 +288,7 @@ def send_verification_email(user, token_obj, request=None):
         '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 28px;">'
         "<tr>"
         '<td align="center" style="background-color:#6F43FE;border-radius:10px;">'
-        f'<a href="{verify_url}"'
+        f'<a href="{html_verify_url}"'
         ' style="display:block;padding:16px 40px;'
         "font-family:Poppins,Arial,sans-serif;"
         "font-size:15px;font-weight:700;color:#ffffff;"
@@ -234,7 +315,7 @@ def send_verification_email(user, token_obj, request=None):
         "background-color:#f9f7ff;border-radius:6px;"
         "padding:12px 14px;word-break:break-all;"
         'border:1px solid #EDE8FF;color:#6F43FE;font-family:Courier New,monospace;">'
-        f"{verify_url}"
+        f"{html_verify_url}"
         "</p>"
         # Disclaimer — darker for accessibility
         '<p style="margin:0;font-size:12px;color:#666666;line-height:1.7;">'
@@ -283,34 +364,38 @@ def send_verification_email(user, token_obj, request=None):
 class ResendVerificationSerializer(serializers.Serializer):
     nu_email = serializers.EmailField()
 
+    def validate_nu_email(self, value):
+        value = value.strip().lower()
+        _, separator, domain = value.rpartition("@")
+        if not separator or domain != "nu.edu.pk":
+            raise serializers.ValidationError("Only NU email addresses are allowed.")
+        return value
+
     def validate(self, attrs):
-        nu_email = attrs.get("nu_email").lower()
-        try:
-            user = User.objects.get(nu_email__iexact=nu_email)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("No user with this NU email found.")
-
-        if user.is_email_verified:
-            raise serializers.ValidationError("This email is already verified.")
-
-        attrs["user"] = user
+        attrs["user"] = User.objects.filter(
+            nu_email=attrs["nu_email"],
+            is_active=True,
+            is_email_verified=False,
+        ).first()
         return attrs
 
     def save(self, **kwargs):
         user = self.validated_data["user"]
-
-        # Optionally invalidate previous tokens for this user
-        VerificationToken.objects.filter(user=user, used_at__isnull=True).delete()
-
+        if user is None:
+            return None
         token_obj = VerificationToken.create_for_user(user)
-        request = self.context.get("request")
-        send_verification_email(user, token_obj, request=request)
+        user._verification_token = token_obj
         return user
 
 
 class LoginSerializer(serializers.Serializer):
     nu_email = serializers.EmailField()
-    password = serializers.CharField(write_only=True, style={"input_type": "password"})
+    password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
+    )
 
     def validate(self, attrs):
         nu_email = attrs.get("nu_email").lower()
@@ -332,6 +417,7 @@ class LoginSerializer(serializers.Serializer):
     def create(self, validated_data):
         user = validated_data["user"]
         refresh = RefreshToken.for_user(user)
+        refresh[SESSION_VERSION_CLAIM] = user.session_version
         return {
             "access": str(refresh.access_token),
             "refresh": str(refresh),
@@ -339,8 +425,317 @@ class LoginSerializer(serializers.Serializer):
         }
 
 
+class VerifiedTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Keep the standard SimpleJWT contract while enforcing email verification."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields[self.username_field] = serializers.EmailField(write_only=True)
+        self.fields["password"] = serializers.CharField(
+            write_only=True,
+            trim_whitespace=False,
+            max_length=MAX_PASSWORD_INPUT_LENGTH,
+            style={"input_type": "password"},
+        )
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token[SESSION_VERSION_CLAIM] = user.session_version
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        if not self.user.is_email_verified:
+            raise AuthenticationFailed("Email is not verified.")
+        return data
+
+
+class VerifiedTokenRefreshSerializer(TokenRefreshSerializer):
+    """Reject refresh tokens whose account is inactive or still unverified."""
+
+    refresh = serializers.CharField(max_length=MAX_AUTH_TOKEN_INPUT_LENGTH)
+
+    def validate(self, attrs):
+        refresh = self.token_class(attrs["refresh"])
+        user_id = refresh.payload.get(api_settings.USER_ID_CLAIM)
+        if user_id is None:
+            raise AuthenticationFailed(
+                "No active account found for the given token.",
+                code="no_active_account",
+            )
+
+        try:
+            user = User.objects.get(**{api_settings.USER_ID_FIELD: user_id})
+        except (User.DoesNotExist, TypeError, ValueError) as exc:
+            raise AuthenticationFailed(
+                "No active account found for the given token.",
+                code="no_active_account",
+            ) from exc
+
+        if not user.is_active:
+            raise AuthenticationFailed(
+                "No active account found for the given token.",
+                code="no_active_account",
+            )
+        if not user.is_email_verified:
+            raise AuthenticationFailed(
+                "Email is not verified.",
+                code="email_not_verified",
+            )
+        if not has_current_session_version(refresh, user):
+            raise AuthenticationFailed(
+                "This session has been revoked. Please sign in again.",
+                code="session_revoked",
+            )
+
+        return super().validate(attrs)
+
+
+def _validate_new_password(password, user):
+    try:
+        validate_password(password, user=user)
+    except DjangoValidationError as exc:
+        raise serializers.ValidationError(
+            {"new_password": list(exc.messages)}
+        ) from exc
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    nu_email = serializers.EmailField()
+
+    def validate_nu_email(self, value):
+        value = value.strip().lower()
+        _, separator, domain = value.rpartition("@")
+        if not separator or domain != "nu.edu.pk":
+            raise serializers.ValidationError("Only NU email addresses are allowed.")
+        return value
+
+    def get_user(self):
+        return (
+            User.objects.filter(
+                nu_email__iexact=self.validated_data["nu_email"],
+                is_active=True,
+                is_email_verified=True,
+            )
+            .only(
+                "user_id",
+                "nu_email",
+                "full_name",
+                "password",
+                "last_login",
+            )
+            .first()
+        )
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(max_length=MAX_UID_INPUT_LENGTH)
+    token = serializers.CharField(max_length=MAX_AUTH_TOKEN_INPUT_LENGTH)
+    new_password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
+    )
+    confirm_password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
+    )
+
+    default_error_messages = {
+        "invalid_link": "Invalid or expired password reset link.",
+        "password_mismatch": "Passwords do not match.",
+    }
+
+    def _get_user(self, uid):
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid))
+            return User.objects.filter(user_id=user_id, is_active=True).first()
+        except (TypeError, ValueError, OverflowError, UnicodeDecodeError):
+            return None
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError(
+                {"confirm_password": [self.error_messages["password_mismatch"]]}
+            )
+
+        user = self._get_user(attrs["uid"])
+        if user is None or not default_token_generator.check_token(
+            user, attrs["token"]
+        ):
+            raise serializers.ValidationError(
+                {"token": [self.error_messages["invalid_link"]]}
+            )
+
+        _validate_new_password(attrs["new_password"], user)
+        attrs["user_id"] = user.user_id
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        user = (
+            User.objects.select_for_update()
+            .filter(user_id=validated_data["user_id"], is_active=True)
+            .first()
+        )
+        if user is None or not default_token_generator.check_token(
+            user, validated_data["token"]
+        ):
+            raise serializers.ValidationError(
+                {"token": [self.error_messages["invalid_link"]]}
+            )
+
+        _validate_new_password(validated_data["new_password"], user)
+        user.set_password(validated_data["new_password"])
+        user.password_changed_at = timezone.now()
+        user.save(update_fields=["password", "password_changed_at", "updated_at"])
+        return invalidate_user_sessions(user)
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    current_password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
+    )
+    new_password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
+    )
+    confirm_password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
+    )
+
+    default_error_messages = {
+        "incorrect_password": "Current password is incorrect.",
+        "password_mismatch": "Passwords do not match.",
+    }
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        if not user.check_password(attrs["current_password"]):
+            raise serializers.ValidationError(
+                {"current_password": [self.error_messages["incorrect_password"]]}
+            )
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError(
+                {"confirm_password": [self.error_messages["password_mismatch"]]}
+            )
+
+        _validate_new_password(attrs["new_password"], user)
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        request_user = self.context["request"].user
+        user = User.objects.select_for_update().get(pk=request_user.pk)
+        if not user.check_password(validated_data["current_password"]):
+            raise serializers.ValidationError(
+                {"current_password": [self.error_messages["incorrect_password"]]}
+            )
+
+        _validate_new_password(validated_data["new_password"], user)
+        user.set_password(validated_data["new_password"])
+        user.password_changed_at = timezone.now()
+        user.save(update_fields=["password", "password_changed_at", "updated_at"])
+        return invalidate_user_sessions(user)
+
+
+class AccountDeletionSerializer(serializers.Serializer):
+    current_password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
+    )
+    confirmation = serializers.CharField(trim_whitespace=False, max_length=16)
+
+    default_error_messages = {
+        "incorrect_password": "Current password is incorrect.",
+        "invalid_confirmation": 'Type "DELETE" exactly to confirm account deletion.',
+    }
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        if attrs["confirmation"] != "DELETE":
+            raise serializers.ValidationError(
+                {"confirmation": [self.error_messages["invalid_confirmation"]]}
+            )
+        if not user.check_password(attrs["current_password"]):
+            raise serializers.ValidationError(
+                {"current_password": [self.error_messages["incorrect_password"]]}
+            )
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        request_user = self.context["request"].user
+        user = User.objects.select_for_update().get(pk=request_user.pk)
+        if not user.check_password(validated_data["current_password"]):
+            raise serializers.ValidationError(
+                {"current_password": [self.error_messages["incorrect_password"]]}
+            )
+
+        original_full_name = user.full_name
+        deleted_email = generate_deleted_user_email()
+        while User.objects.exclude(pk=user.pk).filter(nu_email=deleted_email).exists():
+            deleted_email = generate_deleted_user_email()
+
+        user.nu_email = deleted_email
+        user.full_name = DELETED_USER_FULL_NAME
+        user.github_username = None
+        user.is_github_connected = False
+        user.avatar_url = None
+        user.bio = None
+        user.is_active = False
+        user.is_email_verified = False
+        user.is_staff = False
+        user.is_superuser = False
+        user.last_login = None
+        user.set_unusable_password()
+        user.password_changed_at = timezone.now()
+        user.session_version += 1
+        user.save(
+            update_fields=[
+                "nu_email",
+                "full_name",
+                "github_username",
+                "is_github_connected",
+                "avatar_url",
+                "bio",
+                "is_active",
+                "is_email_verified",
+                "is_staff",
+                "is_superuser",
+                "last_login",
+                "password",
+                "password_changed_at",
+                "session_version",
+                "updated_at",
+            ]
+        )
+        Skill.objects.filter(user=user).delete()
+        VerificationToken.objects.filter(user=user).delete()
+        user.groups.clear()
+        user.user_permissions.clear()
+        scrub_deleted_user_notification_messages(user, original_full_name)
+        scrub_deleted_user_report_snapshots(user)
+        revoke_user_refresh_tokens(user)
+        return user
+
+
 class LogoutSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
+    refresh = serializers.CharField(max_length=MAX_AUTH_TOKEN_INPUT_LENGTH)
 
     def validate(self, attrs):
         self.token = attrs.get("refresh")
@@ -350,17 +745,23 @@ class LogoutSerializer(serializers.Serializer):
         try:
             token = RefreshToken(self.token)
             token.blacklist()
-        except Exception:
+        except TokenError:
             raise serializers.ValidationError("Token is invalid or has already been blacklisted.")
 
 
 class UserUpdateSerializer(serializers.Serializer):
     full_name = serializers.CharField(required=False, allow_blank=False, max_length=255)
-    bio = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    skills = serializers.ListField(
+    bio = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        max_length=MAX_USER_BIO_LENGTH,
+    )
+    skills = EarlyBoundedListField(
         child=serializers.CharField(max_length=100),
         required=False,
         allow_empty=True,
+        max_length=MAX_USER_SKILLS,
     )
 
     def validate(self, attrs):

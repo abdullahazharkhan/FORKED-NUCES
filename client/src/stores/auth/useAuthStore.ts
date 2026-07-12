@@ -1,7 +1,6 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 export interface UserType {
     user_id: number;
@@ -17,35 +16,33 @@ export interface UserType {
     updated_at: string;
 }
 
+export type SessionStatus = "idle" | "loading" | "authenticated" | "unauthenticated" | "error";
+
 interface AuthState {
     user: UserType | null;
+    sessionStatus: SessionStatus;
 
     setUser: (userData: UserType) => void;
     updateUser: (partial: Partial<UserType>) => void;
     clearUser: () => void;
+    setSessionStatus: (status: SessionStatus) => void;
     getUser: () => UserType | null;
 }
 
-export const useAuthStore = create<AuthState>()(
-    persist(
-        (set, get) => ({
-            user: null,
+export const useAuthStore = create<AuthState>()((set, get) => ({
+    user: null,
+    sessionStatus: "idle",
 
-            setUser: (userData) => set({ user: userData }),
+    setUser: (userData) => set({ user: userData, sessionStatus: "authenticated" }),
 
-            updateUser: (partial) =>
-                set((state) =>
-                    state.user
-                        ? { user: { ...state.user, ...partial } }
-                        : state
-                ),
+    updateUser: (partial) =>
+        set((state) =>
+            state.user
+                ? { user: { ...state.user, ...partial } }
+                : state
+        ),
 
-            clearUser: () => set({ user: null }),
-
-            getUser: () => get().user,
-        }),
-        {
-            name: "auth-user-storage", // stored in localStorage
-        }
-    )
-);
+    clearUser: () => set({ user: null, sessionStatus: "unauthenticated" }),
+    setSessionStatus: (sessionStatus) => set({ sessionStatus }),
+    getUser: () => get().user,
+}));

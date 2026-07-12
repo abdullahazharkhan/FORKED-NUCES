@@ -7,12 +7,16 @@ from django.contrib.auth.models import (
     BaseUserManager,
 )
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db import models
+from django.db.models.functions import Lower, Trim
 from django.utils import timezone
+from django.utils.crypto import salted_hmac
 import secrets
 
 def validate_nu_email(value):
-    if not value.lower().endswith("nu.edu.pk"):
+    _, separator, domain = value.strip().lower().rpartition("@")
+    if not separator or domain != "nu.edu.pk":
         raise ValidationError("Email must belong to the NU domain (nu.edu.pk)")
 
 class UserManager(BaseUserManager):
@@ -21,7 +25,7 @@ class UserManager(BaseUserManager):
         if not nu_email:
             raise ValueError("Users must have an NU email address")
     
-        nu_email = self.normalize_email(nu_email)
+        nu_email = self.normalize_email(nu_email).lower()
         
         # validate domain
         allowed_domain = "nu.edu.pk"
@@ -78,17 +82,60 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     password_changed_at = models.DateTimeField(null=True, blank=True)
+    session_version = models.PositiveBigIntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     objects = UserManager()
 
+    EMAIL_FIELD = "nu_email"
     USERNAME_FIELD = "nu_email"
     REQUIRED_FIELDS = ["full_name"]
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower(Trim("nu_email")),
+                name="accounts_user_nu_email_ci_unique",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(nu_email=Lower(Trim("nu_email")))
+                    & models.Q(
+                        nu_email__regex=r"^[^@\s]+@nu\.edu\.pk$"
+                    )
+                ),
+                name="accounts_user_nu_email_normalized_domain",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.nu_email:
+            normalized_email = self.__class__.objects.normalize_email(
+                self.nu_email.strip()
+            ).lower()
+            if normalized_email != self.nu_email:
+                self.nu_email = normalized_email
+                update_fields = kwargs.get("update_fields")
+                if update_fields is not None:
+                    kwargs["update_fields"] = set(update_fields) | {"nu_email"}
+            validate_email(self.nu_email)
+            validate_nu_email(self.nu_email)
+        return super().save(*args, **kwargs)
+
     def __str__(self):
         return self.nu_email
+
+    def _get_session_auth_hash(self, secret=None):
+        """Bind Django sessions to the same global revocation version as JWTs."""
+        key_salt = "django.contrib.auth.models.AbstractBaseUser.get_session_auth_hash"
+        return salted_hmac(
+            key_salt,
+            f"{self.password}:{self.session_version}",
+            secret=secret,
+            algorithm="sha256",
+        ).hexdigest()
 
     @property
     def id(self):

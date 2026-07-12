@@ -1,41 +1,56 @@
 import { NextResponse } from "next/server";
 
-const DRF_BASE = process.env.DRF_API_BASE_URL || "http://localhost:8000";
+import { setAuthCookies } from "@/lib/server/authCookies";
+import {
+    djangoRequest,
+    forwardDjangoResponse,
+    isNextResponse,
+    jsonHeaders,
+    parseJsonBody,
+    upstreamErrorResponse,
+} from "@/lib/server/djangoBff";
 
-export async function POST(req: Request) {
-    const { nu_email, password } = await req.json();
+type LoginBody = { nu_email?: string; password?: string };
+type LoginResult = {
+    access?: string;
+    refresh?: string;
+    user?: unknown;
+};
 
-    const drfRes = await fetch(`${DRF_BASE}/api/auth/login/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nu_email, password }),
-    });
+export async function POST(request: Request) {
+    const body = await parseJsonBody<LoginBody>(request);
+    if (isNextResponse(body)) return body;
 
-    if (!drfRes.ok) {
-        const error = await drfRes.json();
-        return NextResponse.json(error, { status: drfRes.status });
+    if (!body.nu_email || !body.password) {
+        return NextResponse.json(
+            { detail: "Email and password are required." },
+            { status: 400 }
+        );
     }
 
-    const data = await drfRes.json();
+    try {
+        const result = await djangoRequest<LoginResult>("/api/auth/login/", {
+            method: "POST",
+            headers: jsonHeaders(),
+            body: JSON.stringify({ nu_email: body.nu_email, password: body.password }),
+        });
 
-    const res = NextResponse.json({ user: data.user, success: true, message: "Login successful" });
+        if (!result.response.ok) return forwardDjangoResponse(result, "Login failed.");
+        if (!result.body?.access || !result.body.refresh || !result.body.user) {
+            return NextResponse.json(
+                { detail: "The backend returned an invalid login response." },
+                { status: 502 }
+            );
+        }
 
-    // Set cookies
-    res.cookies.set("access_token", data.access, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 15, // 15 minutes
-    });
-
-    res.cookies.set("refresh_token", data.refresh, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-    });
-
-    return res;
+        const response = NextResponse.json({
+            user: result.body.user,
+            success: true,
+            message: "Login successful",
+        });
+        setAuthCookies(response, result.body);
+        return response;
+    } catch (error) {
+        return upstreamErrorResponse(error);
+    }
 }

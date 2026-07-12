@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "@heroui/react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -8,22 +8,22 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { registerUser } from "@/lib/authClient";
+import { newPasswordSchema, nuEmailSchema } from "@/lib/authValidation";
 
 const getStartedSchema = z.object({
     fullName: z.string().min(1, "Full Name is required"),
-    nuemail: z
-        .string()
-        .regex(
-            /^[klmfpi][0-9]{6}@nu\.edu\.pk$/,
-            "NU Email must be a valid NU email address"
-        ),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
+    nuemail: nuEmailSchema,
+    password: newPasswordSchema,
 });
 
 type GetStartedForm = z.infer<typeof getStartedSchema>;
 
+type RegistrationResult = {
+    message?: string;
+};
+
 type ApiError = {
-    body?: string;
+    body?: unknown;
     detail?: string;
     message?: string;
     status?: string | number;
@@ -36,12 +36,13 @@ const getErrorMessage = (err: unknown): string => {
     if (!e) return "Registration failed";
 
     if (e.body && typeof e.body === "object" && !Array.isArray(e.body)) {
-        const firstKey = Object.keys(e.body)[0];
-        if (firstKey && Array.isArray(e.body[firstKey])) {
-            return String(e.body[firstKey][0]);
+        const body = e.body as Record<string, unknown>;
+        const firstKey = Object.keys(body)[0];
+        if (firstKey && Array.isArray(body[firstKey])) {
+            return String(body[firstKey][0]);
         }
-        if (typeof e.body[firstKey] === "string") {
-            return e.body[firstKey];
+        if (firstKey && typeof body[firstKey] === "string") {
+            return body[firstKey];
         }
     }
 
@@ -58,16 +59,18 @@ const GetStarted = () => {
         register,
         handleSubmit,
         reset,
-        watch,
         formState: { errors, isValid },
     } = useForm<GetStartedForm>({
         resolver: zodResolver(getStartedSchema),
         mode: "onChange",
     });
 
-    const submittedEmail = watch("nuemail");
+    const [completedRegistration, setCompletedRegistration] = React.useState<{
+        email: string;
+        result: RegistrationResult;
+    } | null>(null);
 
-    const mutation = useMutation({
+    const mutation = useMutation<RegistrationResult, unknown, GetStartedForm>({
         mutationFn: async (data: GetStartedForm) => {
             const payload = {
                 full_name: data.fullName,
@@ -76,16 +79,18 @@ const GetStarted = () => {
             };
             return await registerUser(payload);
         },
-        onSuccess: () => {
-            reset();
-        },
-        onError: (err) => {
-            console.error("Registration error", err);
-        },
     });
 
+    const submittedEmail = completedRegistration?.email ?? "your NU email";
+
     const onSubmit = (data: GetStartedForm) => {
-        mutation.mutate(data);
+        mutation.mutate(data, {
+            onSuccess: (result) => {
+                setCompletedRegistration({ email: data.nuemail, result });
+                reset();
+                mutation.reset();
+            },
+        });
     };
 
     const baseInputClasses =
@@ -94,18 +99,10 @@ const GetStarted = () => {
     const getInputClass = (fieldError?: unknown) =>
         `${baseInputClasses} ${fieldError ? "border-red-500" : "border-gray-300"}`;
 
-    const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-
-    useEffect(() => {
-        if (mutation.isError) {
-            setErrorMessage(getErrorMessage(mutation.error));
-        } else {
-            setErrorMessage(null);
-        }
-    }, [mutation.isError, mutation.error]);
+    const errorMessage = mutation.isError ? getErrorMessage(mutation.error) : null;
 
     // ── Success screen ────────────────────────────────────────────────────────
-    if (mutation.isSuccess) {
+    if (completedRegistration) {
         return (
             <div className="sm:w-2/3 mx-auto space-y-6">
                 <div className="border-2 border-primarypurple/30 bg-primarypurple/5 rounded-xl p-8 flex flex-col items-center text-center gap-4">
@@ -113,13 +110,12 @@ const GetStarted = () => {
                         ✉️
                     </div>
                     <h2 className="text-2xl font-black uppercase tracking-tight text-primarypurple">
-                        Check your email!
+                        Check your email
                     </h2>
                     <p className="text-gray-600 text-sm leading-relaxed">
-                        We&apos;ve sent a verification link to{" "}
-                        <span className="font-semibold text-black">{submittedEmail}</span>.
-                        <br />
-                        Click the link in the email to activate your account.
+                        If <span className="font-semibold text-black">{submittedEmail}</span>{" "}
+                        is eligible, it will receive registration instructions. This neutral
+                        response protects existing accounts from discovery.
                     </p>
                     <p className="text-xs text-gray-400">
                         The link expires in 24 hours. Didn&apos;t get it? Check your spam folder or{" "}
@@ -154,11 +150,16 @@ const GetStarted = () => {
                     <input
                         type="text"
                         id="fullName"
+                        autoComplete="name"
+                        aria-invalid={Boolean(errors.fullName)}
+                        aria-describedby={
+                            errors.fullName ? "full-name-error" : undefined
+                        }
                         {...register("fullName")}
                         className={getInputClass(errors.fullName)}
                     />
                     {errors.fullName && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="full-name-error" className="text-sm text-red-500 mt-1">
                             {errors.fullName.message}
                         </p>
                     )}
@@ -170,13 +171,18 @@ const GetStarted = () => {
                         NU Email
                     </label>
                     <input
-                        type="text"
+                        type="email"
                         id="nuemail"
+                        autoComplete="email"
+                        aria-invalid={Boolean(errors.nuemail)}
+                        aria-describedby={
+                            errors.nuemail ? "registration-email-error" : undefined
+                        }
                         {...register("nuemail")}
                         className={getInputClass(errors.nuemail)}
                     />
                     {errors.nuemail && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="registration-email-error" className="text-sm text-red-500 mt-1">
                             {errors.nuemail.message}
                         </p>
                     )}
@@ -190,11 +196,16 @@ const GetStarted = () => {
                     <input
                         type="password"
                         id="password"
+                        autoComplete="new-password"
+                        aria-invalid={Boolean(errors.password)}
+                        aria-describedby={
+                            errors.password ? "registration-password-error" : undefined
+                        }
                         {...register("password")}
                         className={getInputClass(errors.password)}
                     />
                     {errors.password && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="registration-password-error" className="text-sm text-red-500 mt-1">
                             {errors.password.message}
                         </p>
                     )}
@@ -221,7 +232,7 @@ const GetStarted = () => {
                 </div>
 
                 {errorMessage && (
-                    <div className="mt-4 p-3 rounded text-sm bg-red-100 text-red-700">
+                    <div role="alert" className="mt-4 p-3 rounded text-sm bg-red-100 text-red-700">
                         {errorMessage}
                     </div>
                 )}

@@ -1,27 +1,32 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "@heroui/react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { registerUser, resendVerificationEmail } from "@/lib/authClient";
+import { resendVerificationEmail } from "@/lib/authClient";
 
 const resendEmailSchema = z.object({
     nuemail: z
         .string()
-        .regex(
-            /^[klmfp][0-9]{6}@nu\.edu\.pk$/,
-            "Please enter a valid NU email address"
+        .email("Please enter a valid email address")
+        .refine(
+            (value) => value.trim().toLowerCase().endsWith("@nu.edu.pk"),
+            "Only @nu.edu.pk email addresses are allowed"
         ),
 });
 
 type ResendEmailForm = z.infer<typeof resendEmailSchema>;
 
+type ResendEmailResult = {
+    message?: string;
+};
+
 type ApiError = {
-    body?: string;
+    body?: unknown;
     detail?: string;
     message?: string;
     status?: string | number;
@@ -34,12 +39,13 @@ const getErrorMessage = (err: unknown): string => {
     if (!e) return "Registration failed";
 
     if (e.body && typeof e.body === "object" && !Array.isArray(e.body)) {
-        const firstKey = Object.keys(e.body)[0];
-        if (firstKey && Array.isArray(e.body[firstKey])) {
-            return String(e.body[firstKey][0]);
+        const body = e.body as Record<string, unknown>;
+        const firstKey = Object.keys(body)[0];
+        if (firstKey && Array.isArray(body[firstKey])) {
+            return String(body[firstKey][0]);
         }
-        if (typeof e.body[firstKey] === "string") {
-            return e.body[firstKey];
+        if (firstKey && typeof body[firstKey] === "string") {
+            return body[firstKey];
         }
     }
 
@@ -60,13 +66,13 @@ const ResendEmail = () => {
         register,
         handleSubmit,
         reset,
-        formState: { errors, isValid, isSubmitting },
+        formState: { errors, isValid },
     } = useForm<ResendEmailForm>({
         resolver: zodResolver(resendEmailSchema),
         mode: "onChange",
     });
 
-    const mutation = useMutation({
+    const mutation = useMutation<ResendEmailResult, unknown, ResendEmailForm>({
         mutationFn: async (data: ResendEmailForm) => {
             const payload = {
                 nu_email: data.nuemail,
@@ -76,30 +82,17 @@ const ResendEmail = () => {
         onSuccess: () => {
             reset();
         },
-        onError: (err) => {
-            console.error("Registration error", err);
-        },
     });
 
     const onSubmit = (data: ResendEmailForm) => {
         mutation.mutate(data);
     };
 
-    const [message, setMessage] = React.useState<string | null>(null);
-    const [isError, setIsError] = React.useState(false);
-
-    useEffect(() => {
-        if (mutation.isError) {
-            setMessage(getErrorMessage(mutation.error));
-            setIsError(true);
-        } else if (mutation.isSuccess) {
-            const res = mutation.data as { message?: string } | undefined;
-            setMessage(
-                res?.message || "Registration successful. Check your email to verify."
-            );
-            setIsError(false);
-        }
-    }, [mutation.isError, mutation.isSuccess, mutation.error, mutation.data]);
+    const message = mutation.isError
+        ? getErrorMessage(mutation.error)
+        : mutation.isSuccess
+            ? mutation.data?.message || "If an unverified account exists, check its inbox."
+            : null;
 
 
     const baseInputClasses =
@@ -122,13 +115,18 @@ const ResendEmail = () => {
                         NU Email
                     </label>
                     <input
-                        type="text"
+                        type="email"
                         id="nuemail"
+                        autoComplete="email"
+                        aria-invalid={Boolean(errors.nuemail)}
+                        aria-describedby={
+                            errors.nuemail ? "resend-email-error" : undefined
+                        }
                         {...register("nuemail")}
                         className={getInputClass(errors.nuemail)}
                     />
                     {errors.nuemail && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="resend-email-error" className="text-sm text-red-500 mt-1">
                             {errors.nuemail.message}
                         </p>
                     )}
@@ -138,15 +136,16 @@ const ResendEmail = () => {
                     <Button
                         className="bg-primarygreen text-black font-bold"
                         type="submit"
-                        isDisabled={!isValid || isSubmitting}
+                        isDisabled={!isValid || mutation.isPending}
                     >
-                        {isSubmitting ? "Submitting..." : "Resend Verification Email"}
+                        {mutation.isPending ? "Sending..." : "Resend Verification Email"}
                     </Button>
                 </div>
 
                 {message && (
                     <div
-                        className={`mt-4 p-3 rounded text-sm ${isError
+                        role={mutation.isError ? "alert" : "status"}
+                        className={`mt-4 p-3 rounded text-sm ${mutation.isError
                             ? "bg-red-100 text-red-700"
                             : "bg-green-100 text-green-700"
                             }`}

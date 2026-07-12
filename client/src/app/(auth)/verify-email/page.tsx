@@ -12,6 +12,8 @@ type VerifyPayload = {
     nu_email: string;
 };
 
+type VerifyResult = { message?: string };
+
 type ApiError = {
     body?: unknown;
     detail?: string;
@@ -68,24 +70,24 @@ const VerifyEmailInner = () => {
     const token = searchParams.get("token");
     const nu_email = searchParams.get("nu_email");
 
-    const mutation = useMutation<any, unknown, VerifyPayload>({
+    const mutation = useMutation<VerifyResult, unknown, VerifyPayload>({
         mutationFn: async (payload: VerifyPayload) => {
             return await verifyEmail(payload);
         },
-        onError: (err) => {
-            console.error("Verify email error", err);
-        },
     });
 
-    const hasTriggered = useRef(false);
+    const triggeredVerification = useRef<string | null>(null);
+    const verify = mutation.mutate;
+    const verificationKey =
+        token && nu_email ? `${nu_email}\u0000${token}` : null;
 
     useEffect(() => {
-        if (!token || !nu_email) return;
-        if (hasTriggered.current) return;
+        if (!verificationKey || !token || !nu_email) return;
+        if (triggeredVerification.current === verificationKey) return;
 
-        hasTriggered.current = true;
-        mutation.mutate({ token, nu_email });
-    }, [token, nu_email]);
+        triggeredVerification.current = verificationKey;
+        verify({ token, nu_email });
+    }, [token, nu_email, verificationKey, verify]);
 
     let content: React.ReactNode = null;
 
@@ -142,7 +144,7 @@ const VerifyEmailInner = () => {
                         Resend verification email to your email.
                         <div className="mt-2">
                             <Link
-                                href="/resend"
+                                href="/verify-email/resend"
                                 className="text-primarypurple font-semibold underline"
                             >
                                 Resend Verification Email
@@ -183,7 +185,7 @@ const VerifyEmailInner = () => {
                 Verify Email
             </h1>
 
-            {content}
+            <div aria-live="polite">{content}</div>
         </div>
     );
 };
