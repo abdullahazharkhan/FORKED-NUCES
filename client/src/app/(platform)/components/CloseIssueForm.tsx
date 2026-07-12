@@ -1,9 +1,17 @@
 "use client";
 
-import React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { type FormEvent, useMemo, useState } from "react";
+import {
+    useInfiniteQuery,
+    useMutation,
+    useQueryClient,
+} from "@tanstack/react-query";
+
 import { authFetch } from "@/lib/authFetch";
-import { Search } from "lucide-react";
+import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
+import { queryKeys } from "@/lib/queryKeys";
+
+const PAGE_SIZE = 20;
 
 interface CloseIssueFormProps {
     issueId: number;
@@ -11,75 +19,80 @@ interface CloseIssueFormProps {
     onClose: () => void;
 }
 
-type UserResult = {
+type AcceptedCollaborationRequest = {
+    request_id: number;
+    status: string;
     user_id: number;
-    full_name: string;
-    nu_email: string;
+    user_full_name: string;
+    user_nu_email: string;
 };
 
-const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
+const CloseIssueForm = ({
     issueId,
     projectId,
     onClose,
-}) => {
+}: CloseIssueFormProps) => {
     const queryClient = useQueryClient();
+    const [selectedRequests, setSelectedRequests] = useState<
+        AcceptedCollaborationRequest[]
+    >([]);
+    const [formError, setFormError] = useState<string | null>(null);
 
-    const [searchTerm, setSearchTerm] = React.useState("");
-    const [debouncedTerm, setDebouncedTerm] = React.useState("");
-    const [selectedUserIds, setSelectedUserIds] = React.useState<number[]>([]);
-    const [formError, setFormError] = React.useState<string | null>(null);
-
-    // Debounce search input (for client-side filtering only)
-    React.useEffect(() => {
-        const id = setTimeout(
-            () => setDebouncedTerm(searchTerm.trim()),
-            300
-        );
-        return () => clearTimeout(id);
-    }, [searchTerm]);
-
-    // Fetch ALL users once and cache with React Query
     const {
-        data: usersData,
-        isLoading,
-        isError,
+        data,
         error,
-    } = useQuery<UserResult[]>({
-        queryKey: ["users"],
-        queryFn: async () => {
-            const res = await authFetch(`/api/users`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
+        fetchNextPage,
+        hasNextPage,
+        isError,
+        isFetchNextPageError,
+        isFetching,
+        isFetchingNextPage,
+        isPending,
+        refetch,
+    } = useInfiniteQuery<PaginatedPage<AcceptedCollaborationRequest>>({
+        queryKey: queryKeys.issueCollaborationRequests(issueId, "accepted"),
+        initialPageParam: 0,
+        queryFn: async ({ pageParam, signal }) => {
+            const params = new URLSearchParams({
+                limit: String(PAGE_SIZE),
+                offset: String(pageParam),
+                status: "accepted",
             });
-
-            if (!res.ok) {
-                throw new Error("Failed to fetch users");
+            const response = await authFetch(
+                `/api/issues/${issueId}/collaboration-requests?${params.toString()}`,
+                { method: "GET", signal }
+            );
+            if (!response.ok) {
+                throw new Error("Failed to load accepted collaborators");
             }
-
-            return res.json();
+            return readPaginatedArray<AcceptedCollaborationRequest>(response);
         },
-        // Optional: keep in cache for some time
-        staleTime: 5 * 60 * 1000,
+        getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
     });
 
-    const allUsers: UserResult[] = Array.isArray(usersData) ? usersData : [];
-
-    // Client-side filtering based on debounced search term
-    const filteredUsers = React.useMemo(() => {
-        const term = debouncedTerm.toLowerCase();
-        if (term.length < 2) return [];
-        return allUsers.filter(
-            (user) =>
-                user.full_name.toLowerCase().includes(term) ||
-                user.nu_email.toLowerCase().includes(term)
-        );
-    }, [allUsers, debouncedTerm]);
+    const acceptedRequests = useMemo(
+        () =>
+            data?.pages
+                .flatMap((page) => page.items)
+                .filter((request) => request.status === "accepted") ?? [],
+        [data]
+    );
+    const initialRequestError = isError && acceptedRequests.length === 0;
+    const acceptedRequestIds = useMemo(
+        () => new Set(acceptedRequests.map((request) => request.request_id)),
+        [acceptedRequests]
+    );
+    const activeSelectedRequests = selectedRequests.filter((request) =>
+        acceptedRequestIds.has(request.request_id)
+    );
+    const selectedUserIds = activeSelectedRequests.map(
+        (request) => request.user_id
+    );
 
     const closeIssueMutation = useMutation({
         mutationFn: async (userIds: number[]) => {
-            console.log("mutationFn received userIds:", userIds);
-            const res = await authFetch(
-                `/api/issues/close-with-collaborator/`,
+            const response = await authFetch(
+                "/api/issues/close-with-collaborator/",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -90,55 +103,70 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
                 }
             );
 
-            const body = await res.json().catch(() => null);
-            console.log("Response body:", body);
-
-            if (!res.ok) {
+            const body = await response.json().catch(() => null);
+            if (!response.ok) {
                 throw new Error(
                     (body && (body.detail || body.message)) ||
-                    "Failed to close issue"
+                        "Failed to close issue"
                 );
             }
-
             return body;
         },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: ["project", projectId],
-            });
-
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
-
-            queryClient.invalidateQueries({
-                queryKey: ["project-collaborators", projectId],
-            });
-
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.project(projectId),
+                }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.recommendedProjects,
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.myProjects,
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.allUserProjects,
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.allUserCollaborations,
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.projectCollaborators(projectId),
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.issueCollaborationRequests(
+                        issueId,
+                        "accepted"
+                    ),
+                }),
+            ]);
             onClose();
         },
-        onError: (err: any) => {
+        onError: (mutationError: unknown) => {
             setFormError(
-                err?.message || "Failed to close issue. Please try again."
+                mutationError instanceof Error
+                    ? mutationError.message
+                    : "Failed to close issue. Please try again."
             );
         },
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setFormError(null);
-        console.log("handleSubmit - selectedUserIds:", selectedUserIds);
-        console.log("handleSubmit - selectedUserIds length:", selectedUserIds.length);
-        closeIssueMutation.mutate(selectedUserIds);
+    const toggleRequest = (request: AcceptedCollaborationRequest) => {
+        if (request.status !== "accepted") return;
+
+        setSelectedRequests((current) =>
+            current.some((selected) => selected.request_id === request.request_id)
+                ? current.filter(
+                      (selected) => selected.request_id !== request.request_id
+                  )
+                : [...current, request]
+        );
     };
 
-    const toggleUser = (userId: number) => {
-        console.log("toggleUser called with userId:", userId);
-        setSelectedUserIds((prev) => {
-            const newValue = prev.includes(userId)
-                ? prev.filter((id) => id !== userId)
-                : [...prev, userId];
-            console.log("toggleUser - prev:", prev, "-> new:", newValue);
-            return newValue;
-        });
+    const handleSubmit = (event: FormEvent) => {
+        event.preventDefault();
+        setFormError(null);
+        closeIssueMutation.mutate(selectedUserIds);
     };
 
     const isSubmitting = closeIssueMutation.isPending;
@@ -146,135 +174,165 @@ const CloseIssueForm: React.FC<CloseIssueFormProps> = ({
     return (
         <form className="space-y-4" onSubmit={handleSubmit}>
             <p className="text-sm text-gray-700">
-                Optionally select collaborators who helped resolve this issue.
-                The issue will be marked as <span className="font-semibold">Closed</span>.
+                Optionally credit contributors whose collaboration requests were
+                accepted. The issue will be marked as{" "}
+                <span className="font-semibold">Closed</span>.
             </p>
 
-            {/* Search input */}
             <div className="space-y-1">
-                <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Search User (name or NU email)
-                </label>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2">
-                    <Search className="h-4 w-4 text-gray-400" />
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Start typing to search…"
-                        className="w-full border-none text-sm outline-none"
-                    />
-                </div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                    Accepted Collaborators
+                </p>
                 <p className="text-[11px] text-gray-500">
-                    Minimum 2 characters required to filter.
+                    Only contributors who consented through an accepted request
+                    can be credited. You may close the issue without selecting
+                    anyone.
                 </p>
             </div>
 
-            {/* Results */}
-            <div className="max-h-56 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-2">
-                {isLoading && (
+            <div
+                className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-2"
+                aria-live="polite"
+            >
+                {isPending && (
                     <p className="text-xs text-gray-500">
-                        Loading users…
+                        Loading accepted collaborators...
                     </p>
                 )}
 
-                {!isLoading && isError && (
-                    <p className="text-xs text-red-600">
-                        {(error as Error)?.message ||
-                            "Failed to load users."}
-                    </p>
+                {initialRequestError && (
+                    <div
+                        className="flex items-center justify-between gap-3 text-xs text-red-600"
+                        role="alert"
+                    >
+                        <span>
+                            {(error as Error)?.message ||
+                                "Failed to load accepted collaborators."}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => void refetch()}
+                            disabled={isFetching}
+                            className="font-semibold underline disabled:opacity-60"
+                        >
+                            Retry
+                        </button>
+                    </div>
                 )}
 
-                {!isLoading && !isError && debouncedTerm.length < 2 && (
-                    <p className="text-xs text-gray-500">
-                        Type at least 2 characters to search for users.
-                    </p>
-                )}
-
-                {!isLoading &&
-                    !isError &&
-                    debouncedTerm.length >= 2 &&
-                    filteredUsers.length === 0 && (
+                {!isPending &&
+                    !initialRequestError &&
+                    acceptedRequests.length === 0 && (
                         <p className="text-xs text-gray-500">
-                            No users found for this query.
+                            No accepted collaboration requests yet. You can still
+                            close this issue without crediting a collaborator.
                         </p>
                     )}
 
-                {!isLoading &&
-                    !isError &&
-                    debouncedTerm.length >= 2 &&
-                    filteredUsers.map((user) => {
-                        const isSelected = selectedUserIds.includes(user.user_id);
+                {!initialRequestError &&
+                    acceptedRequests.map((request) => {
+                        const isSelected = activeSelectedRequests.some(
+                            (selected) =>
+                                selected.request_id === request.request_id
+                        );
                         return (
                             <button
-                                key={user.user_id}
+                                key={request.request_id}
                                 type="button"
-                                onClick={() => toggleUser(user.user_id)}
-                                className={`flex w-full flex-col items-start rounded-lg px-3 py-2 text-left text-xs transition ${isSelected
-                                    ? "bg-primarypurple/10 border border-primarypurple text-primarypurple"
-                                    : "bg-white border border-transparent hover:bg-gray-100"
-                                    }`}
+                                aria-pressed={isSelected}
+                                onClick={() => toggleRequest(request)}
+                                className={`flex w-full flex-col items-start rounded-lg border px-3 py-2 text-left text-xs transition ${
+                                    isSelected
+                                        ? "border-primarypurple bg-primarypurple/10 text-primarypurple"
+                                        : "border-transparent bg-white hover:bg-gray-100"
+                                }`}
                             >
                                 <span className="font-semibold">
-                                    {user.full_name}
+                                    {request.user_full_name}
                                 </span>
                                 <span className="text-[11px] text-gray-600">
-                                    {user.nu_email}
+                                    {request.user_nu_email}
                                 </span>
                             </button>
                         );
                     })}
+
+                {isFetchNextPageError && (
+                    <div
+                        className="flex items-center justify-between gap-3 text-xs text-red-600"
+                        role="alert"
+                    >
+                        <span>Could not load more accepted collaborators.</span>
+                        <button
+                            type="button"
+                            onClick={() => void fetchNextPage()}
+                            disabled={isFetchingNextPage}
+                            className="font-semibold underline disabled:opacity-60"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+
+                {hasNextPage && !isFetchNextPageError && (
+                    <button
+                        type="button"
+                        onClick={() => void fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold hover:bg-gray-100 disabled:opacity-60"
+                    >
+                        {isFetchingNextPage
+                            ? "Loading more..."
+                            : "Load more accepted collaborators"}
+                    </button>
+                )}
             </div>
 
-            {/* Selected collaborators */}
-            {selectedUserIds.length > 0 && (
+            {activeSelectedRequests.length > 0 && (
                 <div className="space-y-1">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-                        Selected Collaborators ({selectedUserIds.length})
+                        Credited Collaborators ({activeSelectedRequests.length})
                     </p>
                     <div className="flex flex-wrap gap-2">
-                        {selectedUserIds.map((id) => {
-                            const user = allUsers.find((u) => u.user_id === id);
-                            if (!user) return null;
-                            return (
-                                <span
-                                    key={id}
-                                    className="inline-flex items-center gap-1 rounded-full bg-primarypurple/10 px-2 py-1 text-xs text-primarypurple"
+                        {activeSelectedRequests.map((request) => (
+                            <span
+                                key={request.request_id}
+                                className="inline-flex items-center gap-1 rounded-full bg-primarypurple/10 px-2 py-1 text-xs text-primarypurple"
+                            >
+                                {request.user_full_name}
+                                <button
+                                    type="button"
+                                    aria-label={`Remove ${request.user_full_name} from credited collaborators`}
+                                    onClick={() => toggleRequest(request)}
+                                    className="ml-1 text-primarypurple/60 hover:text-primarypurple"
                                 >
-                                    {user.full_name}
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleUser(id)}
-                                        className="ml-1 text-primarypurple/60 hover:text-primarypurple"
-                                    >
-                                        ×
-                                    </button>
-                                </span>
-                            );
-                        })}
+                                    x
+                                </button>
+                            </span>
+                        ))}
                     </div>
                 </div>
             )}
 
-            {/* Error */}
             {formError && (
-                <p className="text-xs text-red-600">{formError}</p>
+                <p className="text-xs text-red-600" role="alert">
+                    {formError}
+                </p>
             )}
 
-            {/* Actions */}
             <div className="mt-2 flex justify-end gap-2">
                 <button
                     type="button"
                     onClick={onClose}
                     disabled={isSubmitting}
-                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition disabled:opacity-60"
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-60"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="rounded-lg bg-primarypurple px-4 py-2 text-sm font-semibold text-white hover:bg-primarypurple/90 disabled:opacity-60 transition"
+                    className="rounded-lg bg-primarypurple px-4 py-2 text-sm font-semibold text-white transition hover:bg-primarypurple/90 disabled:opacity-60"
                 >
                     {isSubmitting ? "Closing..." : "Close Issue"}
                 </button>

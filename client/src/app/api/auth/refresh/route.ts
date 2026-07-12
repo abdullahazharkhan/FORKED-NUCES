@@ -1,42 +1,55 @@
-// app/api/auth/refresh/route.ts
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const DRF_BASE = process.env.DRF_API_BASE_URL || "http://localhost:8000";
+import { clearAuthCookies, setAuthCookies } from "@/lib/server/authCookies";
+import { REFRESH_COOKIE_NAME } from "@/lib/authCookieNames";
+import {
+    djangoRequest,
+    forwardDjangoResponse,
+    jsonHeaders,
+    rejectCrossOriginMutation,
+    upstreamErrorResponse,
+} from "@/lib/server/djangoBff";
 
-export async function POST() {
+type RefreshResult = { access?: string; refresh?: string };
+
+export async function POST(request: Request) {
+    const rejection = rejectCrossOriginMutation(request);
+    if (rejection) return rejection;
+
     const cookieStore = await cookies();
-    const refresh = cookieStore.get("refresh_token")?.value;
+    const refresh = cookieStore.get(REFRESH_COOKIE_NAME)?.value;
 
     if (!refresh) {
         return NextResponse.json({ detail: "No refresh token" }, { status: 401 });
     }
 
-    const drfRes = await fetch(`${DRF_BASE}/api/token/refresh/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh }),
-    });
+    try {
+        const result = await djangoRequest<RefreshResult>("/api/token/refresh/", {
+            method: "POST",
+            headers: jsonHeaders(),
+            body: JSON.stringify({ refresh }),
+        });
 
-    if (!drfRes.ok) {
-        // Refresh failed (expired/blacklisted)
-        const res = NextResponse.json({ detail: "Refresh failed" }, { status: 401 });
-        res.cookies.delete("access_token");
-        res.cookies.delete("refresh_token");
-        return res;
+        if (!result.response.ok) {
+            const response = forwardDjangoResponse(result, "Refresh failed");
+            if (result.response.status === 401 || result.response.status === 403) {
+                clearAuthCookies(response);
+            }
+            return response;
+        }
+
+        if (!result.body?.access) {
+            return NextResponse.json(
+                { detail: "The backend returned an invalid refresh response." },
+                { status: 502 }
+            );
+        }
+
+        const response = NextResponse.json({ success: true });
+        setAuthCookies(response, result.body);
+        return response;
+    } catch (error) {
+        return upstreamErrorResponse(error);
     }
-
-    const data = await drfRes.json();
-
-    const res = NextResponse.json({ success: true });
-
-    res.cookies.set("access_token", data.access, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 15,
-    });
-
-    return res;
 }

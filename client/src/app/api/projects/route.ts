@@ -1,92 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextRequest } from "next/server";
 
-const DRF_BASE = process.env.DRF_API_BASE_URL || "http://localhost:8000";
+import {
+    isNextResponse,
+    parseJsonBody,
+    proxyAuthenticatedDjango,
+} from "@/lib/server/djangoBff";
+import {
+    appendSearchParams,
+    pickSearchParams,
+    PROJECT_LIST_QUERY_PARAMS,
+} from "@/lib/pagination";
 
-const DRF_PROJECTS_URL = `${DRF_BASE}/api/projects/`;
+export async function GET(request: NextRequest) {
+    const path = appendSearchParams(
+        "/api/projects/",
+        pickSearchParams(request.nextUrl.searchParams, PROJECT_LIST_QUERY_PARAMS)
+    );
 
-export async function GET(req: NextRequest) {
-    const cookieStore = await cookies();
-    const access = cookieStore.get("access_token")?.value;
-
-    if (!access) {
-        return NextResponse.json(
-            { detail: "Unauthenticated. Access token missing." },
-            { status: 401 }
-        );
-    }
-
-    const drfRes = await fetch(DRF_PROJECTS_URL, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access}`,
-        }
-    });
-
-    const drfBody = await drfRes.json().catch(() => null);
-
-    if (!drfRes.ok) {
-        return NextResponse.json(
-            drfBody || { detail: "Failed to fetch users" },
-            { status: drfRes.status }
-        );
-    }
-
-    return NextResponse.json(drfBody, { status: 200 });
+    return proxyAuthenticatedDjango(
+        path,
+        { method: "GET" },
+        "Failed to fetch projects."
+    );
 }
 
+export async function POST(request: Request) {
+    const body = await parseJsonBody<unknown>(request);
+    if (isNextResponse(body)) return body;
 
-export async function POST(req: NextRequest) {
-    const cookieStore = await cookies();
-    const access = cookieStore.get("access_token")?.value;
-
-    if (!access) {
-        return NextResponse.json(
-            { detail: "Unauthenticated. Access token missing." },
-            { status: 401 }
-        );
-    }
-
-    let body: unknown;
-    try {
-        body = await req.json();
-    } catch {
-        return NextResponse.json(
-            { detail: "Invalid JSON body." },
-            { status: 400 }
-        );
-    }
-
-    const { title, description, github_url, tags } = body as {
-        title?: string;
-        description?: string;
-        github_url?: string;
-        tags?: string[];
-    };
-
-    const drfRes = await fetch(DRF_PROJECTS_URL, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access}`,
-        },
-        body: JSON.stringify({
-            title,
-            description,
-            github_url,
-            tags,
-        }),
-    });
-
-    const drfBody = await drfRes.json().catch(() => null);
-
-    if (!drfRes.ok) {
-        return NextResponse.json(
-            drfBody || { detail: "Failed to create project" },
-            { status: drfRes.status }
-        );
-    }
-
-    return NextResponse.json(drfBody, { status: 201 });
+    return proxyAuthenticatedDjango(
+        "/api/projects/",
+        { method: "POST", body: JSON.stringify(body) },
+        "Failed to create project."
+    );
 }

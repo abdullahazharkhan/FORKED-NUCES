@@ -3,8 +3,15 @@ from rest_framework import serializers
 from .models import Comment
 
 
+MAX_COMMENT_LENGTH = 2_000
+
+
 class CommentCreateSerializer(serializers.ModelSerializer):
     project_id = serializers.IntegerField(write_only=True)
+    comment_body = serializers.CharField(
+        max_length=MAX_COMMENT_LENGTH,
+        trim_whitespace=True,
+    )
 
     class Meta:
         model = Comment
@@ -46,3 +53,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "user_full_name",
             "user_nu_email",
         ]
+
+
+class ToggleProjectLikeSerializer(serializers.Serializer):
+    project_id = serializers.IntegerField(min_value=1)

@@ -7,8 +7,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdEditor } from "md-editor-rt";
 import "md-editor-rt/lib/style.css";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
+import { queryKeys } from "@/lib/queryKeys";
+import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
 
 const AVAILABLE_TAGS = [
     "frontend",
@@ -17,11 +19,15 @@ const AVAILABLE_TAGS = [
     "machine-learning",
     "devops",
     "mobile",
-];
+] as const;
+type ProjectTag = (typeof AVAILABLE_TAGS)[number];
 
 const projectSchema = z.object({
     title: z.string().min(1, "Project title is required"),
-    description: z.string().min(1, "Description is required"),
+    description: z
+        .string()
+        .min(1, "Description is required")
+        .max(10_000, "Description must be 10,000 characters or fewer"),
     github_url: z
         .string()
         .min(1, "GitHub URL is required")
@@ -34,7 +40,7 @@ const projectSchema = z.object({
             "URL must be a GitHub repository or profile link"
         ),
     tags: z
-        .array(z.enum(AVAILABLE_TAGS as [string, ...string[]]))
+        .array(z.enum(AVAILABLE_TAGS))
         .min(1, "Please select at least one tag"),
 });
 
@@ -79,6 +85,7 @@ const getErrorMessage = (err: unknown): string => {
 };
 
 const AddProject = () => {
+    const queryClient = useQueryClient();
     const {
         register,
         control,
@@ -134,7 +141,13 @@ const AddProject = () => {
 
             return body;
         },
-        onSuccess: () => {
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.myProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.recommendedProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.allUserProjects }),
+            ]);
             reset(
                 {
                     title: "",
@@ -152,9 +165,6 @@ const AddProject = () => {
                 }
             );
             clearErrors();
-        },
-        onError: (err) => {
-            console.error("Create project error", err);
         },
     });
 
@@ -176,9 +186,9 @@ const AddProject = () => {
 
     return (
         <div className="space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6 my-6">
-            <h1 className="text-3xl font-semibold md:text-4xl underline decoration-primarypurple decoration-4">
+            <h2 className="text-3xl font-semibold md:text-4xl underline decoration-primarypurple decoration-4">
                 Add Project
-            </h1>
+            </h2>
 
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                 {/* Project Title */}
@@ -189,11 +199,15 @@ const AddProject = () => {
                     <input
                         type="text"
                         id="title"
+                        aria-invalid={Boolean(errors.title)}
+                        aria-describedby={
+                            errors.title ? "add-project-title-error" : undefined
+                        }
                         {...register("title")}
                         className={getInputClass(errors.title)}
                     />
                     {shouldShowError("title") && errors.title && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="add-project-title-error" className="text-sm text-red-500 mt-1">
                             {errors.title.message}
                         </p>
                     )}
@@ -201,24 +215,38 @@ const AddProject = () => {
 
                 {/* Description (Markdown editor) */}
                 <div className="flex flex-col">
-                    <label className="font-semibold text-lg">Description</label>
+                    <p id="add-project-description-label" className="font-semibold text-lg">
+                        Description
+                    </p>
                     <Controller
                         control={control}
                         name="description"
                         render={({ field }) => (
+                            <div
+                                role="group"
+                                aria-labelledby="add-project-description-label"
+                                aria-describedby={
+                                    errors.description
+                                        ? "add-project-description-error"
+                                        : undefined
+                                }
+                            >
                             <MdEditor
-                                language="en-US"
-                                modelValue={field.value || ""}
-                                onChange={field.onChange}
-                                className="mt-2 rounded-xl border-2 border-primarypurple/30 bg-primarypurple/5"
-                                theme="light"
-                                previewTheme="github"
-                                style={{ height: "320px" }}
-                            />
+                                {...untrustedMarkdownProps}
+                                    editorId="add-project-description"
+                                    language="en-US"
+                                    modelValue={field.value || ""}
+                                    onChange={field.onChange}
+                                    className="mt-2 rounded-xl border-2 border-primarypurple/30 bg-primarypurple/5"
+                                    theme="light"
+                                    previewTheme="github"
+                                    style={{ height: "320px" }}
+                                />
+                            </div>
                         )}
                     />
                     {shouldShowError("description") && errors.description && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="add-project-description-error" className="text-sm text-red-500 mt-1">
                             {errors.description.message}
                         </p>
                     )}
@@ -232,11 +260,17 @@ const AddProject = () => {
                     <input
                         type="url"
                         id="github_url"
+                        aria-invalid={Boolean(errors.github_url)}
+                        aria-describedby={
+                            errors.github_url
+                                ? "add-project-github-error"
+                                : undefined
+                        }
                         {...register("github_url")}
                         className={getInputClass(errors.github_url)}
                     />
                     {shouldShowError("github_url") && errors.github_url && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="add-project-github-error" className="text-sm text-red-500 mt-1">
                             {errors.github_url.message}
                         </p>
                     )}
@@ -244,13 +278,15 @@ const AddProject = () => {
 
                 {/* Tags (multi-select, design only changed here) */}
                 <div className="flex flex-col">
-                    <label className="font-semibold text-lg">Tags</label>
+                    <p id="add-project-tags-label" className="font-semibold text-lg">
+                        Tags
+                    </p>
                     <Controller
                         control={control}
                         name="tags"
                         render={({ field }) => {
-                            const value: string[] = field.value || [];
-                            const toggleTag = (tag: string, checked: boolean) => {
+                            const value: ProjectTag[] = field.value || [];
+                            const toggleTag = (tag: ProjectTag, checked: boolean) => {
                                 if (checked) {
                                     field.onChange([...value, tag]);
                                 } else {
@@ -259,7 +295,16 @@ const AddProject = () => {
                             };
 
                             return (
-                                <div className="mt-2 flex flex-wrap gap-2">
+                                <div
+                                    role="group"
+                                    aria-labelledby="add-project-tags-label"
+                                    aria-describedby={
+                                        errors.tags
+                                            ? "add-project-tags-error"
+                                            : undefined
+                                    }
+                                    className="mt-2 flex flex-wrap gap-2"
+                                >
                                     {AVAILABLE_TAGS.map((tag) => {
                                         const checked = value.includes(tag);
                                         return (
@@ -287,7 +332,7 @@ const AddProject = () => {
                         }}
                     />
                     {shouldShowError("tags") && errors.tags && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="add-project-tags-error" className="text-sm text-red-500 mt-1">
                             {errors.tags.message as string}
                         </p>
                     )}
@@ -305,6 +350,7 @@ const AddProject = () => {
 
                 {message && (
                     <div
+                        role={isError ? "alert" : "status"}
                         className={`mt-4 p-3 rounded text-sm ${isError
                             ? "bg-red-100 text-red-700"
                             : "bg-green-100 text-green-700"

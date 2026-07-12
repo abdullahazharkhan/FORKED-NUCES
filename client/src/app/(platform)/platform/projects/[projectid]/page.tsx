@@ -2,39 +2,56 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { notFound } from "next/navigation";
 import { authFetch } from "@/lib/authFetch";
 import ProjectDetails from "../components/ProjectDetails";
-import ProjectCollaborators from "../components/ProjectCollaborators";
+import { queryKeys } from "@/lib/queryKeys";
+import { HttpResponseError, isNotFoundError } from "@/lib/httpError";
+import { RetryAlert } from "@/app/(platform)/components/RetryAlert";
 
 type ProjectPageProps = {
     params: Promise<{ projectid: string }>;
 };
 
+const ISSUE_SKELETON_IDS = ["one", "two", "three"] as const;
+
 const Project = ({ params }: ProjectPageProps) => {
     const { projectid } = React.use(params);
 
     const projectIdNumber = Number(projectid);
+    const hasValidProjectId =
+        Number.isSafeInteger(projectIdNumber) && projectIdNumber > 0;
 
     const {
         data: project,
         isLoading,
         isError,
+        isFetching,
         error,
+        refetch,
     } = useQuery({
-        queryKey: ["project", projectIdNumber], // ← IMPORTANT: use number
-        queryFn: async () => {
+        queryKey: queryKeys.project(projectIdNumber),
+        queryFn: async ({ signal }) => {
             const res = await authFetch(`/api/projects/${projectIdNumber}`, {
                 method: "GET",
-                headers: { "Content-Type": "application/json" },
+                signal,
             });
 
             if (!res.ok) {
-                throw new Error("Failed to fetch project");
+                throw new HttpResponseError(
+                    "Failed to fetch project",
+                    res.status
+                );
             }
 
             return res.json();
         },
+        enabled: hasValidProjectId,
+        retry: (failureCount, queryError) =>
+            !isNotFoundError(queryError) && failureCount < 3,
     });
+
+    if (!hasValidProjectId || isNotFoundError(error)) notFound();
 
     return (
         <div className="space-y-6 px-8 py-6">
@@ -76,9 +93,9 @@ const Project = ({ params }: ProjectPageProps) => {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            {Array.from({ length: 3 }).map((_, idx) => (
+                            {ISSUE_SKELETON_IDS.map((id) => (
                                 <div
-                                    key={idx}
+                                    key={id}
                                     className="rounded-xl border border-primarypurple/20 bg-white/80 shadow-sm"
                                 >
                                     <div className="flex w-full items-center justify-between gap-2 px-3 py-2">
@@ -100,17 +117,16 @@ const Project = ({ params }: ProjectPageProps) => {
 
             {/* Error state */}
             {isError && (
-                <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                    {(error as Error)?.message || "Failed to load project."}
-                </div>
+                <RetryAlert
+                    error={error}
+                    fallbackMessage="Failed to load project."
+                    isRetrying={isFetching}
+                    onRetry={() => void refetch()}
+                />
             )}
 
             {/* Content */}
-            {!isLoading && !isError && project && (
-                <>
-                    <ProjectDetails project={project} />
-                </>
-            )}
+            {!isLoading && project && <ProjectDetails project={project} />}
         </div>
     );
 };

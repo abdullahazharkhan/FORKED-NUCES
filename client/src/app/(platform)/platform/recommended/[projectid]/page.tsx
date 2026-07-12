@@ -2,8 +2,12 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { notFound } from "next/navigation";
 import { authFetch } from "@/lib/authFetch";
 import ProjectDetails from "../../projects/components/ProjectDetails";
+import { queryKeys } from "@/lib/queryKeys";
+import { HttpResponseError, isNotFoundError } from "@/lib/httpError";
+import { RetryAlert } from "@/app/(platform)/components/RetryAlert";
 
 type ProjectPageProps = {
   params: Promise<{ projectid: string }>;
@@ -12,27 +16,36 @@ type ProjectPageProps = {
 const RecommendedProject = ({ params }: ProjectPageProps) => {
   const { projectid } = React.use(params);
   const projectIdNumber = Number(projectid);
+  const hasValidProjectId =
+    Number.isSafeInteger(projectIdNumber) && projectIdNumber > 0;
 
   const {
     data: project,
     isLoading,
     isError,
+    isFetching,
     error,
+    refetch,
   } = useQuery({
-    queryKey: ["project", projectIdNumber],
-    queryFn: async () => {
+    queryKey: queryKeys.project(projectIdNumber),
+    queryFn: async ({ signal }) => {
       const res = await authFetch(`/api/projects/${projectIdNumber}`, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        signal,
       });
 
       if (!res.ok) {
-        throw new Error("Failed to fetch project");
+        throw new HttpResponseError("Failed to fetch project", res.status);
       }
 
       return res.json();
     },
+    enabled: hasValidProjectId,
+    retry: (failureCount, queryError) =>
+      !isNotFoundError(queryError) && failureCount < 3,
   });
+
+  if (!hasValidProjectId || isNotFoundError(error)) notFound();
 
   return (
     <div className="space-y-6 px-8 py-6">
@@ -69,12 +82,15 @@ const RecommendedProject = ({ params }: ProjectPageProps) => {
       )}
 
       {isError && (
-        <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {(error as Error)?.message || "Failed to load project."}
-        </div>
+        <RetryAlert
+          error={error}
+          fallbackMessage="Failed to load project."
+          isRetrying={isFetching}
+          onRetry={() => void refetch()}
+        />
       )}
 
-      {!isLoading && !isError && project && <ProjectDetails project={project} />}
+      {!isLoading && project && <ProjectDetails project={project} />}
     </div>
   );
 };

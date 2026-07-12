@@ -2,8 +2,16 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.db import transaction
 
+from projects.models import Project
+from notifications.models import Notification
+from notifications.services import notify
+
 from .models import Comment, Like
-from .serializers import CommentCreateSerializer, CommentSerializer
+from .serializers import (
+	CommentCreateSerializer,
+	CommentSerializer,
+	ToggleProjectLikeSerializer,
+)
 
 
 class CommentCreateView(generics.CreateAPIView):
@@ -11,7 +19,17 @@ class CommentCreateView(generics.CreateAPIView):
 	serializer_class = CommentCreateSerializer
 
 	def perform_create(self, serializer):
-		serializer.save()
+		with transaction.atomic():
+			comment = serializer.save()
+			notify(
+				recipient=comment.project.user,
+				actor=comment.user,
+				event_type=Notification.TYPE_COMMENT,
+				message=(
+					f"{comment.user.full_name} commented on “{comment.project.title}”."
+				),
+				url_path=f"/platform/projects/{comment.project_id}",
+			)
 
 
 class CommentDeleteView(generics.DestroyAPIView):
@@ -58,39 +76,56 @@ class ProjectCommentsListView(generics.ListAPIView):
 
 class ToggleProjectLikeView(generics.GenericAPIView):
 	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = ToggleProjectLikeSerializer
 
 	def post(self, request, *args, **kwargs):
-		project_id = request.data.get("project_id")
-		if not project_id:
-			return Response(
-				{"detail": "project_id is required."},
-				status=status.HTTP_400_BAD_REQUEST,
-			)
-
+		serializer = self.get_serializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		project_id = serializer.validated_data["project_id"]
 		user = request.user
 
 		with transaction.atomic():
-			like = Like.objects.filter(user=user, project__project_id=project_id).first()
-
-			if like:
-				like.delete()
-				return Response(
-					{"detail": "Project unliked.", "liked": False},
-					status=status.HTTP_200_OK,
-				)
-
-			# Ensure project exists before creating like
-			from projects.models import Project
-
+			# Lock the project so two concurrent toggles for the same project cannot
+			# both observe an absent Like and race into the unique constraint.
 			try:
-				project = Project.objects.get(project_id=project_id)
+				project = Project.objects.select_for_update().get(project_id=project_id)
 			except Project.DoesNotExist:
 				return Response(
 					{"detail": "Project not found."},
 					status=status.HTTP_404_NOT_FOUND,
 				)
 
+			if project.user_id == user.user_id:
+				return Response(
+					{"detail": "You cannot like your own project."},
+					status=status.HTTP_400_BAD_REQUEST,
+				)
+
+			like = Like.objects.filter(user=user, project__project_id=project_id).first()
+
+			if like:
+				like.delete()
+				Notification.objects.filter(
+					dedupe_key=(
+						f"project:{project.project_id}:like:user:{user.user_id}"
+					)
+				).delete()
+				return Response(
+					{"detail": "Project unliked.", "liked": False},
+					status=status.HTTP_200_OK,
+				)
+
 			Like.objects.create(user=user, project=project)
+			notify(
+				recipient=project.user,
+				actor=user,
+				event_type=Notification.TYPE_LIKE,
+				message=f"{user.full_name} liked “{project.title}”.",
+				url_path=f"/platform/projects/{project.project_id}",
+				dedupe_key=(
+					f"project:{project.project_id}:like:user:{user.user_id}"
+				),
+			)
 
 		return Response(
 			{"detail": "Project liked.", "liked": True},

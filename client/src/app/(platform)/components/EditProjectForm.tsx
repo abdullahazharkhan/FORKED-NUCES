@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { MdEditor } from "md-editor-rt";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
-import { useRouter } from "next/navigation";
+import { queryKeys } from "@/lib/queryKeys";
+import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
 
 const AVAILABLE_TAGS = [
     "frontend",
@@ -15,11 +16,16 @@ const AVAILABLE_TAGS = [
     "machine-learning",
     "devops",
     "mobile",
-];
+] as const;
+type ProjectTag = (typeof AVAILABLE_TAGS)[number];
+const availableTagSet = new Set<string>(AVAILABLE_TAGS);
 
 const editProjectSchema = z.object({
     title: z.string().min(1, "Title is required"),
-    description: z.string().min(1, "Description is required"),
+    description: z
+        .string()
+        .min(1, "Description is required")
+        .max(10_000, "Description must be 10,000 characters or fewer"),
     github_url: z
         .string()
         .min(1, "GitHub URL is required")
@@ -32,25 +38,33 @@ const editProjectSchema = z.object({
             "URL must be a GitHub repository or profile link"
         ),
     tags: z
-        .array(z.enum(AVAILABLE_TAGS as [string, ...string[]]))
+        .array(z.enum(AVAILABLE_TAGS))
         .min(1, "Select at least one tag"),
 });
 
 type EditProjectFormValues = z.infer<typeof editProjectSchema>;
 
 interface EditProjectFormProps {
-    project: any;
+    project: {
+        project_id: number;
+        title?: string;
+        description?: string;
+        github_url?: string;
+        tags?: Array<{ tag?: string }>;
+    };
     onClose: () => void;
 }
 
-const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) => {
+const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
     const queryClient = useQueryClient();
-    const router = useRouter();
 
-    const defaultTags: string[] = Array.isArray(project.tags)
+    const defaultTags: ProjectTag[] = Array.isArray(project.tags)
         ? project.tags
-            .map((t: any) => t.tag)
-            .filter((t: string) => AVAILABLE_TAGS.includes(t))
+            .map((tag) => tag.tag)
+            .filter(
+                (tag): tag is ProjectTag =>
+                    typeof tag === "string" && availableTagSet.has(tag)
+            )
         : [];
 
     const {
@@ -92,8 +106,14 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({
-                queryKey: ["project", String(project.project_id)],
+                queryKey: queryKeys.project(project.project_id),
             });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.myProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.recommendedProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.allUserProjects }),
+            ]);
 
             onClose();
         },
@@ -114,29 +134,46 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             {/* Title */}
             <div className="flex flex-col">
-                <label className="text-sm font-semibold" htmlFor="title">
+                <label className="text-sm font-semibold" htmlFor="edit-project-title">
                     Title
                 </label>
                 <input
-                    id="title"
+                    id="edit-project-title"
                     type="text"
+                    aria-invalid={Boolean(errors.title)}
+                    aria-describedby={
+                        errors.title ? "edit-project-title-error" : undefined
+                    }
                     {...register("title")}
                     className={getInputClass(errors.title)}
                 />
                 {errors.title && (
-                    <p className="mt-1 text-xs text-red-500">{errors.title.message}</p>
+                    <p id="edit-project-title-error" className="mt-1 text-xs text-red-500">{errors.title.message}</p>
                 )}
             </div>
 
             {/* Description (Markdown) */}
             <div className="flex flex-col">
-                <label className="text-sm font-semibold">Description</label>
+                <p id="edit-project-description-label" className="text-sm font-semibold">
+                    Description
+                </p>
                 <Controller
                     control={control}
                     name="description"
                     render={({ field }) => (
-                        <div className="mt-1 rounded-xl border-2 border-primarypurple/30 bg-white">
+                        <div
+                            role="group"
+                            aria-labelledby="edit-project-description-label"
+                            aria-describedby={
+                                errors.description
+                                    ? "edit-project-description-error"
+                                    : undefined
+                            }
+                            className="mt-1 rounded-xl border-2 border-primarypurple/30 bg-white"
+                        >
                             <MdEditor
+                                {...untrustedMarkdownProps}
+                                editorId="edit-project-description"
                                 language="en-US"
                                 modelValue={field.value}
                                 onChange={field.onChange}
@@ -147,7 +184,7 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
                     )}
                 />
                 {errors.description && (
-                    <p className="mt-1 text-xs text-red-500">
+                    <p id="edit-project-description-error" className="mt-1 text-xs text-red-500">
                         {errors.description.message}
                     </p>
                 )}
@@ -155,17 +192,23 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
 
             {/* GitHub URL */}
             <div className="flex flex-col">
-                <label className="text-sm font-semibold" htmlFor="github_url">
+                <label className="text-sm font-semibold" htmlFor="edit-project-github-url">
                     GitHub URL
                 </label>
                 <input
-                    id="github_url"
+                    id="edit-project-github-url"
                     type="url"
+                    aria-invalid={Boolean(errors.github_url)}
+                    aria-describedby={
+                        errors.github_url
+                            ? "edit-project-github-url-error"
+                            : undefined
+                    }
                     {...register("github_url")}
                     className={getInputClass(errors.github_url)}
                 />
                 {errors.github_url && (
-                    <p className="mt-1 text-xs text-red-500">
+                    <p id="edit-project-github-url-error" className="mt-1 text-xs text-red-500">
                         {errors.github_url.message}
                     </p>
                 )}
@@ -173,13 +216,15 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
 
             {/* Tags (multi-select from allowed list) */}
             <div className="flex flex-col">
-                <label className="text-sm font-semibold">Tags</label>
+                <p id="edit-project-tags-label" className="text-sm font-semibold">
+                    Tags
+                </p>
                 <Controller
                     control={control}
                     name="tags"
                     render={({ field }) => {
-                        const value: string[] = field.value || [];
-                        const toggleTag = (tag: string, checked: boolean) => {
+                        const value: ProjectTag[] = field.value || [];
+                        const toggleTag = (tag: ProjectTag, checked: boolean) => {
                             if (checked) {
                                 field.onChange([...value, tag]);
                             } else {
@@ -188,7 +233,16 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
                         };
 
                         return (
-                            <div className="mt-1 flex flex-wrap gap-2">
+                            <div
+                                role="group"
+                                aria-labelledby="edit-project-tags-label"
+                                aria-describedby={
+                                    errors.tags
+                                        ? "edit-project-tags-error"
+                                        : undefined
+                                }
+                                className="mt-1 flex flex-wrap gap-2"
+                            >
                                 {AVAILABLE_TAGS.map((tag) => {
                                     const checked = value.includes(tag);
                                     return (
@@ -214,7 +268,7 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
                     }}
                 />
                 {errors.tags && (
-                    <p className="mt-1 text-xs text-red-500">
+                    <p id="edit-project-tags-error" className="mt-1 text-xs text-red-500">
                         {errors.tags.message as string}
                     </p>
                 )}
@@ -225,6 +279,7 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
                 <button
                     type="button"
                     onClick={onClose}
+                    disabled={updateMutation.isPending}
                     className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition"
                 >
                     Cancel
@@ -239,7 +294,7 @@ const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onClose }) =
             </div>
 
             {updateMutation.isError && (
-                <p className="mt-2 text-xs text-red-600">
+                <p className="mt-2 text-xs text-red-600" role="alert">
                     {(updateMutation.error as Error).message ||
                         "Failed to update project."}
                 </p>

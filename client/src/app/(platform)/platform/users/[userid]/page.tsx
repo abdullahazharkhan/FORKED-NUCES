@@ -2,35 +2,49 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { notFound } from "next/navigation";
 import "md-editor-rt/lib/style.css";
 import { authFetch } from "@/lib/authFetch";
 import UserProjects from "../components/UserProjects";
 import UserDetails from "@/app/(platform)/profile/components/UserDetails";
 import UserCollaborations from "../components/UserCollaborations";
+import { queryKeys } from "@/lib/queryKeys";
+import { HttpResponseError, isNotFoundError } from "@/lib/httpError";
+import { RetryAlert } from "@/app/(platform)/components/RetryAlert";
 
 const User = ({ params }: { params: Promise<{ userid: string }> }) => {
     const { userid } = React.use(params);
+    const userIdNumber = Number(userid);
+    const hasValidUserId =
+        Number.isSafeInteger(userIdNumber) && userIdNumber > 0;
 
     const {
         data: user,
         isLoading,
         isError,
+        isFetching,
         error,
+        refetch,
     } = useQuery({
-        queryKey: ["user", userid],
-        queryFn: async () => {
+        queryKey: queryKeys.user(userid),
+        queryFn: async ({ signal }) => {
             const res = await authFetch(`/api/users/${userid}`, {
                 method: "GET",
-                headers: { "Content-Type": "application/json" },
+                signal,
             });
 
             if (!res.ok) {
-                throw new Error("Failed to fetch user");
+                throw new HttpResponseError("Failed to fetch user", res.status);
             }
 
             return res.json();
         },
+        enabled: hasValidUserId,
+        retry: (failureCount, queryError) =>
+            !isNotFoundError(queryError) && failureCount < 3,
     });
+
+    if (!hasValidUserId || isNotFoundError(error)) notFound();
 
     return (
         <div className="mt-6 flex flex-col gap-6 p-6">
@@ -65,12 +79,15 @@ const User = ({ params }: { params: Promise<{ userid: string }> }) => {
             )}
 
             {isError && (
-                <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
-                    {(error as Error)?.message || "Failed to load user."}
-                </div>
+                <RetryAlert
+                    error={error}
+                    fallbackMessage="Failed to load user."
+                    isRetrying={isFetching}
+                    onRetry={() => void refetch()}
+                />
             )}
 
-            {!isLoading && !isError && user && (
+            {!isLoading && user && (
                 <>
                     <UserDetails user={user} page="userDetails" />
                     <div className="border-t-2 border-primarypurple/20"></div>

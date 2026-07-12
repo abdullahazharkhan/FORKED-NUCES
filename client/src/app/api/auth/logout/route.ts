@@ -1,30 +1,42 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-const DRF_BASE = process.env.DRF_API_BASE_URL || "http://localhost:8000";
+import { clearAuthCookies } from "@/lib/server/authCookies";
+import { REFRESH_COOKIE_NAME } from "@/lib/authCookieNames";
+import {
+    djangoRequest,
+    forwardDjangoResponse,
+    jsonHeaders,
+    rejectCrossOriginMutation,
+    upstreamErrorResponse,
+} from "@/lib/server/djangoBff";
 
-export async function POST() {
+export async function POST(request: Request) {
+    const rejection = rejectCrossOriginMutation(request);
+    if (rejection) return rejection;
+
     const cookieStore = await cookies();
-    const refreshToken = cookieStore.get("refresh_token")?.value;
-    const accessToken = cookieStore.get("access_token")?.value;
+    const refresh = cookieStore.get(REFRESH_COOKIE_NAME)?.value;
 
-    if (refreshToken) {
+    if (refresh) {
         try {
-            await fetch(`${DRF_BASE}/api/auth/logout/`, {
+            const result = await djangoRequest("/api/auth/logout/", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({ refresh: refreshToken }),
+                headers: jsonHeaders(),
+                body: JSON.stringify({ refresh }),
             });
+
+            // A 400 means Django confirmed that the refresh token is already unusable.
+            if (!result.response.ok && result.response.status !== 400) {
+                return forwardDjangoResponse(result, "Unable to complete logout.");
+            }
         } catch (error) {
-            console.error("Logout error:", error);
+            // Keep the local refresh cookie so the user can retry server-side revocation.
+            return upstreamErrorResponse(error);
         }
     }
 
-    const res = NextResponse.json({ success: true, message: "Logout successful" });
-    res.cookies.delete("access_token");
-    res.cookies.delete("refresh_token");
-    return res;
+    const response = NextResponse.json({ success: true, message: "Logout successful" });
+    clearAuthCookies(response);
+    return response;
 }

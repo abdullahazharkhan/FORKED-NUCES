@@ -2,7 +2,12 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, VerificationToken
+from .models import Skill, User, VerificationToken
+
+
+class SkillInline(admin.TabularInline):
+    model = Skill
+    extra = 0
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -11,6 +16,7 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ("is_email_verified", "is_github_connected", "is_staff", "is_active")
     search_fields = ("nu_email", "full_name")
     ordering = ("nu_email",)
+    inlines = (SkillInline,)
 
     fieldsets = (
         (None, {"fields": ("nu_email", "password")}),
@@ -46,6 +52,18 @@ class UserAdmin(BaseUserAdmin):
     
 @admin.register(VerificationToken)
 class VerificationTokenAdmin(admin.ModelAdmin):
-    list_display = ("token_id", "user", "token", "expires_at", "used_at", "created_at")
-    search_fields = ("token", "user__nu_email")
+    list_display = ("token_id", "user", "expires_at", "used_at", "created_at")
+    search_fields = ("user__nu_email",)
     list_filter = ("expires_at", "used_at", "created_at")
+    readonly_fields = ("token_id", "user", "expires_at", "used_at", "created_at")
+    exclude = ("token",)
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(Skill)
+class SkillAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "skill")
+    list_filter = ("skill",)
+    search_fields = ("skill", "user__full_name", "user__nu_email")

@@ -6,18 +6,25 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Spinner } from "@heroui/spinner";
 import { useAuthStore } from "@/stores";
+import {
+    MAX_PASSWORD_INPUT_LENGTH,
+    nuEmailSchema,
+} from "@/lib/authValidation";
+import { getSafeInternalPath } from "@/lib/safeRedirect";
 
 const loginSchema = z.object({
-    nuemail: z
+    nuemail: nuEmailSchema,
+    password: z
         .string()
-        .regex(
-            /^[klmfpi][0-9]{6}@nu\.edu\.pk$/,
-            "Please enter a valid NU email address"
+        .min(1, "Password is required")
+        .max(
+            MAX_PASSWORD_INPUT_LENGTH,
+            `Password must be ${MAX_PASSWORD_INPUT_LENGTH} characters or fewer`
         ),
-    password: z.string().min(1, "Password is required"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -62,9 +69,20 @@ const getErrorMessage = (err: unknown): string => {
     return "Login failed";
 };
 
-const Login = () => {
+const LoginForm = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const queryClient = useQueryClient();
     const authStore = useAuthStore.getState();
+    const reason = searchParams.get("reason");
+    const securityNotice =
+        reason === "password-changed"
+            ? "Your password was changed. Sign in again with your new password."
+            : reason === "logout-all"
+                ? "All sessions were signed out successfully."
+                : reason === "account-deleted"
+                    ? "Your account and personal profile data were deleted successfully."
+                : null;
 
     const {
         register,
@@ -99,11 +117,10 @@ const Login = () => {
             return body;
         },
         onSuccess: (data) => {
+            queryClient.clear();
             authStore.setUser(data.user);
-            router.push("/platform");
-        },
-        onError: (err) => {
-            console.error("Login error", err);
+            const nextPath = getSafeInternalPath(searchParams.get("next"));
+            router.replace(nextPath);
         },
     });
 
@@ -159,13 +176,18 @@ const Login = () => {
                         NU Email
                     </label>
                     <input
-                        type="text"
+                        type="email"
                         id="nuemail"
+                        autoComplete="email"
+                        aria-invalid={Boolean(errors.nuemail)}
+                        aria-describedby={
+                            errors.nuemail ? "login-email-error" : undefined
+                        }
                         {...register("nuemail")}
                         className={getInputClass(errors.nuemail)}
                     />
                     {errors.nuemail && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="login-email-error" className="text-sm text-red-500 mt-1">
                             {errors.nuemail.message}
                         </p>
                     )}
@@ -179,23 +201,36 @@ const Login = () => {
                     <input
                         type="password"
                         id="password"
+                        autoComplete="current-password"
+                        aria-invalid={Boolean(errors.password)}
+                        aria-describedby={
+                            errors.password ? "login-password-error" : undefined
+                        }
                         {...register("password")}
                         className={getInputClass(errors.password)}
                     />
                     {errors.password && (
-                        <p className="text-sm text-red-500 mt-1">
+                        <p id="login-password-error" className="text-sm text-red-500 mt-1">
                             {errors.password.message}
                         </p>
                     )}
                 </div>
 
-                <div>
-                    don&apos;t have an account?{" "}
+                <div className="flex flex-wrap justify-between gap-2 text-sm">
+                    <span>
+                        Don&apos;t have an account?{" "}
+                        <Link
+                            href="/get-started"
+                            className="text-primarypurple font-semibold underline"
+                        >
+                            Get Started
+                        </Link>
+                    </span>
                     <Link
-                        href="/get-started"
-                        className="text-primarypurple font-semibold underline"
+                        href="/forgot-password"
+                        className="font-semibold text-primarypurple underline"
                     >
-                        Get Started
+                        Forgot password?
                     </Link>
                 </div>
 
@@ -209,8 +244,18 @@ const Login = () => {
                     </Button>
                 </div>
 
+                {securityNotice && (
+                    <div
+                        role="status"
+                        className="mt-4 rounded bg-green-100 p-3 text-sm text-green-800"
+                    >
+                        {securityNotice}
+                    </div>
+                )}
+
                 {message && (
                     <div
+                        role={isError ? "alert" : "status"}
                         className={`mt-4 p-3 rounded text-sm ${isError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
                             }`}
                     >
@@ -221,5 +266,18 @@ const Login = () => {
         </div>
     );
 };
+
+const Login = () => (
+    <React.Suspense
+        fallback={
+            <div className="flex items-center justify-center gap-3" role="status">
+                <Spinner size="sm" />
+                <span>Loading login...</span>
+            </div>
+        }
+    >
+        <LoginForm />
+    </React.Suspense>
+);
 
 export default Login;
