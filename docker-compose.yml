@@ -1,51 +1,198 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-backend-environment: &backend-environment
+  ENVIRONMENT: ${ENVIRONMENT:-development}
+  DB_NAME: ${DB_NAME:-forked_nuces}
+  DB_USER: ${DB_USER:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env or the selected --env-file}
+  DB_HOST: db
+  DB_PORT: "5432"
+  SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env or the selected --env-file}
+  DEBUG: ${DEBUG:-False}
+  ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+  CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:3000}
+  FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:3000}
+  EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
+  EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
+  EMAIL_PORT: ${EMAIL_PORT:-587}
+  EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+  REDIS_URL: redis://redis:6379/1
+  SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
+  SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-False}
+  CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-False}
+  SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-0}
+  SECURE_HSTS_INCLUDE_SUBDOMAINS: ${SECURE_HSTS_INCLUDE_SUBDOMAINS:-False}
+  SECURE_HSTS_PRELOAD: ${SECURE_HSTS_PRELOAD:-False}
+  USE_WHITENOISE: ${USE_WHITENOISE:-True}
+  DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL:-INFO}
+  WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+  GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
+  GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-30}
+  GUNICORN_GRACEFUL_TIMEOUT: ${GUNICORN_GRACEFUL_TIMEOUT:-30}
+  GUNICORN_KEEPALIVE: ${GUNICORN_KEEPALIVE:-5}
+  FORWARDED_ALLOW_IPS: "*"
+
+x-backend-common: &backend-common
+  build:
+    context: ./server
+    dockerfile: Dockerfile
+  image: forked-nuces-backend:${IMAGE_TAG:-local}
+  environment: *backend-environment
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp:size=64m,mode=1777
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  networks:
+    - app
+    - data
+  logging: *default-logging
+
 services:
   db:
-    image: postgres:16
-    restart: always
+    image: postgres:16.14-alpine@sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: forked_nuces
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-forked_nuces}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env or the selected --env-file}
+      POSTGRES_INITDB_ARGS: --data-checksums
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    stop_grace_period: 60s
+    networks:
+      - data
+    logging: *default-logging
 
   redis:
-    image: redis:7-alpine
-    restart: always
+    image: redis:7.4.9-alpine@sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - ${REDIS_MAXMEMORY:-128mb}
+      - --maxmemory-policy
+      - volatile-lru
+    read_only: true
+    tmpfs:
+      - /data:size=160m,mode=770
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - data
+    logging: *default-logging
+
+  migrate:
+    <<: *backend-common
+    command: ["python", "manage.py", "migrate", "--noinput"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  collectstatic:
+    <<: *backend-common
+    command: ["python", "manage.py", "collectstatic", "--noinput"]
+    restart: "no"
+    volumes:
+      - static_data:/app/staticfiles
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
   backend:
-    build: ./server
-    restart: always
-    depends_on:
-      - db
-      - redis
-    environment:
-      DB_NAME: forked_nuces
-      DB_USER: postgres
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: db
-      DB_PORT: 5432
-      SECRET_KEY: ${SECRET_KEY}
-      DEBUG: "False"
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL}
-      EMAIL_BACKEND: ${EMAIL_BACKEND}
-      EMAIL_HOST: ${EMAIL_HOST}
-      EMAIL_PORT: ${EMAIL_PORT}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      REDIS_URL: redis://redis:6379/1
-      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-False}
-      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-False}
-      SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-0}
+    <<: *backend-common
+    restart: unless-stopped
+    expose:
+      - "8000"
+    # Loopback-only publishing keeps local development convenient without
+    # exposing Gunicorn directly to the public internet.
     ports:
-      - "8000:8000"
-    command: >
-      sh -c "python manage.py migrate &&
-             gunicorn drf_backend.wsgi:application --bind 0.0.0.0:8000"
+      - "127.0.0.1:${BACKEND_HOST_PORT:-8000}:8000"
+    volumes:
+      - static_data:/app/staticfiles:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      collectstatic:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import os, urllib.request; host = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')[0].strip() or 'localhost'; request = urllib.request.Request('http://127.0.0.1:8000/ready/', headers={'Host': host, 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(request, timeout=3)
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    stop_grace_period: 45s
+
+  caddy:
+    image: caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    profiles: ["production"]
+    restart: unless-stopped
+    environment:
+      API_DOMAIN: ${API_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app
+    logging: *default-logging
+
+networks:
+  app:
+  data:
+    internal: true
 
 volumes:
   postgres_data:
-
+  static_data:
+  caddy_data:
+  caddy_config:
