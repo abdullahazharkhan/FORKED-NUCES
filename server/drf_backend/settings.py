@@ -253,9 +253,22 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-# Email uses the configured SMTP provider in production.
-# For local dev without email, set EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend in .env
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+# In development, real deliveries are also copied to stdout by default.
+_configured_email_backend = os.environ.get(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend",
+)
+EMAIL_DELIVERY_BACKEND = _configured_email_backend
+EMAIL_CONSOLE_COPY = env_bool("EMAIL_CONSOLE_COPY", ENVIRONMENT == "development")
+if (
+    ENVIRONMENT == "development"
+    and EMAIL_CONSOLE_COPY
+    and EMAIL_DELIVERY_BACKEND
+    != "django.core.mail.backends.console.EmailBackend"
+):
+    EMAIL_BACKEND = "drf_backend.email_backends.DevelopmentEmailBackend"
+else:
+    EMAIL_BACKEND = EMAIL_DELIVERY_BACKEND
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_USE_TLS = True

@@ -1,67 +1,104 @@
 import type { ElementType } from "react";
-import { MdManageAccounts, MdContentPasteSearch } from "react-icons/md";
-import { FaThList } from "react-icons/fa";
+import { ArrowUpRight, Radar, ShieldCheck, Sparkles } from "lucide-react";
 
 const FEATURES = [
     {
-        title: "Profile Management",
-        description: "Update your personal info, skills, and project details so contributors instantly know your strengths. Build a clean public profile that highlights what you love to work on and what you're great at.",
-        icon: MdManageAccounts,
+        eyebrow: "01 · Discover",
+        title: "Find the right project, not just another repository.",
+        description:
+            "Search by skills, technologies, open issues, and momentum. Recommendations surface work where your contribution can matter now.",
+        points: ["Skill-aware recommendations", "Search and technology filters"],
+        icon: Radar,
+        tone: "bg-primarypurple text-white",
+        iconTone: "bg-white/15 text-primarygreen",
     },
     {
-        title: "Project Listing",
-        description: "Add your GitHub repositories to the platform and showcase what you're building to the FAST community. Highlight issues, features, and ideas so others can easily jump in and contribute.",
-        icon: FaThList,
+        eyebrow: "02 · Collaborate",
+        title: "A clear path from issue to accepted contribution.",
+        description:
+            "Apply to issues, invite contributors, record decisions, and give credit only when the work is genuinely completed.",
+        points: ["Consent-based collaboration", "Built-in activity and notifications"],
+        icon: ShieldCheck,
+        tone: "bg-white text-black",
+        iconTone: "bg-primarypurple/10 text-primarypurple",
     },
     {
-        title: "Project Search",
-        description: "Search through all listed projects and quickly find ideas that match your skills and interests. Filter by tags, technologies, and difficulty to discover the perfect project to contribute to.",
-        icon: MdContentPasteSearch,
+        eyebrow: "03 · Grow",
+        title: "Let completed work tell your developer story.",
+        description:
+            "Your profile brings projects, skills, and accepted contributions together into a living record of how you build with others.",
+        points: ["Contribution-backed profiles", "Community activity and rankings"],
+        icon: Sparkles,
+        tone: "bg-primarygreen text-black",
+        iconTone: "bg-black text-primarygreen",
     },
 ] as const;
 
-const FeatureBox = ({
-    title,
-    description,
-    Icon,
-}: {
-    title: string;
+type FeatureCardProps = {
     description: string;
+    eyebrow: string;
     Icon: ElementType;
-}) => {
-    return (
-        <div className="relative bg-white rounded-xl shadow-md px-6 py-8 border-l-4 border-b-4 hover:shadow-lg space-y-4 cursor-default">
-            <div className="absolute -top-6 right-0 -translate-x-1/2">
-                <div className="bg-primarygreen text-black w-16 h-16 rounded-full flex items-center justify-center shadow-md">
-                    <Icon className="text-2xl" />
-                </div>
-            </div>
-
-            <h3 className="text-xl font-semibold">
-                {title}
-            </h3>
-
-            <p className="text-gray-700 text-sm text-center">
-                {description}
-            </p>
-        </div>
-    );
+    iconTone: string;
+    points: readonly string[];
+    title: string;
+    tone: string;
 };
 
+const FeatureCard = ({
+    description,
+    eyebrow,
+    Icon,
+    iconTone,
+    points,
+    title,
+    tone,
+}: FeatureCardProps) => (
+    <article className={`group flex min-h-[28rem] flex-col rounded-3xl p-6 shadow-sm sm:p-8 ${tone}`}>
+        <div className="flex items-start justify-between gap-4">
+            <span className={`flex h-12 w-12 items-center justify-center rounded-xl ${iconTone}`}>
+                <Icon className="h-6 w-6" aria-hidden="true" />
+            </span>
+            <ArrowUpRight
+                className="h-5 w-5 opacity-40 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:opacity-100"
+                aria-hidden="true"
+            />
+        </div>
+        <p className="mt-10 text-xs font-bold uppercase tracking-[0.18em] opacity-55">
+            {eyebrow}
+        </p>
+        <h3 className="mt-3 text-2xl font-black leading-tight tracking-[-0.035em]">
+            {title}
+        </h3>
+        <p className="mt-4 text-sm leading-6 opacity-65">{description}</p>
+        <ul className="mt-auto space-y-2 border-t border-current/15 pt-6 text-sm font-semibold">
+            {points.map((point) => (
+                <li key={point} className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                    {point}
+                </li>
+            ))}
+        </ul>
+    </article>
+);
 
-const Features = () => {
-    return (
-        <div className='space-y-12'>
-            <h2 className='text-6xl font-black italic tracking-[-0.20rem] uppercase text-center underline underline-offset-2 decoration-primarygreen bg-primarygreen/20 w-fit mx-auto'>
-                Features
-            </h2>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-4 w-7/8 mx-auto'>
+const Features = () => (
+    <section id="features" className="bg-black/[0.025] px-5 py-20 sm:px-8 sm:py-28">
+        <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-3xl text-center">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-primarypurple">
+                    Everything between idea and impact
+                </p>
+                <h2 className="mt-4 text-balance text-4xl font-black tracking-[-0.045em] sm:text-5xl">
+                    Collaboration that stays simple, visible, and fair.
+                </h2>
+            </div>
+            <div className="mt-12 grid gap-4 lg:grid-cols-3">
                 {FEATURES.map((feature) => (
-                    <FeatureBox key={feature.title} title={feature.title} description={feature.description} Icon={feature.icon} />
+                    <FeatureCard key={feature.title} {...feature} Icon={feature.icon} />
                 ))}
             </div>
         </div>
-    )
-}
+    </section>
+);
 
-export default Features
+export default Features;

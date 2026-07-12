@@ -1,21 +1,25 @@
 "use client";
 
-import React from "react";
-import { Button } from "@heroui/react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@heroui/react";
+import { Spinner } from "@heroui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Spinner } from "@heroui/spinner";
-import { useAuthStore } from "@/stores";
-import {
-    MAX_PASSWORD_INPUT_LENGTH,
-    nuEmailSchema,
-} from "@/lib/authValidation";
-import { getSafeInternalPath } from "@/lib/safeRedirect";
+import { ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { PasswordInput } from "@/components/PasswordInput";
+import {
+    AUTH_LABEL_CLASS,
+    AUTH_PRIMARY_BUTTON_CLASS,
+    getAuthInputClass,
+} from "@/lib/authFormStyles";
+import { MAX_PASSWORD_INPUT_LENGTH, nuEmailSchema } from "@/lib/authValidation";
+import { getSafeInternalPath } from "@/lib/safeRedirect";
+import { useAuthStore } from "@/stores";
 
 const loginSchema = z.object({
     nuemail: nuEmailSchema,
@@ -28,7 +32,7 @@ const loginSchema = z.object({
         ),
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 type ApiError = {
     body?: unknown;
@@ -38,35 +42,24 @@ type ApiError = {
     statusText?: string;
 };
 
-const getErrorMessage = (err: unknown): string => {
-    const e = err as ApiError | undefined;
+const getErrorMessage = (error: unknown): string => {
+    const apiError = error as ApiError | undefined;
+    if (!apiError) return "Login failed";
 
-    if (!e) return "Login failed";
-
-    // DRF-style body object
-    if (e.body && typeof e.body === "object" && !Array.isArray(e.body)) {
-        const body = e.body as Record<string, unknown>;
+    if (apiError.body && typeof apiError.body === "object" && !Array.isArray(apiError.body)) {
+        const body = apiError.body as Record<string, unknown>;
         const firstKey = Object.keys(body)[0];
-
         if (firstKey) {
             const value = body[firstKey];
-            if (Array.isArray(value) && value.length > 0) {
-                return String(value[0]);
-            }
-            if (typeof value === "string") {
-                return value;
-            }
+            if (Array.isArray(value) && value.length > 0) return String(value[0]);
+            if (typeof value === "string") return value;
         }
     }
 
-    if (typeof e.body === "string") return e.body;
-    if (e.detail) return e.detail;
-    if (e.message) return e.message;
-
-    if (e.status) {
-        return `${e.status} ${e.statusText || ""}`.trim();
-    }
-
+    if (typeof apiError.body === "string") return apiError.body;
+    if (apiError.detail) return apiError.detail;
+    if (apiError.message) return apiError.message;
+    if (apiError.status) return `${apiError.status} ${apiError.statusText || ""}`.trim();
     return "Login failed";
 };
 
@@ -74,7 +67,7 @@ const LoginForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const queryClient = useQueryClient();
-    const authStore = useAuthStore.getState();
+    const setUser = useAuthStore((state) => state.setUser);
     const reason = searchParams.get("reason");
     const securityNotice =
         reason === "password-changed"
@@ -83,20 +76,20 @@ const LoginForm = () => {
                 ? "All sessions were signed out successfully."
                 : reason === "account-deleted"
                     ? "Your account and personal profile data were deleted successfully."
-                : null;
+                    : null;
 
     const {
         register,
         handleSubmit,
         formState: { errors, isValid },
-    } = useForm<LoginForm>({
+    } = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
         mode: "onChange",
     });
 
     const loginMutation = useMutation({
-        mutationFn: async (data: LoginForm) => {
-            const res = await fetch("/api/auth/login", {
+        mutationFn: async (data: LoginFormValues) => {
+            const response = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -104,180 +97,154 @@ const LoginForm = () => {
                     password: data.password,
                 }),
             });
-
-            const body = await res.json().catch(() => null);
-
-            if (!res.ok) {
+            const body = await response.json().catch(() => null);
+            if (!response.ok) {
                 throw {
-                    status: res.status,
-                    statusText: res.statusText,
+                    status: response.status,
+                    statusText: response.statusText,
                     body,
                 } as ApiError;
             }
-
             return body;
         },
         onSuccess: (data) => {
             queryClient.clear();
-            authStore.setUser(data.user);
-            const nextPath = getSafeInternalPath(searchParams.get("next"));
-            router.replace(nextPath);
+            setUser(data.user);
+            router.replace(getSafeInternalPath(searchParams.get("next")));
         },
     });
 
-    const onSubmit = (data: LoginForm) => {
-        loginMutation.mutate(data);
-    };
-
-    const baseInputClasses =
-        "p-2 rounded border-2 focus:border-primarypurple/80 focus:ring-0 outline-none transition-colors duration-200";
-
-    const getInputClass = (fieldError?: unknown) =>
-        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-gray-300"}`;
-
-    let message: React.ReactNode | string | null = null;
+    let message: ReactNode | null = null;
     let isError = false;
-
     if (loginMutation.isError) {
         const rawMessage = getErrorMessage(loginMutation.error);
-
-        if (rawMessage === "Email is not verified.") {
-            message = (
+        message =
+            rawMessage === "Email is not verified." ? (
                 <span>
                     Your email is not verified.{" "}
-                    <Link
-                        href="/verify-email/resend"
-                        className="text-primarypurple font-semibold underline"
-                    >
+                    <Link href="/verify-email/resend" className="font-bold underline underline-offset-2">
                         Resend verification email
                     </Link>
                 </span>
+            ) : (
+                rawMessage
             );
-        } else {
-            message = rawMessage;
-        }
-
         isError = true;
-    } else if (loginMutation.isSuccess) {
-        const result = loginMutation.data as { message?: string } | undefined;
-        message = result?.message || "Login successful.";
-        isError = false;
     }
 
     return (
-        <div className="sm:w-2/3 mx-auto space-y-8">
-            <h1 className="text-left text-4xl font-black italic tracking-[-0.20rem] uppercase underline underline-offset-2 decoration-primarygreen bg-primarygreen/20 w-fit">
-                Login
-            </h1>
-
-            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                {/* NU Email */}
-                <div className="flex flex-col">
-                    <label htmlFor="nuemail" className="font-semibold text-lg">
-                        NU Email
-                    </label>
-                    <input
-                        type="email"
-                        id="nuemail"
-                        autoComplete="email"
-                        aria-invalid={Boolean(errors.nuemail)}
-                        aria-describedby={
-                            errors.nuemail ? "login-email-error" : undefined
-                        }
-                        {...register("nuemail")}
-                        className={getInputClass(errors.nuemail)}
-                    />
-                    {errors.nuemail && (
-                        <p id="login-email-error" className="text-sm text-red-500 mt-1">
-                            {errors.nuemail.message}
-                        </p>
-                    )}
+        <div className="landing-fade-up">
+            <div className="mb-7">
+                <div className="inline-flex items-center gap-2 rounded-full bg-primarypurple/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-primarypurple">
+                    <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" />
+                    Welcome back
                 </div>
+                <h1 className="mt-4 text-3xl font-black tracking-[-0.04em] text-black sm:text-4xl">
+                    Log in to keep building.
+                </h1>
+                <p className="mt-3 text-sm leading-6 text-black/50">
+                    Access your projects, collaborations, and community activity.
+                </p>
+            </div>
 
-                {/* Password */}
-                <div className="flex flex-col">
-                    <label htmlFor="password" className="font-semibold text-lg">
-                        Password
-                    </label>
-                    <PasswordInput
-                        id="password"
-                        autoComplete="current-password"
-                        aria-invalid={Boolean(errors.password)}
-                        aria-describedby={
-                            errors.password ? "login-password-error" : undefined
-                        }
-                        {...register("password")}
-                        className={getInputClass(errors.password)}
-                    />
-                    {errors.password && (
-                        <p id="login-password-error" className="text-sm text-red-500 mt-1">
-                            {errors.password.message}
-                        </p>
-                    )}
+            {securityNotice && (
+                <div role="status" className="mb-4 flex gap-3 rounded-xl border border-green-200 bg-green-50 p-3.5 text-sm leading-6 text-green-800">
+                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    {securityNotice}
                 </div>
+            )}
 
-                <div className="flex flex-wrap justify-between gap-2 text-sm">
-                    <span>
-                        Don&apos;t have an account?{" "}
-                        <Link
-                            href="/get-started"
-                            className="text-primarypurple font-semibold underline"
-                        >
-                            Get Started
-                        </Link>
-                    </span>
-                    <Link
-                        href="/forgot-password"
-                        className="font-semibold text-primarypurple underline"
-                    >
-                        Forgot password?
-                    </Link>
-                </div>
+            <div className="rounded-3xl border border-black/[0.08] bg-white p-5 shadow-[0_24px_70px_rgba(31,21,67,0.08)] sm:p-7">
+                <form noValidate className="space-y-5" onSubmit={handleSubmit((data) => loginMutation.mutate(data))}>
+                    <div className="space-y-2">
+                        <label htmlFor="nuemail" className={AUTH_LABEL_CLASS}>NU Email</label>
+                        <input
+                            type="email"
+                            id="nuemail"
+                            autoComplete="email"
+                            placeholder="k23xxxx@nu.edu.pk"
+                            required
+                            aria-invalid={Boolean(errors.nuemail)}
+                            aria-describedby={errors.nuemail ? "login-email-error" : undefined}
+                            {...register("nuemail")}
+                            className={getAuthInputClass(Boolean(errors.nuemail))}
+                        />
+                        {errors.nuemail && (
+                            <p id="login-email-error" className="text-sm text-red-600">{errors.nuemail.message}</p>
+                        )}
+                    </div>
 
-                <div className="flex w-full justify-end">
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-4">
+                            <label htmlFor="password" className={AUTH_LABEL_CLASS}>Password</label>
+                            <Link href="/forgot-password" className="text-xs font-bold text-primarypurple hover:text-black">
+                                Forgot password?
+                            </Link>
+                        </div>
+                        <PasswordInput
+                            id="password"
+                            autoComplete="current-password"
+                            placeholder="Enter your password"
+                            required
+                            aria-invalid={Boolean(errors.password)}
+                            aria-describedby={errors.password ? "login-password-error" : undefined}
+                            {...register("password")}
+                            className={getAuthInputClass(Boolean(errors.password))}
+                        />
+                        {errors.password && (
+                            <p id="login-password-error" className="text-sm text-red-600">{errors.password.message}</p>
+                        )}
+                    </div>
+
                     <Button
-                        className="bg-primarygreen text-black font-bold"
+                        className={AUTH_PRIMARY_BUTTON_CLASS}
                         type="submit"
                         isDisabled={!isValid || loginMutation.isPending}
                     >
-                        {loginMutation.isPending ? "Logging in..." : "Login"}
+                        {loginMutation.isPending ? "Logging in..." : (
+                            <span className="flex items-center gap-2">
+                                Log in
+                                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                            </span>
+                        )}
                     </Button>
-                </div>
 
-                {securityNotice && (
-                    <div
-                        role="status"
-                        className="mt-4 rounded bg-green-100 p-3 text-sm text-green-800"
-                    >
-                        {securityNotice}
-                    </div>
-                )}
-
-                {message && (
-                    <div
-                        role={isError ? "alert" : "status"}
-                        className={`mt-4 p-3 rounded text-sm ${isError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                    {message && (
+                        <div
+                            role={isError ? "alert" : "status"}
+                            className={`rounded-xl border p-3.5 text-sm leading-6 ${
+                                isError
+                                    ? "border-red-200 bg-red-50 text-red-700"
+                                    : "border-green-200 bg-green-50 text-green-700"
                             }`}
-                    >
-                        {message}
-                    </div>
-                )}
-            </form>
+                        >
+                            {message}
+                        </div>
+                    )}
+                </form>
+            </div>
+
+            <p className="mt-6 text-center text-sm text-black/50">
+                New to FORKED NUCES?{" "}
+                <Link href="/get-started" className="font-bold text-primarypurple hover:text-black">
+                    Create an account
+                </Link>
+            </p>
         </div>
     );
 };
 
 const Login = () => (
-    <React.Suspense
+    <Suspense
         fallback={
-            <div className="flex items-center justify-center gap-3" role="status">
+            <div className="flex min-h-80 items-center justify-center gap-3" role="status">
                 <Spinner size="sm" />
-                <span>Loading login...</span>
+                <span className="text-sm text-black/50">Loading login...</span>
             </div>
         }
     >
         <LoginForm />
-    </React.Suspense>
+    </Suspense>
 );
 
 export default Login;
