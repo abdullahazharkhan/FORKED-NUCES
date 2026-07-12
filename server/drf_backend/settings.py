@@ -36,20 +36,33 @@ def env_list(name, default):
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env_bool("DEBUG", True)
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development").strip().lower()
+if ENVIRONMENT not in {"development", "test", "production"}:
+    raise ImproperlyConfigured(
+        "ENVIRONMENT must be one of: development, test, production."
+    )
+PRODUCTION = env_bool("PRODUCTION", ENVIRONMENT == "production")
+ALLOW_INSECURE_PRODUCTION = env_bool("ALLOW_INSECURE_PRODUCTION", False)
+
+# Debugging must be explicitly enabled, even outside production.
+DEBUG = env_bool("DEBUG", False)
+if PRODUCTION and DEBUG:
+    raise ImproperlyConfigured("DEBUG must be False in production.")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
-    if DEBUG:
+    if not PRODUCTION:
         SECRET_KEY = "django-insecure-dev-only-change-me"
     else:
-        raise ImproperlyConfigured("SECRET_KEY must be set when DEBUG=False.")
+        raise ImproperlyConfigured("SECRET_KEY must be set in production.")
 
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
-if not DEBUG and not ALLOWED_HOSTS:
-    raise ImproperlyConfigured("ALLOWED_HOSTS must be set when DEBUG=False.")
+ALLOWED_HOSTS = env_list(
+    "ALLOWED_HOSTS",
+    "" if PRODUCTION else "localhost,127.0.0.1,testserver",
+)
+if PRODUCTION and not ALLOWED_HOSTS:
+    raise ImproperlyConfigured("ALLOWED_HOSTS must be set in production.")
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -68,11 +81,14 @@ INSTALLED_APPS = [
     "accounts",
     "projects",
     "interactions",
+    "notifications",
+    "moderation",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "drf_backend.middleware.RequestIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -80,6 +96,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+USE_WHITENOISE = env_bool("USE_WHITENOISE", PRODUCTION)
+if USE_WHITENOISE:
+    MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")
 
 ROOT_URLCONF = "drf_backend.urls"
 
@@ -104,14 +124,20 @@ WSGI_APPLICATION = "drf_backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+_db_password = os.environ.get("DB_PASSWORD")
+if PRODUCTION and not _db_password:
+    raise ImproperlyConfigured("DB_PASSWORD must be set in production.")
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get("DB_NAME", "forked_nuces"),
         "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "admin"),
+        "PASSWORD": _db_password or "admin",
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", "5432"),
+        "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", "60" if PRODUCTION else "0")),
+        "CONN_HEALTH_CHECKS": True,
     }
 }
 
@@ -134,6 +160,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", "3600"))
+if PASSWORD_RESET_TIMEOUT <= 0:
+    raise ImproperlyConfigured("PASSWORD_RESET_TIMEOUT must be a positive number of seconds.")
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -150,7 +180,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+if USE_WHITENOISE:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -159,20 +199,45 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "accounts.authentication.SessionVersionJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ),
+    "DEFAULT_PAGINATION_CLASS": "drf_backend.pagination.ArrayLimitOffsetPagination",
+    "PAGE_SIZE": 50,
+    "DEFAULT_RENDERER_CLASSES": (
+        ("rest_framework.renderers.JSONRenderer",)
+        if PRODUCTION
+        else (
+            "rest_framework.renderers.JSONRenderer",
+            "rest_framework.renderers.BrowsableAPIRenderer",
+        )
+    ),
     # ── Rate limiting ──────────────────────────────────────────────────────────
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",   # unauthenticated users
         "rest_framework.throttling.UserRateThrottle",   # authenticated users
+        "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
         "anon": "30/minute",    # 30 requests/min for guests (blocks bots/scrapers)
         "user": "200/minute",   # 200 requests/min for logged-in users
+        "token": "10/minute",
+        "login": "10/minute",
+        "register": "5/hour",
+        "verify_email": "10/minute",
+        "resend_verification": "3/hour",
+        "password_reset_request": "5/hour",
+        "password_reset_confirm": "10/hour",
+        "password_change": "10/hour",
+        "logout_all": "10/hour",
+        "account_export": "5/hour",
+        "account_delete": "3/hour",
+        "collaboration_request": "30/hour",
+        "collaboration_action": "60/hour",
+        "report_create": "10/hour",
     },
 }
 
@@ -188,7 +253,7 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-# Email — uses Outlook SMTP in production
+# Email uses the configured SMTP provider in production.
 # For local dev without email, set EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend in .env
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
@@ -197,26 +262,86 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER", "forkednuces@gmail.com")
-FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "http://localhost:3000")
+FRONTEND_BASE_URL = os.environ.get(
+    "FRONTEND_BASE_URL",
+    "" if PRODUCTION else "http://localhost:3000",
+)
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
+if PRODUCTION:
+    if not FRONTEND_BASE_URL:
+        raise ImproperlyConfigured("FRONTEND_BASE_URL must be set in production.")
+    if not FRONTEND_BASE_URL.startswith("https://") and not ALLOW_INSECURE_PRODUCTION:
+        raise ImproperlyConfigured("FRONTEND_BASE_URL must use HTTPS in production.")
+    expected_smtp_backend = "django.core.mail.backends.smtp.EmailBackend"
+    if EMAIL_BACKEND != expected_smtp_backend and not env_bool(
+        "ALLOW_NON_SMTP_EMAIL", False
+    ):
+        raise ImproperlyConfigured(
+            "The SMTP EMAIL_BACKEND is required in production; set ALLOW_NON_SMTP_EMAIL=True only for an intentional provider override."
+        )
+    if EMAIL_BACKEND == expected_smtp_backend and (
+        not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD
+    ):
+        raise ImproperlyConfigured(
+            "EMAIL_HOST_USER and EMAIL_HOST_PASSWORD are required for production SMTP."
+        )
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+CORS_ALLOWED_ORIGINS = env_list(
+    "CORS_ALLOWED_ORIGINS",
+    "" if PRODUCTION else "http://localhost:3000,http://127.0.0.1:3000",
+)
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", "")
+if PRODUCTION and not ALLOW_INSECURE_PRODUCTION:
+    if not CORS_ALLOWED_ORIGINS:
+        raise ImproperlyConfigured("CORS_ALLOWED_ORIGINS must be set in production.")
+    insecure_cors_origins = [
+        origin for origin in CORS_ALLOWED_ORIGINS if not origin.startswith("https://")
+    ]
+    if insecure_cors_origins:
+        raise ImproperlyConfigured(
+            "All production CORS_ALLOWED_ORIGINS must use HTTPS."
+        )
 
 # Allow cookies/auth if needed (adjust in production as required)
 CORS_ALLOW_CREDENTIALS = True
 
-# Production security controls. Keep these false in local HTTP development, and enable them when serving over HTTPS.
-SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", False)
-SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", not DEBUG)
-CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", not DEBUG)
-SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "0"))
-SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", False)
+# Caddy terminates TLS and forwards the original scheme with this header.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = env_bool("USE_X_FORWARDED_HOST", PRODUCTION)
+SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", PRODUCTION)
+SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", PRODUCTION)
+CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", PRODUCTION)
+SECURE_HSTS_SECONDS = int(
+    os.environ.get("SECURE_HSTS_SECONDS", "31536000" if PRODUCTION else "0")
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", PRODUCTION)
 SECURE_HSTS_PRELOAD = env_bool("SECURE_HSTS_PRELOAD", False)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+X_FRAME_OPTIONS = "DENY"
+
+if PRODUCTION and not ALLOW_INSECURE_PRODUCTION:
+    if not SECURE_SSL_REDIRECT:
+        raise ImproperlyConfigured("SECURE_SSL_REDIRECT must be enabled in production.")
+    if not SESSION_COOKIE_SECURE or not CSRF_COOKIE_SECURE:
+        raise ImproperlyConfigured("Secure session and CSRF cookies are required in production.")
+    if SECURE_HSTS_SECONDS <= 0:
+        raise ImproperlyConfigured("SECURE_HSTS_SECONDS must be positive in production.")
 
 # ── Redis Cache ────────────────────────────────────────────────────────────────
 # Used by DRF throttling (shared across all workers) and general caching.
 # Falls back to in-memory cache if REDIS_URL is not set.
 _redis_url = os.environ.get("REDIS_URL", "")
+ALLOW_LOCAL_CACHE = env_bool("ALLOW_LOCAL_CACHE", False)
+if PRODUCTION and not _redis_url and not ALLOW_LOCAL_CACHE:
+    raise ImproperlyConfigured(
+        "REDIS_URL is required in production; set ALLOW_LOCAL_CACHE=True only for an intentional override."
+    )
 if _redis_url:
     CACHES = {
         "default": {
@@ -224,7 +349,10 @@ if _redis_url:
             "LOCATION": _redis_url,
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "SOCKET_CONNECT_TIMEOUT": int(os.environ.get("REDIS_CONNECT_TIMEOUT", "5")),
+                "SOCKET_TIMEOUT": int(os.environ.get("REDIS_SOCKET_TIMEOUT", "5")),
             },
+            "KEY_PREFIX": os.environ.get("CACHE_KEY_PREFIX", "forked_nuces"),
         }
     }
 else:
@@ -233,3 +361,47 @@ else:
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         }
     }
+
+
+LOG_LEVEL = os.environ.get(
+    "DJANGO_LOG_LEVEL",
+    os.environ.get("LOG_LEVEL", "INFO" if PRODUCTION else "DEBUG"),
+).upper()
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "{asctime} {levelname} request_id={request_id} {name} {message}",
+            "style": "{",
+        },
+    },
+    "filters": {
+        "request_id": {
+            "()": "drf_backend.middleware.RequestIdLogFilter",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+            "filters": ["request_id"],
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": LOG_LEVEL,
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}

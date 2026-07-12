@@ -16,6 +16,9 @@ from .views import (
     TopContributorsView,
     UserActivityStatsView,
     RecentActivityView,
+    IssueCollaborationRequestListCreateView,
+    CollaborationRequestActionView,
+    MyCollaborationRequestsView,
 )
 
 
@@ -33,6 +36,21 @@ urlpatterns = [
     path("issues/<int:issue_id>/status/", IssueStatusUpdateView.as_view(), name="issue-status-update"),
     path("issues/<int:issue_id>/", IssueUpdateDeleteView.as_view(), name="issue-update-delete"),
     path(
+        "issues/<int:issue_id>/collaboration-requests/",
+        IssueCollaborationRequestListCreateView.as_view(),
+        name="issue-collaboration-requests",
+    ),
+    path(
+        "collaboration-requests/mine/",
+        MyCollaborationRequestsView.as_view(),
+        name="my-collaboration-requests",
+    ),
+    path(
+        "collaboration-requests/<int:request_id>/",
+        CollaborationRequestActionView.as_view(),
+        name="collaboration-request-action",
+    ),
+    path(
         "issues/close-with-collaborator/",
         CloseIssueAndAddCollaboratorView.as_view(),
         name="issue-close-with-collaborator",
@@ -47,7 +65,7 @@ urlpatterns = [
         UserCollaboratedProjectsView.as_view(),
         name="user-collaborated-projects",
     ),
-    # Endpoints using PostgreSQL DB Views
+    # Derived project data is computed through Django ORM querysets.
     path("recommended/", RecommendedProjectsView.as_view(), name="recommended-projects"),
     path("top-contributors/", TopContributorsView.as_view(), name="top-contributors"),
     path("user-stats/", UserActivityStatsView.as_view(), name="user-activity-stats-self"),

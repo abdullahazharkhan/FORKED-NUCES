@@ -1,9 +1,16 @@
 from rest_framework import serializers
 from django.db import transaction
 
-from .models import Project, Tag, Issue, Collaborator
+from drf_backend.fields import EarlyBoundedListField
+from .limits import MAX_ISSUES_PER_PROJECT
+from .models import CollaborationRequest, Project, Tag, Issue, Collaborator
 from accounts.models import User
-from interactions.models import Comment
+
+
+MAX_ISSUE_DESCRIPTION_LENGTH = 10_000
+MAX_PROJECT_DESCRIPTION_LENGTH = 10_000
+MAX_CLOSE_COLLABORATORS = 50
+MAX_PROJECT_TAGS = 25
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -28,14 +35,18 @@ class IssueSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
 	tags = TagSerializer(many=True, read_only=True)
-	issues = IssueSerializer(many=True, read_only=True)
 	owner_user_id = serializers.IntegerField(source="user.user_id", read_only=True)
 	owner_full_name = serializers.CharField(source="user.full_name", read_only=True)
 	owner_nu_email = serializers.EmailField(source="user.nu_email", read_only=True)
-	likes_count = serializers.IntegerField(source="likes.count", read_only=True)
-	user_has_liked = serializers.SerializerMethodField()
-	user_has_collaborated = serializers.SerializerMethodField()
-	user_has_commented = serializers.SerializerMethodField()
+	owner_avatar_url = serializers.URLField(source="user.avatar_url", read_only=True)
+	likes_count = serializers.IntegerField(read_only=True, default=0)
+	comments_count = serializers.IntegerField(read_only=True, default=0)
+	user_has_liked = serializers.BooleanField(read_only=True, default=False)
+	user_has_collaborated = serializers.BooleanField(read_only=True, default=False)
+	user_has_commented = serializers.BooleanField(read_only=True, default=False)
+	issues_count = serializers.IntegerField(read_only=True, default=0)
+	open_issues = serializers.IntegerField(read_only=True, default=0)
+	closed_issues = serializers.IntegerField(read_only=True, default=0)
 
 	class Meta:
 		model = Project
@@ -47,11 +58,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"created_at",
 			"updated_at",
 			"tags",
-			"issues",
+			"issues_count",
+			"open_issues",
+			"closed_issues",
 			"owner_user_id",
 			"owner_full_name",
 			"owner_nu_email",
+			"owner_avatar_url",
 			"likes_count",
+			"comments_count",
 			"user_has_liked",
 			"user_has_collaborated",
 			"user_has_commented",
@@ -61,46 +76,36 @@ class ProjectSerializer(serializers.ModelSerializer):
 			"created_at",
 			"updated_at",
 			"tags",
-			"issues",
+			"issues_count",
+			"open_issues",
+			"closed_issues",
 			"owner_user_id",
 			"owner_full_name",
 			"owner_nu_email",
+			"owner_avatar_url",
 			"likes_count",
+			"comments_count",
 			"user_has_liked",
 			"user_has_collaborated",
 			"user_has_commented",
 		]
 
-	def get_user_has_liked(self, obj):
-		request = self.context.get("request")
-		user = getattr(request, "user", None)
-		if not user or not user.is_authenticated:
-			return False
-		return obj.likes.filter(user=user).exists()
 
-	def get_user_has_collaborated(self, obj):
-		request = self.context.get("request")
-		user = getattr(request, "user", None)
-		if not user or not user.is_authenticated:
-			return False
-		# Check if user is a collaborator on any issue in this project
-		return Collaborator.objects.filter(issue__project=obj, user=user).exists()
+class ProjectDetailSerializer(ProjectSerializer):
+	issues = IssueSerializer(source="bounded_issues", many=True, read_only=True)
 
-	def get_user_has_commented(self, obj):
-		request = self.context.get("request")
-		user = getattr(request, "user", None)
-		if not user or not user.is_authenticated:
-			return False
-		# Check if user has commented on this project
-		return Comment.objects.filter(project=obj, user=user).exists()
-
+	class Meta(ProjectSerializer.Meta):
+		fields = [*ProjectSerializer.Meta.fields, "issues"]
+		read_only_fields = [*ProjectSerializer.Meta.read_only_fields, "issues"]
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
-	tags = serializers.ListField(
+	description = serializers.CharField(max_length=MAX_PROJECT_DESCRIPTION_LENGTH)
+	tags = EarlyBoundedListField(
 		child=serializers.CharField(max_length=100),
 		allow_empty=True,
 		write_only=True,
 		required=False,
+		max_length=MAX_PROJECT_TAGS,
 	)
 
 	class Meta:
@@ -122,11 +127,13 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
-	tags = serializers.ListField(
+	description = serializers.CharField(max_length=MAX_PROJECT_DESCRIPTION_LENGTH)
+	tags = EarlyBoundedListField(
 		child=serializers.CharField(max_length=100),
 		allow_empty=True,
 		write_only=True,
 		required=False,
+		max_length=MAX_PROJECT_TAGS,
 	)
 
 	class Meta:
@@ -154,6 +161,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
 class IssueCreateSerializer(serializers.ModelSerializer):
 	project_id = serializers.IntegerField(write_only=True)
+	description = serializers.CharField(max_length=MAX_ISSUE_DESCRIPTION_LENGTH)
 
 	class Meta:
 		model = Issue
@@ -168,23 +176,47 @@ class IssueCreateSerializer(serializers.ModelSerializer):
 		self.context["project"] = project
 		return value
 
+	@transaction.atomic
 	def create(self, validated_data):
-		validated_data.pop("project_id")
-		project = self.context["project"]
+		project_id = validated_data.pop("project_id")
+		request = self.context["request"]
+		try:
+			project = Project.objects.select_for_update().get(
+				project_id=project_id,
+				user=request.user,
+			)
+		except Project.DoesNotExist:
+			raise serializers.ValidationError(
+				{"project_id": "Project does not exist or is not owned by the user."}
+			)
+
+		if Issue.objects.filter(project=project).count() >= MAX_ISSUES_PER_PROJECT:
+			raise serializers.ValidationError(
+				{
+					"project_id": (
+						f"A project can contain at most {MAX_ISSUES_PER_PROJECT} issues."
+					)
+				}
+			)
 		return Issue.objects.create(project=project, **validated_data)
 
 
 class IssueUpdateSerializer(serializers.ModelSerializer):
+	description = serializers.CharField(max_length=MAX_ISSUE_DESCRIPTION_LENGTH)
+
 	class Meta:
 		model = Issue
 		fields = ["title", "description"]
 
 
 class CloseIssueInputSerializer(serializers.Serializer):
-	issue_id = serializers.IntegerField()
-	user_id = serializers.IntegerField(required=False)
-	user_ids = serializers.ListField(
-		child=serializers.IntegerField(), required=False, allow_empty=True
+	issue_id = serializers.IntegerField(min_value=1)
+	user_id = serializers.IntegerField(min_value=1, required=False)
+	user_ids = EarlyBoundedListField(
+		child=serializers.IntegerField(min_value=1),
+		required=False,
+		allow_empty=True,
+		max_length=MAX_CLOSE_COLLABORATORS,
 	)
 
 	def validate(self, attrs):
@@ -198,6 +230,155 @@ class CloseIssueInputSerializer(serializers.Serializer):
 		return attrs
 
 
+class CollaborationRequestCreateSerializer(serializers.Serializer):
+	user_id = serializers.IntegerField(min_value=1, required=False)
+	message = serializers.CharField(
+		max_length=1000,
+		required=False,
+		allow_blank=True,
+		trim_whitespace=True,
+		default="",
+	)
+
+
+class CollaborationRequestActionSerializer(serializers.Serializer):
+	action = serializers.ChoiceField(
+		choices=("accept", "reject", "withdraw", "cancel")
+	)
+
+
+class CollaborationRequestSerializer(serializers.ModelSerializer):
+	issue_id = serializers.IntegerField(source="issue.issue_id", read_only=True)
+	issue_title = serializers.CharField(source="issue.title", read_only=True)
+	project_id = serializers.IntegerField(
+		source="issue.project.project_id",
+		read_only=True,
+	)
+	project_title = serializers.CharField(
+		source="issue.project.title",
+		read_only=True,
+	)
+	project_owner_id = serializers.IntegerField(
+		source="issue.project.user_id",
+		read_only=True,
+	)
+	user_id = serializers.IntegerField(source="user.user_id", read_only=True)
+	user_full_name = serializers.CharField(source="user.full_name", read_only=True)
+	user_nu_email = serializers.EmailField(source="user.nu_email", read_only=True)
+	user_avatar_url = serializers.URLField(source="user.avatar_url", read_only=True)
+	created_by_user_id = serializers.IntegerField(
+		source="created_by.user_id",
+		read_only=True,
+	)
+	resolved_by_user_id = serializers.IntegerField(
+		source="resolved_by.user_id",
+		read_only=True,
+		allow_null=True,
+	)
+
+	class Meta:
+		model = CollaborationRequest
+		fields = [
+			"request_id",
+			"issue_id",
+			"issue_title",
+			"project_id",
+			"project_title",
+			"project_owner_id",
+			"user_id",
+			"user_full_name",
+			"user_nu_email",
+			"user_avatar_url",
+			"created_by_user_id",
+			"resolved_by_user_id",
+			"kind",
+			"status",
+			"message",
+			"created_at",
+			"updated_at",
+			"responded_at",
+		]
+		read_only_fields = fields
+
+
+class ProjectListQuerySerializer(serializers.Serializer):
+	ISSUE_STATUS_ALL = "all"
+	ISSUE_STATUS_OPEN = "open"
+	ISSUE_STATUS_CLOSED = "closed"
+	ISSUE_STATUS_WITHOUT_OPEN = "without-open"
+
+	ORDER_NEWEST = "newest"
+	ORDER_OLDEST = "oldest"
+	ORDER_UPDATED = "updated"
+	ORDER_POPULAR = "popular"
+	ORDER_DISCUSSED = "discussed"
+	ORDER_NEEDS_HELP = "needs-help"
+
+	search = serializers.CharField(
+		max_length=120,
+		required=False,
+		allow_blank=True,
+		trim_whitespace=True,
+		default="",
+	)
+	tag = serializers.CharField(
+		max_length=100,
+		required=False,
+		allow_blank=True,
+		trim_whitespace=True,
+		default="",
+	)
+	issue_status = serializers.ChoiceField(
+		choices=(
+			ISSUE_STATUS_ALL,
+			ISSUE_STATUS_OPEN,
+			ISSUE_STATUS_CLOSED,
+			ISSUE_STATUS_WITHOUT_OPEN,
+		),
+		default=ISSUE_STATUS_ALL,
+	)
+	ordering = serializers.ChoiceField(
+		choices=(
+			ORDER_NEWEST,
+			ORDER_OLDEST,
+			ORDER_UPDATED,
+			ORDER_POPULAR,
+			ORDER_DISCUSSED,
+			ORDER_NEEDS_HELP,
+		),
+		default=ORDER_NEWEST,
+	)
+
+
+class RecommendedProjectsQuerySerializer(serializers.Serializer):
+	MODE_SPOTLIGHT = "spotlight"
+	MODE_WITH_ISSUES = "with-issues"
+	MODE_WITHOUT_ISSUES = "without-issues"
+	MODE_SKILL_MATCH = "skill-match"
+	MODE_NETWORK = "network"
+
+	mode = serializers.ChoiceField(
+		choices=(
+			MODE_SPOTLIGHT,
+			MODE_WITH_ISSUES,
+			MODE_WITHOUT_ISSUES,
+			MODE_SKILL_MATCH,
+			MODE_NETWORK,
+		),
+		default=MODE_SPOTLIGHT,
+	)
+	limit = serializers.IntegerField(min_value=1, max_value=50, default=20)
+	offset = serializers.IntegerField(min_value=0, max_value=10000, default=0)
+
+
+class TopContributorsQuerySerializer(serializers.Serializer):
+	limit = serializers.IntegerField(min_value=1, max_value=50, default=10)
+
+
+class RecentActivityQuerySerializer(serializers.Serializer):
+	limit = serializers.IntegerField(min_value=1, max_value=100, default=20)
+
+
 class CollaboratorUserIssueSerializer(serializers.ModelSerializer):
 	issues = serializers.SerializerMethodField()
 
@@ -206,12 +387,17 @@ class CollaboratorUserIssueSerializer(serializers.ModelSerializer):
 		fields = ["user_id", "full_name", "nu_email", "avatar_url", "issues"]
 
 	def get_issues(self, obj):
-		# All issues this user has collaborated on
-		issues = (
-			Issue.objects.filter(collaborators__user=obj)
-			.select_related("project")
-			.distinct()
-		)
+		prefetched_collaborations = getattr(obj, "scoped_issue_collaborations", None)
+		if prefetched_collaborations is not None:
+			issues = [collaboration.issue for collaboration in prefetched_collaborations]
+		else:
+			# Used by the global collaborator view, where all collaborated issues
+			# are intentionally returned.
+			issues = (
+				Issue.objects.filter(collaborators__user=obj)
+				.select_related("project")
+				.distinct()
+			)
 		return [
 			{
 				"issue_id": issue.issue_id,
@@ -240,10 +426,20 @@ class IssueWithCollaboratorsSerializer(serializers.ModelSerializer):
 		]
 
 	def get_collaborators(self, obj):
-		users = (
-			User.objects.filter(issue_collaborations__issue=obj)
-			.distinct()
+		prefetched_collaborations = getattr(
+			obj,
+			"prefetched_collaborations",
+			None,
 		)
+		if prefetched_collaborations is not None:
+			users = [
+				collaboration.user for collaboration in prefetched_collaborations
+			]
+		else:
+			users = (
+				User.objects.filter(issue_collaborations__issue=obj)
+				.distinct()
+			)
 		return [
 			{
 				"user_id": user.user_id,

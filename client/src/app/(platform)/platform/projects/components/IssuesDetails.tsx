@@ -8,11 +8,42 @@ import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
 import EditIssueForm from "@/app/(platform)/components/EditIssueForm";
 import CloseIssueForm from "@/app/(platform)/components/CloseIssueForm";
+import { AccessibleDialog } from "@/app/(platform)/components/AccessibleDialog";
+import { ReportButton } from "@/app/(platform)/components/ReportButton";
+import { queryKeys } from "@/lib/queryKeys";
+import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
+
+const MAX_ISSUES_PER_PROJECT = 100;
 
 const issueSchema = z.object({
-    title: z.string().min(1, "Issue title is required"),
-    description: z.string().min(1, "Issue description is required"),
+    title: z
+        .string()
+        .min(1, "Issue title is required")
+        .max(255, "Issue title must be 255 characters or fewer"),
+    description: z
+        .string()
+        .min(1, "Issue description is required")
+        .max(10_000, "Issue description must be 10,000 characters or fewer"),
 });
+
+type Issue = {
+    issue_id?: number;
+    id?: number;
+    title?: string;
+    description?: string;
+    status?: string;
+    created_at?: string;
+    updated_at?: string;
+};
+
+type ProjectWithIssues = {
+    project_id: number;
+    issues?: Issue[];
+};
+
+type IssueMutationError = Error & {
+    fieldErrors?: Record<string, unknown>;
+};
 
 const IssuesDetails = ({
     project,
@@ -21,13 +52,14 @@ const IssuesDetails = ({
     issues,
     isOwner,
 }: {
-    project: any;
-    openIssues: any[];
-    closedIssues: any[];
-    issues: any[];
+    project: ProjectWithIssues;
+    openIssues: Issue[];
+    closedIssues: Issue[];
+    issues: Issue[];
     isOwner: boolean;
 }) => {
     const queryClient = useQueryClient();
+    const hasReachedIssueLimit = issues.length >= MAX_ISSUES_PER_PROJECT;
 
     const [isAddingIssue, setIsAddingIssue] = React.useState(false);
     const [newIssueTitle, setNewIssueTitle] = React.useState("");
@@ -45,7 +77,7 @@ const IssuesDetails = ({
 
     // Edit issue modal state
     const [isEditIssueOpen, setIsEditIssueOpen] = React.useState(false);
-    const [issueBeingEdited, setIssueBeingEdited] = React.useState<any | null>(null);
+    const [issueBeingEdited, setIssueBeingEdited] = React.useState<Issue | null>(null);
 
     // Delete issue modal state
     const [isIssueDeleteOpen, setIsIssueDeleteOpen] = React.useState(false);
@@ -62,7 +94,7 @@ const IssuesDetails = ({
         setIsIssueDeleteOpen(true);
     };
 
-    const handleEditIssue = (issue: any) => {
+    const handleEditIssue = (issue: Issue) => {
         setIssueBeingEdited(issue);
         setIsEditIssueOpen(true);
     };
@@ -88,12 +120,12 @@ const IssuesDetails = ({
             const body = await res.json().catch(() => null);
 
             if (!res.ok) {
-                const error: any = new Error(
+                const error = new Error(
                     (body && (body.detail || body.message)) ||
                     "Failed to create issue"
-                );
+                ) as IssueMutationError;
                 if (body && typeof body === "object") {
-                    error.fieldErrors = body;
+                    error.fieldErrors = body as Record<string, unknown>;
                 }
                 throw error;
             }
@@ -102,23 +134,22 @@ const IssuesDetails = ({
         },
         onMutate: async (data) => {
             await queryClient.cancelQueries({
-                queryKey: ["project", project.project_id],
+                queryKey: queryKeys.project(project.project_id),
             });
 
-            const previousProject = queryClient.getQueryData<any>([
-                "project",
-                project.project_id,
-            ]);
+            const previousProject = queryClient.getQueryData<ProjectWithIssues>(
+                queryKeys.project(project.project_id)
+            );
 
-            queryClient.setQueryData<any>(
-                ["project", project.project_id],
-                (old: any) =>
+            queryClient.setQueryData<ProjectWithIssues>(
+                queryKeys.project(project.project_id),
+                (old) =>
                     old
                         ? {
                             ...old,
                             issues: [
                                 {
-                                    issue_id: Date.now(),
+                                    issue_id: -Date.now(),
                                     title: data.title,
                                     description: data.description,
                                     status: "OPEN",
@@ -132,28 +163,30 @@ const IssuesDetails = ({
 
             return { previousProject };
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             setNewIssueTitle("");
             setNewIssueDescription("");
             setIssueErrors({});
             setIsAddingIssue(false);
 
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
-            queryClient.invalidateQueries({
-                queryKey: ["project", project.project_id],
-            });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.recommendedProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.myProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.allUserProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.project(project.project_id) }),
+            ]);
         },
         onError: (err, _vars, context) => {
-            console.error("Create issue error", err);
-            const anyErr = err as any;
+            const mutationError = err as IssueMutationError;
             const fieldErrors: {
                 title?: string;
                 description?: string;
                 form?: string;
             } = {};
 
-            if (anyErr.fieldErrors && typeof anyErr.fieldErrors === "object") {
-                const fe = anyErr.fieldErrors;
+            if (mutationError.fieldErrors && typeof mutationError.fieldErrors === "object") {
+                const fe = mutationError.fieldErrors;
                 if (Array.isArray(fe.title) && fe.title[0]) {
                     fieldErrors.title = String(fe.title[0]);
                 }
@@ -167,7 +200,7 @@ const IssuesDetails = ({
 
             if (!fieldErrors.title && !fieldErrors.description && !fieldErrors.form) {
                 fieldErrors.form =
-                    (anyErr as Error).message ||
+                    mutationError.message ||
                     "Failed to create issue. Please try again.";
             }
 
@@ -176,7 +209,7 @@ const IssuesDetails = ({
             // rollback optimistic create if needed
             if (context?.previousProject) {
                 queryClient.setQueryData(
-                    ["project", project.project_id],
+                    queryKeys.project(project.project_id),
                     context.previousProject
                 );
             }
@@ -205,22 +238,21 @@ const IssuesDetails = ({
         onMutate: async (issueId) => {
             setDeleteError(null);
             await queryClient.cancelQueries({
-                queryKey: ["project", project.project_id],
+                queryKey: queryKeys.project(project.project_id),
             });
 
-            const previousProject = queryClient.getQueryData<any>([
-                "project",
-                project.project_id,
-            ]);
+            const previousProject = queryClient.getQueryData<ProjectWithIssues>(
+                queryKeys.project(project.project_id)
+            );
 
-            queryClient.setQueryData<any>(
-                ["project", project.project_id],
-                (old: any) =>
+            queryClient.setQueryData<ProjectWithIssues>(
+                queryKeys.project(project.project_id),
+                (old) =>
                     old
                         ? {
                             ...old,
                             issues: (old.issues ?? []).filter(
-                                (i: any) => (i.issue_id ?? i.id) !== issueId
+                                (issue) => (issue.issue_id ?? issue.id) !== issueId
                             ),
                         }
                         : old
@@ -229,10 +261,9 @@ const IssuesDetails = ({
             return { previousProject };
         },
         onError: (err, _issueId, context) => {
-            console.error("Delete issue error", err);
             if (context?.previousProject) {
                 queryClient.setQueryData(
-                    ["project", project.project_id],
+                    queryKeys.project(project.project_id),
                     context.previousProject
                 );
             }
@@ -241,15 +272,18 @@ const IssuesDetails = ({
                 "Failed to delete issue. Please try again."
             );
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             setIsIssueDeleteOpen(false);
             setIssueToDelete(null);
             setDeleteError(null);
 
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
-            queryClient.invalidateQueries({
-                queryKey: ["project", project.project_id],
-            });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.recommendedProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.myProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.allUserProjects }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.project(project.project_id) }),
+            ]);
         },
     });
 
@@ -263,6 +297,13 @@ const IssuesDetails = ({
         e.preventDefault();
 
         setIssueErrors({});
+
+        if (hasReachedIssueLimit) {
+            setIssueErrors({
+                form: `A project can contain at most ${MAX_ISSUES_PER_PROJECT} issues.`,
+            });
+            return;
+        }
 
         const trimmed = {
             title: newIssueTitle.trim(),
@@ -310,13 +351,25 @@ const IssuesDetails = ({
                     {isOwner && (
                         <button
                             type="button"
+                            aria-expanded={isAddingIssue}
+                            aria-controls="add-issue-form"
+                            disabled={hasReachedIssueLimit}
+                            title={
+                                hasReachedIssueLimit
+                                    ? `This project has reached the ${MAX_ISSUES_PER_PROJECT}-issue limit.`
+                                    : undefined
+                            }
                             onClick={() => {
                                 setIsAddingIssue((prev) => !prev);
                                 setIssueErrors({});
                             }}
-                            className="rounded-lg border border-primarypurple/30 bg-primarypurple/10 px-3 py-1 text-xs font-semibold text-primarypurple transition hover:bg-primarypurple/20"
+                            className="rounded-lg border border-primarypurple/30 bg-primarypurple/10 px-3 py-1 text-xs font-semibold text-primarypurple transition hover:bg-primarypurple/20 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {isAddingIssue ? "Cancel" : "Add Issue"}
+                            {hasReachedIssueLimit
+                                ? "Issue limit reached"
+                                : isAddingIssue
+                                  ? "Cancel"
+                                  : "Add Issue"}
                         </button>
                     )}
                 </div>
@@ -324,21 +377,32 @@ const IssuesDetails = ({
                 {/* Inline Add Issue form */}
                 {isOwner && isAddingIssue && (
                     <form
+                        id="add-issue-form"
                         onSubmit={handleAddIssueSubmit}
                         className="space-y-3 rounded-xl border border-primarypurple/25 bg-white/90 p-3 shadow-sm"
                     >
                         {issueErrors.form && (
-                            <p className="text-xs text-red-600">
+                            <p className="text-xs text-red-600" role="alert">
                                 {issueErrors.form}
                             </p>
                         )}
 
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                            <label
+                                htmlFor="new-issue-title"
+                                className="text-xs font-semibold uppercase tracking-wide text-gray-600"
+                            >
                                 Issue Title
                             </label>
                             <input
+                                id="new-issue-title"
                                 type="text"
+                                aria-invalid={Boolean(issueErrors.title)}
+                                aria-describedby={
+                                    issueErrors.title
+                                        ? "new-issue-title-error"
+                                        : undefined
+                                }
                                 value={newIssueTitle}
                                 onChange={(e) => {
                                     setNewIssueTitle(e.target.value);
@@ -356,24 +420,38 @@ const IssuesDetails = ({
                                     }`}
                             />
                             {issueErrors.title && (
-                                <p className="text-[11px] text-red-600">
+                                <p
+                                    id="new-issue-title-error"
+                                    className="text-[11px] text-red-600"
+                                >
                                     {issueErrors.title}
                                 </p>
                             )}
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                            <p
+                                id="new-issue-description-label"
+                                className="text-xs font-semibold uppercase tracking-wide text-gray-600"
+                            >
                                 Issue Description
-                            </label>
+                            </p>
 
                             <div
+                                role="group"
+                                aria-labelledby="new-issue-description-label"
+                                aria-describedby={
+                                    issueErrors.description
+                                        ? "new-issue-description-error"
+                                        : undefined
+                                }
                                 className={`rounded-lg border p-2 ${issueErrors.description
                                     ? "border-red-400"
                                     : "border-gray-200"
                                     }`}
                             >
                                 <MdEditor
+                                    {...untrustedMarkdownProps}
                                     editorId={`new-issue-${project.project_id ?? "p"}`}
                                     modelValue={newIssueDescription}
                                     onChange={(val) => {
@@ -391,7 +469,10 @@ const IssuesDetails = ({
                                 />
                             </div>
                             {issueErrors.description && (
-                                <p className="text-[11px] text-red-600">
+                                <p
+                                    id="new-issue-description-error"
+                                    className="text-[11px] text-red-600"
+                                >
                                     {issueErrors.description}
                                 </p>
                             )}
@@ -431,7 +512,7 @@ const IssuesDetails = ({
                 )}
 
                 <div className="space-y-2">
-                    {issues.map((issue: any) => {
+                    {issues.map((issue) => {
                         const isOpenIssueRow =
                             openIssueId === issue.issue_id ||
                             openIssueId === issue.id;
@@ -440,17 +521,22 @@ const IssuesDetails = ({
                             issue.status === "OPEN" || issue.status === "open";
 
                         const issueId = issue.issue_id ?? issue.id;
+                        if (issueId == null) return null;
+                        const isOptimistic = issueId < 0;
+                        const contentId = `issue-content-${issueId}`;
 
                         return (
                             <div
                                 key={issueId}
                                 className="rounded-xl border border-primarypurple/20 bg-white/80 shadow-sm transition-colors hover:bg-primarypurple/5"
                             >
-                                <div className="flex w-full items-center justify-between gap-2 px-3 py-2">
+                                <div className="flex w-full flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                                     {/* Left: title + date (click to expand) */}
                                     <button
                                         type="button"
-                                        onClick={() => toggleIssue(issueId ?? 0)}
+                                        onClick={() => toggleIssue(issueId)}
+                                        aria-expanded={isOpenIssueRow}
+                                        aria-controls={contentId}
                                         className="flex flex-1 items-center justify-between gap-2 text-left"
                                     >
                                         <div className="flex flex-col">
@@ -473,7 +559,11 @@ const IssuesDetails = ({
                                                     : "bg-gray-200 text-gray-700"
                                                     }`}
                                             >
-                                                {statusOpen ? "Open" : "Closed"}
+                                                {isOptimistic
+                                                    ? "Saving..."
+                                                    : statusOpen
+                                                        ? "Open"
+                                                        : "Closed"}
                                             </span>
 
                                             <motion.span
@@ -482,15 +572,16 @@ const IssuesDetails = ({
                                                 }}
                                                 transition={{ duration: 0.2 }}
                                                 className="text-xs text-gray-500"
+                                                aria-hidden="true"
                                             >
                                                 ▸
                                             </motion.span>
                                         </div>
                                     </button>
 
-                                    {/* Right: action buttons (owner only) */}
-                                    {isOwner && (
-                                        <div className="flex items-center gap-1 pl-2">
+                                    {/* Right: owner controls or member reporting */}
+                                    {!isOptimistic && (isOwner ? (
+                                        <div className="flex flex-wrap items-center justify-end gap-1 pl-2">
                                             {/* Mark as Done */}
                                             {statusOpen && (
                                                 <button
@@ -500,7 +591,7 @@ const IssuesDetails = ({
                                                     }
                                                     className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100"
                                                 >
-                                                    <CheckCircle2 className="h-3 w-3" />
+                                                    <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
                                                     Mark as Closed
                                                 </button>
                                             )}
@@ -514,7 +605,7 @@ const IssuesDetails = ({
                                                 className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                                                 aria-label="Edit issue"
                                             >
-                                                <Pencil className="h-4 w-4" />
+                                                <Pencil className="h-4 w-4" aria-hidden="true" />
                                             </button>
 
                                             {/* Delete */}
@@ -526,16 +617,23 @@ const IssuesDetails = ({
                                                 className="rounded-full p-1 text-red-500 hover:bg-red-50 hover:text-red-700"
                                                 aria-label="Delete issue"
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-4 w-4" aria-hidden="true" />
                                             </button>
                                         </div>
-                                    )}
+                                    ) : (
+                                        <ReportButton
+                                            targetId={issueId}
+                                            targetLabel={issue.title || `issue ${issueId}`}
+                                            targetType="issue"
+                                        />
+                                    ))}
                                 </div>
 
                                 <AnimatePresence initial={false}>
                                     {isOpenIssueRow && (
                                         <motion.div
                                             key="content"
+                                            id={contentId}
                                             initial={{
                                                 height: 0,
                                                 opacity: 0,
@@ -556,6 +654,7 @@ const IssuesDetails = ({
                                         >
                                             <div className="p-3">
                                                 <MdPreview
+                                                    {...untrustedMarkdownProps}
                                                     editorId={`issue-${project.project_id ?? "p"}-${issueId}`}
                                                     modelValue={
                                                         issue.description || ""
@@ -573,117 +672,75 @@ const IssuesDetails = ({
                 </div>
             </div>
 
-            {/* Close Issue with Collaborator Modal */}
-            {isCloseIssueOpen && issueToClose && (
-                <>
-                    <div
-                        className="fixed inset-0 z-40 bg-black/40"
-                        onClick={() => setIsCloseIssueOpen(false)}
+            {/* Close issue modal */}
+            {isCloseIssueOpen && issueToClose !== null && (
+                <AccessibleDialog
+                    title="Close Issue"
+                    onClose={() => setIsCloseIssueOpen(false)}
+                >
+                    <CloseIssueForm
+                        issueId={issueToClose}
+                        projectId={project.project_id}
+                        onClose={() => setIsCloseIssueOpen(false)}
                     />
-                    <div className="fixed inset-0 z-50 my-8 flex items-center justify-center px-4">
-                        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                            <div className="mb-4 flex items-center justify-between">
-                                <h2 className="text-lg font-semibold">
-                                    Close Issue with Collaborator
-                                </h2>
-                                <button
-                                    onClick={() => setIsCloseIssueOpen(false)}
-                                    className="text-sm text-gray-500 hover:text-gray-800"
-                                >
-                                    Close
-                                </button>
-                            </div>
-
-                            <CloseIssueForm
-                                issueId={issueToClose}
-                                projectId={project.project_id}
-                                onClose={() => setIsCloseIssueOpen(false)}
-                            />
-                        </div>
-                    </div>
-                </>
+                </AccessibleDialog>
             )}
 
             {/* Edit Issue Modal */}
             {isEditIssueOpen && issueBeingEdited && (
-                <>
-                    <div
-                        className="fixed inset-0 z-40 bg-black/40"
-                        onClick={() => setIsEditIssueOpen(false)}
+                <AccessibleDialog
+                    title="Edit Issue"
+                    className="max-w-2xl"
+                    onClose={() => setIsEditIssueOpen(false)}
+                >
+                    <EditIssueForm
+                        issue={issueBeingEdited}
+                        projectId={project.project_id}
+                        onClose={() => setIsEditIssueOpen(false)}
                     />
-                    <div className="fixed inset-0 z-50 my-8 flex items-center justify-center px-4">
-                        <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
-                            <div className="mb-4 flex items-center justify-between">
-                                <h2 className="text-lg font-semibold">Edit Issue</h2>
-                                <button
-                                    onClick={() => setIsEditIssueOpen(false)}
-                                    className="text-sm text-gray-500 hover:text-gray-800"
-                                >
-                                    Close
-                                </button>
-                            </div>
-
-                            <EditIssueForm
-                                issue={issueBeingEdited}
-                                projectId={project.project_id}
-                                onClose={() => setIsEditIssueOpen(false)}
-                            />
-                        </div>
-                    </div>
-                </>
+                </AccessibleDialog>
             )}
 
             {/* Delete Issue Confirmation Modal */}
             {isIssueDeleteOpen && (
-                <>
-                    <div
-                        className="fixed inset-0 z-40 bg-black/40"
-                        onClick={() =>
-                            !deleteIssueMutation.isPending &&
-                            setIsIssueDeleteOpen(false)
-                        }
-                    />
-                    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-                        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                            <h2 className="mb-2 text-lg font-semibold">
-                                Delete Issue
-                            </h2>
-                            <p className="mb-4 text-sm text-gray-700">
-                                Are you sure you want to delete this issue? This
-                                action cannot be undone.
-                            </p>
+                <AccessibleDialog
+                    title="Delete Issue"
+                    closeDisabled={deleteIssueMutation.isPending}
+                    onClose={() => setIsIssueDeleteOpen(false)}
+                >
+                    <p className="mb-4 text-sm text-gray-700">
+                        Are you sure you want to delete this issue? This action
+                        cannot be undone.
+                    </p>
 
-                            {deleteError && (
-                                <p className="mb-3 text-xs text-red-600">
-                                    {deleteError}
-                                </p>
-                            )}
+                    {deleteError && (
+                        <p className="mb-3 text-xs text-red-600" role="alert">
+                            {deleteError}
+                        </p>
+                    )}
 
-                            <div className="mt-2 flex justify-end gap-2">
-                                <button
-                                    type="button"
-                                    disabled={deleteIssueMutation.isPending}
-                                    onClick={() =>
-                                        setIsIssueDeleteOpen(false)
-                                    }
-                                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-60"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleConfirmDeleteIssue}
-                                    disabled={deleteIssueMutation.isPending}
-                                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
-                                >
-                                    {deleteIssueMutation.isPending
-                                        ? "Deleting..."
-                                        : "Delete"}
-                                </button>
-                            </div>
-                        </div>
+                    <div className="mt-2 flex justify-end gap-2">
+                        <button
+                            type="button"
+                            data-dialog-initial-focus="true"
+                            disabled={deleteIssueMutation.isPending}
+                            onClick={() => setIsIssueDeleteOpen(false)}
+                            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-60"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleConfirmDeleteIssue}
+                            disabled={deleteIssueMutation.isPending}
+                            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
+                        >
+                            {deleteIssueMutation.isPending
+                                ? "Deleting..."
+                                : "Delete"}
+                        </button>
                     </div>
-                </>
+                </AccessibleDialog>
             )}
         </>
     );
