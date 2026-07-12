@@ -1,80 +1,106 @@
-import ProjectCard from '@/app/(platform)/components/ProjectCard'
-import React, { useMemo, useState } from 'react'
-import { useQuery } from "@tanstack/react-query";
+"use client";
+
+import { useMemo } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+
+import ProjectCard, {
+    type ProjectSummary,
+} from "@/app/(platform)/components/ProjectCard";
 import { authFetch } from "@/lib/authFetch";
+import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
+import { queryKeys } from "@/lib/queryKeys";
+
+const PAGE_SIZE = 20;
 
 const UserProjects = ({ userid }: { userid: string }) => {
-    const [search, setSearch] = useState("");
-    const [selectedTag, setSelectedTag] = useState("all");
-
-    const {
-        data,
-        isLoading,
-        isError,
-        error,
-    } = useQuery({
-        queryKey: ["my-projects"],
-        queryFn: async () => {
-            const res = await authFetch(`/api/projects/by-user/${userid}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+    const projectsQuery = useInfiniteQuery<PaginatedPage<ProjectSummary>>({
+        queryKey: queryKeys.userProjects(userid),
+        initialPageParam: 0,
+        queryFn: async ({ pageParam, signal }) => {
+            const params = new URLSearchParams({
+                limit: String(PAGE_SIZE),
+                offset: String(pageParam),
             });
-
-            if (!res.ok) {
-                throw new Error("Failed to fetch your projects");
+            const response = await authFetch(
+                `/api/projects/by-user/${userid}?${params.toString()}`,
+                { method: "GET", signal }
+            );
+            if (!response.ok) {
+                throw new Error("Failed to fetch owned projects");
             }
-
-            return res.json();
+            return readPaginatedArray<ProjectSummary>(response);
         },
+        getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
     });
 
-    const projects = Array.isArray(data) ? data : [];
-
-    const allTags = useMemo(() => {
-        const tags = new Set<string>();
-        projects.forEach((project: any) => {
-            project.tags?.forEach((t: any) => tags.add(t.tag));
-        });
-        return ["all", ...Array.from(tags)];
-    }, [projects]);
-
-    const filteredProjects = useMemo(() => {
-        const q = search.trim().toLowerCase();
-
-        return projects.filter((project: any) => {
-            const matchesSearch =
-                project.title.toLowerCase().includes(q) ||
-                project.owner_full_name.toLowerCase().includes(q) ||
-                project.owner_nu_email.toLowerCase().includes(q);
-
-            const matchesTag =
-                selectedTag === "all" ||
-                project.tags?.some((t: any) => t.tag === selectedTag);
-
-            return matchesSearch && matchesTag;
-        });
-    }, [search, selectedTag, projects]);
-
-    const showEmptyState =
-        !isLoading && !isError && filteredProjects.length === 0;
+    const projects = useMemo(
+        () =>
+            projectsQuery.data?.pages.flatMap((page) => page.items) ?? [],
+        [projectsQuery.data]
+    );
+    const initialError = projectsQuery.isError && projects.length === 0;
 
     return (
-        <div className="my-6 space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6">
-            <h1 className="text-4xl font-semibold underline decoration-4 decoration-primarypurple">
+        <section
+            className="my-6 space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6"
+            aria-labelledby="owned-projects-heading"
+        >
+            <h2
+                id="owned-projects-heading"
+                className="text-3xl font-semibold underline decoration-4 decoration-primarypurple sm:text-4xl"
+            >
                 Projects Owned
-            </h1>
+            </h2>
 
             <ProjectCard
-                isError={isError}
-                error={error}
-                isLoading={isLoading}
-                showEmptyState={showEmptyState}
-                filteredProjects={filteredProjects}
+                isError={initialError}
+                error={projectsQuery.error}
+                isLoading={projectsQuery.isPending}
+                isRetrying={projectsQuery.isFetching}
+                onRetry={() => void projectsQuery.refetch()}
+                showEmptyState={
+                    !projectsQuery.isPending &&
+                    !initialError &&
+                    projects.length === 0
+                }
+                filteredProjects={projects}
             />
-        </div>
-    )
-}
 
-export default UserProjects
+            {projectsQuery.isFetchNextPageError && (
+                <div
+                    className="flex items-center justify-center gap-3 text-sm text-red-700"
+                    role="alert"
+                >
+                    <span>Could not load more owned projects.</span>
+                    <button
+                        type="button"
+                        onClick={() => void projectsQuery.fetchNextPage()}
+                        disabled={projectsQuery.isFetchingNextPage}
+                        className="font-semibold underline disabled:opacity-60"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
+            {projectsQuery.hasNextPage &&
+                !initialError &&
+                !projectsQuery.isFetchNextPageError && (
+                    <div className="flex justify-center">
+                        <button
+                            type="button"
+                            onClick={() => void projectsQuery.fetchNextPage()}
+                            disabled={projectsQuery.isFetchingNextPage}
+                            className="rounded-lg bg-primarypurple px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                        >
+                            {projectsQuery.isFetchingNextPage
+                                ? "Loading..."
+                                : "Load more projects"}
+                        </button>
+                    </div>
+                )}
+        </section>
+    );
+};
+
+export default UserProjects;

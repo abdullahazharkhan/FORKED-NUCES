@@ -1,42 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextRequest } from "next/server";
 
-const DRF_BASE = process.env.DRF_API_BASE_URL || "http://localhost:8000";
+import {
+    appendSearchParams,
+    BASIC_LIST_QUERY_PARAMS,
+    pickSearchParams,
+} from "@/lib/pagination";
+import { proxyAuthenticatedDjango } from "@/lib/server/djangoBff";
 
 export async function GET(
-    req: NextRequest,
+    request: NextRequest,
     { params }: { params: Promise<{ userid: string }> }
 ) {
-    const cookieStore = await cookies();
-    const access = cookieStore.get("access_token")?.value;
-
     const { userid } = await params;
-
-    if (!access) {
-        return NextResponse.json(
-            { detail: "Unauthenticated. Access token missing." },
-            { status: 401 }
-        );
-    }
-
-    const drfUrl = `${DRF_BASE}/api/projects/by-user/${userid}/`;
-
-    const drfRes = await fetch(drfUrl, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access}`,
-        },
-    });
-
-    const drfBody = await drfRes.json().catch(() => null);
-
-    if (!drfRes.ok) {
-        return NextResponse.json(
-            drfBody || { detail: "Failed to fetch project" },
-            { status: drfRes.status }
-        );
-    }
-
-    return NextResponse.json(drfBody, { status: 200 });
+    const path = appendSearchParams(
+        `/api/projects/by-user/${userid}/`,
+        pickSearchParams(request.nextUrl.searchParams, BASIC_LIST_QUERY_PARAMS)
+    );
+    return proxyAuthenticatedDjango(
+        path,
+        { method: "GET" },
+        "Failed to fetch projects."
+    );
 }

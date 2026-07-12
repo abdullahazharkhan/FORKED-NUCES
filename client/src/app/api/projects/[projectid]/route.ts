@@ -1,145 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import {
+    isNextResponse,
+    parseJsonBody,
+    proxyAuthenticatedDjango,
+    rejectCrossOriginMutation,
+} from "@/lib/server/djangoBff";
 
-const DRF_BASE = process.env.DRF_API_BASE_URL || "http://localhost:8000";
+type Context = { params: Promise<{ projectid: string }> };
 
-export async function GET(
-    req: NextRequest,
-    { params }: { params: Promise<{ projectid: string }> }
-) {
-    const cookieStore = await cookies();
-    const access = cookieStore.get("access_token")?.value;
-
+export async function GET(_request: Request, { params }: Context) {
     const { projectid } = await params;
-
-    if (!access) {
-        return NextResponse.json(
-            { detail: "Unauthenticated. Access token missing." },
-            { status: 401 }
-        );
-    }
-
-    const drfUrl = `${DRF_BASE}/api/projects/public/${projectid}/`;
-
-    const drfRes = await fetch(drfUrl, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access}`,
-        },
-    });
-
-    const drfBody = await drfRes.json().catch(() => null);
-
-    if (!drfRes.ok) {
-        return NextResponse.json(
-            drfBody || { detail: "Failed to fetch project" },
-            { status: drfRes.status }
-        );
-    }
-
-    return NextResponse.json(drfBody, { status: 200 });
+    return proxyAuthenticatedDjango(
+        `/api/projects/public/${projectid}/`,
+        { method: "GET" },
+        "Failed to fetch project."
+    );
 }
 
-export async function PUT(req: NextRequest,
-    { params }: { params: Promise<{ projectid: string }> }) {
-    const cookieStore = await cookies();
-    const access = cookieStore.get("access_token")?.value;
-
+export async function PUT(request: Request, { params }: Context) {
     const { projectid } = await params;
+    const body = await parseJsonBody<unknown>(request);
+    if (isNextResponse(body)) return body;
 
-    if (!access) {
-        return NextResponse.json(
-            { detail: "Unauthenticated. Access token missing." },
-            { status: 401 }
-        );
-    }
-
-    let body: unknown;
-    try {
-        body = await req.json();
-    } catch {
-        return NextResponse.json(
-            { detail: "Invalid JSON body." },
-            { status: 400 }
-        );
-    }
-
-    const { title, description, github_url, tags } = body as {
-        title?: string;
-        description?: string;
-        github_url?: string;
-        tags?: string[];
-    };
-
-    const drfRes = await fetch(`${DRF_BASE}/api/projects/${projectid}/`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access}`,
-        },
-        body: JSON.stringify({ title, description, github_url, tags }),
-    });
-
-    if (!drfRes.ok) {
-        const error = await drfRes.json();
-        return NextResponse.json(error, { status: drfRes.status });
-    }
-
-    const updatedProject = await drfRes.json();
-
-    return NextResponse.json(updatedProject, { status: 200 });
+    return proxyAuthenticatedDjango(
+        `/api/projects/${projectid}/`,
+        { method: "PUT", body: JSON.stringify(body) },
+        "Failed to update project."
+    );
 }
 
-export async function DELETE(
-    req: NextRequest,
-    { params }: { params: Promise<{ projectid: string }> }
-) {
-    const cookieStore = await cookies();
-    const access = cookieStore.get("access_token")?.value;
+export async function DELETE(request: Request, { params }: Context) {
+    const rejection = rejectCrossOriginMutation(request);
+    if (rejection) return rejection;
 
     const { projectid } = await params;
-
-    if (!access) {
-        return NextResponse.json(
-            { detail: "Unauthenticated. Access token missing." },
-            { status: 401 }
-        );
-    }
-
-    const drfRes = await fetch(`${DRF_BASE}/api/projects/${projectid}/`, {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access}`,
-        },
-    });
-
-    // DRF often returns 204 No Content on successful delete
-    if (!drfRes.ok) {
-        const error = await drfRes.json().catch(() => null);
-        return NextResponse.json(
-            error || { detail: "Failed to delete project" },
-            { status: drfRes.status }
-        );
-    }
-
-    // If 204, there is no body to parse
-    if (drfRes.status === 204) {
-        return NextResponse.json(
-            { success: true, message: "Project deleted successfully" },
-            { status: 200 }
-        );
-    }
-
-    const data = await drfRes.json().catch(() => null);
-
-    return NextResponse.json(
-        {
-            data,
-            success: true,
-            message: "Project deleted successfully",
-        },
-        { status: 200 }
+    return proxyAuthenticatedDjango(
+        `/api/projects/${projectid}/`,
+        { method: "DELETE" },
+        "Failed to delete project."
     );
 }
