@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Database, Download, ShieldAlert, Trash2 } from "lucide-react";
 
 import { authFetch } from "@/lib/authFetch";
 import {
@@ -16,6 +16,12 @@ import {
 import { useAuthStore } from "@/stores";
 import { MAX_PASSWORD_INPUT_LENGTH } from "@/lib/authValidation";
 import { PasswordInput } from "@/components/PasswordInput";
+import {
+    PLATFORM_INPUT_CLASS,
+    PLATFORM_PANEL_CLASS,
+    PLATFORM_PRIMARY_BUTTON_CLASS,
+    PLATFORM_SECONDARY_BUTTON_CLASS,
+} from "@/lib/platformStyles";
 
 const deletionSchema = z.object({
     currentPassword: z
@@ -109,26 +115,38 @@ export default function AccountDataControls() {
     };
 
     return (
-        <div className="my-6 space-y-8">
-            <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
-                <div>
-                    <h2 className="text-2xl font-semibold">Download Your Data</h2>
-                    <p className="mt-1 text-sm text-gray-600">
+        <div className="space-y-6 pt-6">
+            <section className={`${PLATFORM_PANEL_CLASS} overflow-hidden`} aria-labelledby="download-data-heading">
+                <div className="h-1.5 bg-primarygreen" aria-hidden="true" />
+                <div className="p-5 sm:p-7">
+                <div className="flex items-start gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarygreen/25 text-black">
+                        <Database className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                    <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-primarypurple">
+                        Data portability
+                    </p>
+                    <h2 id="download-data-heading" className="mt-1 text-2xl font-black tracking-[-0.03em] text-black">Download your data</h2>
+                    <p className="mt-2 text-sm leading-6 text-black/55">
                         Export your profile, projects, contributions, notifications and
                         submitted reports as a structured JSON file. Passwords and session
                         tokens are never included.
                     </p>
+                    </div>
                 </div>
-                <Button
+
+                <button
                     type="button"
-                    className="bg-primarygreen font-bold text-black"
-                    isLoading={exportData.isPending}
-                    onPress={() => exportData.mutate()}
+                    disabled={exportData.isPending}
+                    onClick={() => exportData.mutate()}
+                    className={`${PLATFORM_PRIMARY_BUTTON_CLASS} mt-6 gap-2`}
                 >
-                    {exportData.isPending ? "Preparing Export..." : "Download Data"}
-                </Button>
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                    {exportData.isPending ? "Preparing export..." : "Download data"}
+                </button>
                 {exportData.isError && (
-                    <p role="alert" className="rounded bg-red-100 p-3 text-sm text-red-700">
+                    <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                         {getAuthFormErrorMessage(
                             exportData.error,
                             "Unable to export account data."
@@ -136,42 +154,60 @@ export default function AccountDataControls() {
                     </p>
                 )}
                 {exportData.isSuccess && (
-                    <p role="status" className="rounded bg-green-50 p-3 text-sm text-green-800">
+                    <p role="status" className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
                         Your account data download is ready.
                     </p>
                 )}
+                </div>
             </section>
 
-            <section className="space-y-4 rounded-xl border border-red-300 bg-red-50 p-6">
-                <div>
-                    <h2 className="text-2xl font-semibold text-red-900">Delete Account</h2>
-                    <p className="mt-1 text-sm leading-6 text-red-800">
+            <section className={`${PLATFORM_PANEL_CLASS} overflow-hidden`} aria-labelledby="delete-account-heading">
+                <div className="h-1.5 bg-red-600" aria-hidden="true" />
+                <div className="p-5 sm:p-7">
+                <div className="flex items-start gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+                        <ShieldAlert className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                    <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-red-600">
+                        Danger zone
+                    </p>
+                    <h2 id="delete-account-heading" className="mt-1 text-2xl font-black tracking-[-0.03em] text-black">Delete account</h2>
+                    <p className="mt-2 text-sm leading-6 text-black/55">
                         This permanently deactivates your account, revokes every session and
                         removes personal profile data. Shared projects and contribution
                         history remain under an anonymous Deleted User identity so other
                         students&apos; project history is preserved.
                     </p>
+                    </div>
                 </div>
 
                 {!showDeletion ? (
-                    <Button
+                    <button
                         type="button"
-                        color="danger"
-                        onPress={() => {
+                        aria-expanded={false}
+                        aria-controls="account-deletion-form"
+                        onClick={() => {
                             deleteAccount.reset();
                             setShowDeletion(true);
                         }}
+                        className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-100"
                     >
-                        Start Account Deletion
-                    </Button>
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        Start account deletion
+                    </button>
                 ) : (
                     <form
-                        className="space-y-4 rounded-lg border border-red-300 bg-white p-4"
+                        id="account-deletion-form"
+                        className="mt-6 space-y-5 rounded-2xl border border-red-200 bg-red-50/60 p-4 sm:p-5"
                         onSubmit={handleSubmit((data) => deleteAccount.mutate(data))}
                     >
-                        <div className="flex flex-col">
-                            <label htmlFor="delete-current-password" className="font-semibold">
-                                Current Password
+                        <p className="text-sm font-bold leading-6 text-red-900">
+                            Verify your identity and type the confirmation phrase below. This action cannot be undone.
+                        </p>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="delete-current-password" className="text-sm font-bold text-black">
+                                Current password
                             </label>
                             <PasswordInput
                                 id="delete-current-password"
@@ -184,20 +220,20 @@ export default function AccountDataControls() {
                                         : undefined
                                 }
                                 {...register("currentPassword")}
-                                className={`rounded border-2 p-2 outline-none focus:border-red-600 ${errors.currentPassword ? "border-red-500" : "border-gray-300"}`}
+                                className={`${PLATFORM_INPUT_CLASS} focus:border-red-600 focus:ring-red-100 ${errors.currentPassword ? "border-red-500" : ""}`}
                             />
                             {errors.currentPassword && (
                                 <p
                                     id="delete-current-password-error"
-                                    className="mt-1 text-sm text-red-700"
+                                    className="text-xs font-medium text-red-700"
                                 >
                                     {errors.currentPassword.message}
                                 </p>
                             )}
                         </div>
 
-                        <div className="flex flex-col">
-                            <label htmlFor="delete-confirmation" className="font-semibold">
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="delete-confirmation" className="text-sm font-bold text-black">
                                 Type DELETE to confirm
                             </label>
                             <input
@@ -212,12 +248,12 @@ export default function AccountDataControls() {
                                         : undefined
                                 }
                                 {...register("confirmation")}
-                                className={`rounded border-2 p-2 outline-none focus:border-red-600 ${errors.confirmation ? "border-red-500" : "border-gray-300"}`}
+                                className={`${PLATFORM_INPUT_CLASS} font-mono tracking-[0.15em] focus:border-red-600 focus:ring-red-100 ${errors.confirmation ? "border-red-500" : ""}`}
                             />
                             {errors.confirmation && (
                                 <p
                                     id="delete-confirmation-error"
-                                    className="mt-1 text-sm text-red-700"
+                                    className="text-xs font-medium text-red-700"
                                 >
                                     {errors.confirmation.message}
                                 </p>
@@ -225,7 +261,7 @@ export default function AccountDataControls() {
                         </div>
 
                         {deleteAccount.isError && (
-                            <p role="alert" className="rounded bg-red-100 p-3 text-sm text-red-800">
+                            <p role="alert" className="rounded-xl border border-red-200 bg-red-100 p-3 text-sm text-red-800">
                                 {getAuthFormErrorMessage(
                                     deleteAccount.error,
                                     "Unable to delete the account."
@@ -233,26 +269,26 @@ export default function AccountDataControls() {
                             </p>
                         )}
 
-                        <div className="flex flex-wrap justify-end gap-2">
-                            <Button
+                        <div className="flex flex-col-reverse gap-2 border-t border-red-200 pt-5 sm:flex-row sm:justify-end">
+                            <button
                                 type="button"
-                                variant="bordered"
-                                isDisabled={deleteAccount.isPending}
-                                onPress={cancelDeletion}
+                                disabled={deleteAccount.isPending}
+                                onClick={cancelDeletion}
+                                className={PLATFORM_SECONDARY_BUTTON_CLASS}
                             >
                                 Cancel
-                            </Button>
-                            <Button
+                            </button>
+                            <button
                                 type="submit"
-                                color="danger"
-                                isDisabled={!isValid || deleteAccount.isPending}
-                                isLoading={deleteAccount.isPending}
+                                disabled={!isValid || deleteAccount.isPending}
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-200 disabled:pointer-events-none disabled:opacity-55"
                             >
-                                Permanently Delete Account
-                            </Button>
+                                {deleteAccount.isPending ? "Deleting account..." : "Permanently delete account"}
+                            </button>
                         </div>
                     </form>
                 )}
+                </div>
             </section>
         </div>
     );

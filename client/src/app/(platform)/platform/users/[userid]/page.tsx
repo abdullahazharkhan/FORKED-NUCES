@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
-import "md-editor-rt/lib/style.css";
+import { ArrowLeft } from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
 import UserProjects from "../components/UserProjects";
 import UserDetails from "@/app/(platform)/profile/components/UserDetails";
@@ -47,33 +48,31 @@ const User = ({ params }: { params: Promise<{ userid: string }> }) => {
     if (!hasValidUserId || isNotFoundError(error)) notFound();
 
     return (
-        <div className="mt-6 flex flex-col gap-6 p-6">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-7 px-5 py-8 sm:px-8 lg:gap-9 lg:py-10">
+            <Link
+                href="/platform/users"
+                className="inline-flex min-h-10 w-fit items-center gap-2 rounded-xl border border-black/10 bg-white px-3.5 text-sm font-bold text-black/55 shadow-sm transition hover:-translate-y-0.5 hover:border-primarypurple/30 hover:text-primarypurple focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
+            >
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                Back to people
+            </Link>
+
             {isLoading && (
-                <div className="space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6 animate-pulse">
-                    <div className="flex flex-col gap-6 md:flex-row">
-                        {/* Avatar skeleton */}
-                        <div className="h-28 w-28 rounded-xl bg-gray-300"></div>
-
-                        <div className="flex flex-col gap-3 flex-1">
-                            <div className="h-6 w-40 bg-gray-300 rounded"></div>
-                            <div className="h-4 w-60 bg-gray-200 rounded"></div>
-                            <div className="h-4 w-32 bg-gray-200 rounded"></div>
-
-                            <div className="h-4 w-24 bg-gray-300 rounded mt-2"></div>
+                <div className="relative isolate animate-pulse space-y-7 overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#4820c7] via-primarypurple to-[#5225cf] p-6 sm:p-9" role="status" aria-label="Loading member profile">
+                    <div className="landing-grid pointer-events-none absolute inset-0 opacity-35" aria-hidden="true" />
+                    <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
+                        <div className="h-32 w-32 rounded-[1.75rem] bg-white/15" />
+                        <div className="flex flex-1 flex-col gap-3">
+                            <div className="h-3 w-24 rounded bg-primarygreen/35" />
+                            <div className="h-9 w-56 max-w-full rounded bg-white/20" />
+                            <div className="h-4 w-64 max-w-full rounded bg-white/10" />
+                            <div className="mt-2 h-7 w-28 rounded-full bg-primarygreen/30" />
                         </div>
                     </div>
-
-                    <div className="flex gap-3 mt-4">
-                        <div className="h-6 w-16 rounded bg-gray-300"></div>
-                        <div className="h-6 w-20 rounded bg-gray-300"></div>
-                        <div className="h-6 w-12 rounded bg-gray-300"></div>
-                    </div>
-
-                    <div className="border-t border-gray-200 pt-4 space-y-3">
-                        <div className="h-5 w-32 bg-gray-300 rounded"></div>
-                        <div className="h-4 w-full bg-gray-200 rounded"></div>
-                        <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
-                        <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
+                    <div className="relative space-y-3 border-t border-white/15 pt-6">
+                        <div className="h-3 w-20 rounded bg-primarygreen/30" />
+                        <div className="h-4 w-full rounded bg-white/10" />
+                        <div className="h-4 w-3/4 rounded bg-white/10" />
                     </div>
                 </div>
             )}
@@ -90,14 +89,11 @@ const User = ({ params }: { params: Promise<{ userid: string }> }) => {
             {!isLoading && user && (
                 <>
                     <UserDetails user={user} page="userDetails" />
-                    <div className="border-t-2 border-primarypurple/20"></div>
                     <UserProjects userid={userid} />
-                    <div className="border-t-2 border-primarypurple/20"></div>
                     <UserCollaborations userid={userid} />
                 </>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 };
 

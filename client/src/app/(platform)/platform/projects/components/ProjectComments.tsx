@@ -9,7 +9,15 @@ import {
 } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
 import { useAuthStore } from "@/stores";
-import { Trash2 } from "lucide-react";
+import {
+    LoaderCircle,
+    MessageCircle,
+    MessagesSquare,
+    RefreshCw,
+    Send,
+    Trash2,
+    UserRound,
+} from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
 import { ReportButton } from "@/app/(platform)/components/ReportButton";
@@ -92,17 +100,25 @@ function removeComment(
 
 const CommentsSkeleton = () => {
     return (
-        <div className="space-y-3 mt-3">
+        <div
+            className="mt-4 space-y-3"
+            role="status"
+            aria-label="Loading project comments"
+        >
             {COMMENT_SKELETON_IDS.map((id) => (
                 <div
                     key={id}
-                    className="rounded-lg border border-primarypurple/10 bg-white/80 p-3 space-y-2 animate-pulse"
+                    className="animate-pulse space-y-3 rounded-2xl border border-primarypurple/10 bg-white p-4"
                 >
-                    <div className="h-3 w-32 rounded bg-gray-200" />
-                    <div className="h-3 w-3/4 rounded bg-gray-100" />
-                    <div className="h-3 w-2/3 rounded bg-gray-100" />
+                    <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-xl bg-primarypurple/10" />
+                        <div className="h-3 w-32 rounded-full bg-gray-200" />
+                    </div>
+                    <div className="h-3 w-3/4 rounded-full bg-gray-100" />
+                    <div className="h-3 w-2/3 rounded-full bg-gray-100" />
                 </div>
             ))}
+            <span className="sr-only">Loading comments...</span>
         </div>
     );
 };
@@ -116,13 +132,20 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
     const [formError, setFormError] = React.useState<string | null>(null);
     const [deleteError, setDeleteError] = React.useState<string | null>(null);
 
-    const invalidateProjectSurfaces = () => Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.project(projectid) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.recommendedProjects }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.myProjects }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.allUserProjects }),
-    ]);
+    const invalidateProjectSurfaces = () =>
+        Promise.all([
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.project(projectid),
+            }),
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.recommendedProjects,
+            }),
+            queryClient.invalidateQueries({ queryKey: queryKeys.myProjects }),
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.allUserProjects,
+            }),
+        ]);
 
     const {
         data,
@@ -335,51 +358,120 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
     };
 
     return (
-        <div className="space-y-3 border-t border-primarypurple/20 pt-4">
-            <div className="flex items-center justify-between">
-                <div className="flex flex-col gap-1">
-                    <h2 className="text-lg font-semibold">Comments</h2>
-                    <p className="text-xs text-gray-600">
-                        See what others are saying about this project.
-                    </p>
+        <section
+            className="relative isolate overflow-hidden rounded-[1.75rem] border border-primarypurple/15 bg-[#fbfaff] p-4 shadow-[0_18px_55px_rgba(24,16,54,0.07)] sm:p-6"
+            aria-labelledby="project-comments-heading"
+        >
+            <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primarypurple via-primarygreen to-primarypurple"
+                aria-hidden="true"
+            />
+            <div
+                className="pointer-events-none absolute -right-20 -top-20 -z-10 h-56 w-56 rounded-full bg-primarygreen/15 blur-3xl"
+                aria-hidden="true"
+            />
+
+            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-start gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primarypurple text-white shadow-[0_10px_24px_rgba(111,67,254,0.22)]">
+                        <MessagesSquare className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <div>
+                        <p className="mb-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primarypurple">
+                            Join the conversation
+                        </p>
+                        <h2
+                            id="project-comments-heading"
+                            className="text-xl font-black tracking-tight text-gray-950 sm:text-2xl"
+                        >
+                            Comments
+                        </h2>
+                        <p className="mt-1 max-w-xl text-sm leading-6 text-gray-600">
+                            Share useful feedback, ask a question, or encourage
+                            the people building this project.
+                        </p>
+                    </div>
                 </div>
+
+                {!isPending && !initialError && (
+                    <span className="w-fit rounded-full border border-primarypurple/15 bg-white px-3 py-1.5 text-xs font-bold text-primarypurple shadow-sm">
+                        {comments.length.toLocaleString()} loaded
+                    </span>
+                )}
             </div>
 
             {/* Add Comment Form */}
             <form
                 onSubmit={handleSubmit}
-                className="space-y-2 rounded-xl border border-primarypurple/25 bg-white/90 p-3 shadow-sm"
+                aria-busy={createCommentMutation.isPending}
+                className="rounded-2xl border border-primarypurple/15 bg-white p-4 shadow-[0_12px_35px_rgba(24,16,54,0.06)] sm:p-5"
             >
-                <label
-                    htmlFor="project-comment-body"
-                    className="text-xs font-semibold uppercase tracking-wide text-gray-600"
-                >
-                    Add a comment
-                </label>
+                <div className="mb-3 flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primarygreen text-black">
+                        <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <label
+                        htmlFor="project-comment-body"
+                        className="text-sm font-bold text-gray-950"
+                    >
+                        Add a comment
+                    </label>
+                </div>
                 <textarea
                     id="project-comment-body"
                     value={newComment}
                     maxLength={MAX_COMMENT_LENGTH}
+                    aria-describedby={`project-comment-help project-comment-count${formError ? " project-comment-error" : ""}`}
+                    aria-invalid={Boolean(formError)}
+                    disabled={createCommentMutation.isPending}
                     onChange={(e) => {
                         setNewComment(e.target.value);
                         if (formError) setFormError(null);
                     }}
-                    rows={3}
+                    rows={4}
                     placeholder="Share your thoughts about this project..."
-                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primarypurple focus:ring-1 focus:ring-primarypurple/50"
+                    className="min-h-28 w-full resize-y rounded-xl border border-gray-200 bg-[#fcfbff] px-4 py-3 text-sm leading-6 text-gray-900 outline-none transition placeholder:text-gray-400 hover:border-primarypurple/30 focus:border-primarypurple focus:bg-white focus:ring-4 focus:ring-primarypurple/10"
                 />
                 {formError && (
-                    <p className="text-[11px] text-red-600" role="alert">
+                    <p
+                        id="project-comment-error"
+                        className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700"
+                        role="alert"
+                    >
                         {formError}
                     </p>
                 )}
 
-                <div className="flex justify-end">
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-gray-500 sm:justify-start">
+                        <span id="project-comment-help">
+                            Keep it constructive and relevant.
+                        </span>
+                        <span
+                            id="project-comment-count"
+                            className={
+                                newComment.length >= MAX_COMMENT_LENGTH
+                                    ? "font-bold text-red-600"
+                                    : "font-medium text-gray-500"
+                            }
+                        >
+                            {newComment.length.toLocaleString()} /{" "}
+                            {MAX_COMMENT_LENGTH.toLocaleString()}
+                        </span>
+                    </div>
                     <button
                         type="submit"
                         disabled={createCommentMutation.isPending}
-                        className="rounded-lg bg-primarypurple px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primarypurple/90 disabled:opacity-60"
+                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primarypurple px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(111,67,254,0.22)] transition hover:-translate-y-0.5 hover:bg-[#5e32f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:w-auto"
                     >
+                        {createCommentMutation.isPending ? (
+                            <LoaderCircle
+                                className="h-4 w-4 animate-spin"
+                                aria-hidden="true"
+                            />
+                        ) : (
+                            <Send className="h-4 w-4" aria-hidden="true" />
+                        )}
                         {createCommentMutation.isPending
                             ? "Posting..."
                             : "Post Comment"}
@@ -393,7 +485,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
             {/* Error */}
             {initialError && (
                 <div
-                    className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                    className="mt-4 flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between"
                     role="alert"
                 >
                     <span>
@@ -404,8 +496,9 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                         type="button"
                         onClick={() => void refetch()}
                         disabled={isFetching}
-                        className="font-semibold underline disabled:opacity-60"
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 font-bold no-underline transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                     >
+                        <RefreshCw className="h-4 w-4" aria-hidden="true" />
                         Retry
                     </button>
                 </div>
@@ -413,7 +506,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
 
             {deleteError && (
                 <p
-                    className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                    className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
                     role="alert"
                 >
                     {deleteError}
@@ -422,41 +515,58 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
 
             {/* Empty state */}
             {!isPending && !initialError && comments.length === 0 && (
-                <p className="text-sm text-gray-600">
-                    No comments yet. Be the first to comment on this project.
-                </p>
+                <div className="mt-4 rounded-2xl border border-dashed border-primarypurple/25 bg-white/70 px-5 py-10 text-center">
+                    <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                        <MessageCircle className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                    <p className="font-bold text-gray-900">Start the conversation</p>
+                    <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-gray-600">
+                        No comments yet. Be the first to share a thoughtful note
+                        about this project.
+                    </p>
+                </div>
             )}
 
             {/* Comments list */}
             {!isPending && !initialError && comments.length > 0 && (
-                <div className="space-y-2">
+                <div className="mt-4 space-y-3">
                     {comments.map((comment) => (
-                        <div
+                        <article
                             key={comment.comment_id}
-                            className="rounded-lg border border-primarypurple/10 bg-white/80 p-3"
+                            className="rounded-2xl border border-black/[0.07] bg-white p-4 shadow-[0_8px_24px_rgba(24,16,54,0.04)] transition hover:border-primarypurple/20 sm:p-5"
                         >
                             {/* Meta (optional user info) */}
-                            <div className="mb-1 flex items-center justify-between">
-                                <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
-                                    {comment.user_full_name && (
-                                        <span className="font-semibold text-gray-700">
-                                            {comment.user_full_name}
-                                        </span>
-                                    )}
-                                    {comment.user_nu_email && (
-                                        <span>{comment.user_nu_email}</span>
-                                    )}
-                                    {comment.created_at && (
-                                        <span>
-                                            ·{" "}
-                                            {new Date(
-                                                comment.created_at
-                                            ).toLocaleDateString()}
-                                        </span>
-                                    )}
+                            <div className="mb-3 flex items-start justify-between gap-3">
+                                <div className="flex min-w-0 items-center gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primarypurple/10 text-primarypurple">
+                                        <UserRound
+                                            className="h-4 w-4"
+                                            aria-hidden="true"
+                                        />
+                                    </span>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-bold text-gray-950">
+                                            {comment.user_full_name ||
+                                                "Community member"}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.7rem] text-gray-500">
+                                            {comment.user_nu_email && (
+                                                <span className="max-w-full truncate">
+                                                    {comment.user_nu_email}
+                                                </span>
+                                            )}
+                                            {comment.created_at && (
+                                                <time dateTime={comment.created_at}>
+                                                    {new Date(
+                                                        comment.created_at
+                                                    ).toLocaleDateString()}
+                                                </time>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-1">
                                     {canReportComment(comment) && (
                                         <ReportButton
                                             targetId={comment.comment_id}
@@ -474,7 +584,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                                                 )
                                             }
                                             disabled={deleteCommentMutation.isPending}
-                                            className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                                             title="Delete comment"
                                             aria-label={`Delete comment by ${
                                                 comment.user_full_name || "this user"
@@ -489,15 +599,15 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                                 </div>
                             </div>
 
-                            <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                            <p className="whitespace-pre-wrap break-words text-sm leading-6 text-gray-700">
                                 {comment.comment_body}
                             </p>
-                        </div>
+                        </article>
                     ))}
 
                     {isFetchNextPageError && (
                         <div
-                            className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                            className="flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between"
                             role="alert"
                         >
                             <span>Could not load more comments.</span>
@@ -505,7 +615,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                                 type="button"
                                 onClick={() => void fetchNextPage()}
                                 disabled={isFetchingNextPage}
-                                className="font-semibold underline disabled:opacity-60"
+                                className="rounded-lg px-2 py-1 font-bold underline underline-offset-2 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
                             >
                                 Retry
                             </button>
@@ -517,8 +627,14 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                             type="button"
                             onClick={() => void fetchNextPage()}
                             disabled={isFetchingNextPage}
-                            className="w-full rounded-lg border border-primarypurple/25 bg-white px-4 py-2 text-sm font-semibold text-primarypurple transition hover:bg-primarypurple/5 disabled:opacity-60"
+                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-primarypurple/20 bg-white px-4 py-2.5 text-sm font-bold text-primarypurple transition hover:border-primarypurple/40 hover:bg-primarypurple/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:cursor-not-allowed disabled:opacity-60"
                         >
+                            {isFetchingNextPage && (
+                                <LoaderCircle
+                                    className="h-4 w-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                            )}
                             {isFetchingNextPage
                                 ? "Loading more comments..."
                                 : "Load more comments"}
@@ -526,7 +642,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                     )}
                 </div>
             )}
-        </div>
+        </section>
     );
 };
 

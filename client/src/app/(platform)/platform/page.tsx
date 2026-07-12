@@ -2,12 +2,20 @@
 
 import { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 
 import ProjectCard, {
     type ProjectSummary,
 } from "../components/ProjectCard";
+import { PlatformPageHeader } from "../components/PlatformPageHeader";
 import { authFetch } from "@/lib/authFetch";
 import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
+import {
+    PLATFORM_INPUT_CLASS,
+    PLATFORM_HEADER_BADGE_CLASS,
+    PLATFORM_PRIMARY_BUTTON_CLASS,
+    PLATFORM_SELECT_CLASS,
+} from "@/lib/platformStyles";
 import { queryKeys } from "@/lib/queryKeys";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
@@ -83,84 +91,136 @@ const Platform = () => {
     const showEmptyState = !isPending && !initialError && projects.length === 0;
     const isDebouncing =
         search.trim() !== debouncedSearch || tag.trim() !== debouncedTag;
+    const hasActiveFilters =
+        search.length > 0 ||
+        tag.length > 0 ||
+        issueStatus !== "all" ||
+        ordering !== "newest";
+
+    const clearFilters = () => {
+        setSearch("");
+        setTag("");
+        setIssueStatus("all");
+        setOrdering("newest");
+    };
 
     return (
-        <div className="space-y-6 p-6 px-8">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-                <h1 className="text-4xl font-semibold underline decoration-4 decoration-primarypurple">
-                    Explore FORK&apos;d Projects
-                </h1>
+        <div className="mx-auto w-full max-w-7xl space-y-7 px-5 py-8 sm:px-8 lg:space-y-9 lg:py-10">
+            <PlatformPageHeader
+                eyebrow="Build in public"
+                title={<>Find your next <span className="text-primarygreen">project.</span></>}
+                description="Explore what FASTians are building, discover open issues, and find a project where your skills can make an impact."
+                actions={
+                    <div className={PLATFORM_HEADER_BADGE_CLASS}>
+                        <span className="text-2xl font-black text-primarygreen">
+                            {typeof totalCount === "number" ? totalCount : projects.length}
+                        </span>
+                        <span className="text-xs font-bold uppercase leading-4 tracking-wider text-white/80">
+                            Projects<br />to explore
+                        </span>
+                    </div>
+                }
+            />
 
-                <div className="grid w-full gap-2 sm:grid-cols-2 xl:max-w-4xl xl:grid-cols-4">
-                    <label className="sr-only" htmlFor="project-search">
-                        Search projects
-                    </label>
-                    <input
-                        id="project-search"
-                        type="search"
-                        placeholder="Search projects..."
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        className="w-full rounded border-2 border-gray-300 p-2 text-sm outline-none transition-colors duration-200 focus:border-primarypurple/80"
-                    />
-
-                    <label className="sr-only" htmlFor="project-tag-filter">
-                        Filter by exact tag
-                    </label>
-                    <input
-                        id="project-tag-filter"
-                        type="search"
-                        placeholder="Filter by exact tag"
-                        value={tag}
-                        onChange={(event) => setTag(event.target.value)}
-                        className="w-full rounded border-2 border-gray-300 p-2 text-sm outline-none transition-colors duration-200 focus:border-primarypurple/80"
-                    />
-
-                    <label className="sr-only" htmlFor="project-issue-filter">
-                        Filter by issue status
-                    </label>
-                    <select
-                        id="project-issue-filter"
-                        value={issueStatus}
-                        onChange={(event) =>
-                            setIssueStatus(event.target.value as IssueStatus)
-                        }
-                        className="w-full rounded border-2 border-gray-300 p-2 text-sm outline-none transition-colors duration-200 focus:border-primarypurple/80"
-                    >
-                        <option value="all">All issue states</option>
-                        <option value="open">Has open issues</option>
-                        <option value="closed">Has closed issues</option>
-                        <option value="without-open">No open issues</option>
-                    </select>
-
-                    <label className="sr-only" htmlFor="project-ordering">
-                        Sort projects
-                    </label>
-                    <select
-                        id="project-ordering"
-                        value={ordering}
-                        onChange={(event) =>
-                            setOrdering(event.target.value as ProjectOrdering)
-                        }
-                        className="w-full rounded border-2 border-gray-300 p-2 text-sm outline-none transition-colors duration-200 focus:border-primarypurple/80"
-                    >
-                        <option value="newest">Newest</option>
-                        <option value="oldest">Oldest</option>
-                        <option value="updated">Recently updated</option>
-                        <option value="popular">Most liked</option>
-                        <option value="discussed">Most discussed</option>
-                        <option value="needs-help">Needs help</option>
-                    </select>
+            <section
+                className="rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-6"
+                aria-labelledby="explore-filter-heading"
+            >
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 id="explore-filter-heading" className="flex items-center gap-2 text-base font-black">
+                            <SlidersHorizontal className="h-4 w-4 text-primarypurple" aria-hidden="true" />
+                            Refine your feed
+                        </h2>
+                        <p className="mt-1 text-xs text-black/45">Search by name or narrow projects by technology and activity.</p>
+                    </div>
+                    {hasActiveFilters && (
+                        <button
+                            type="button"
+                            onClick={clearFilters}
+                            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-bold text-black/50 transition hover:bg-black/[0.04] hover:text-primarypurple focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
+                        >
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                            Clear filters
+                        </button>
+                    )}
                 </div>
-            </div>
 
-            <p className="text-sm text-gray-600" role="status" aria-live="polite">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-black/55">Search projects</span>
+                        <span className="relative block">
+                            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" aria-hidden="true" />
+                            <input
+                                id="project-search"
+                                type="search"
+                                placeholder="Name or creator"
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                className={`${PLATFORM_INPUT_CLASS} pl-11`}
+                            />
+                        </span>
+                    </label>
+
+                    <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-black/55">Technology tag</span>
+                        <input
+                            id="project-tag-filter"
+                            type="search"
+                            placeholder="e.g. frontend"
+                            value={tag}
+                            onChange={(event) => setTag(event.target.value)}
+                            className={PLATFORM_INPUT_CLASS}
+                        />
+                    </label>
+
+                    <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-black/55">Issue activity</span>
+                        <select
+                            id="project-issue-filter"
+                            value={issueStatus}
+                            onChange={(event) => setIssueStatus(event.target.value as IssueStatus)}
+                            className={PLATFORM_SELECT_CLASS}
+                        >
+                            <option value="all">All issue states</option>
+                            <option value="open">Has open issues</option>
+                            <option value="closed">Has closed issues</option>
+                            <option value="without-open">No open issues</option>
+                        </select>
+                    </label>
+
+                    <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-black/55">Sort by</span>
+                        <select
+                            id="project-ordering"
+                            value={ordering}
+                            onChange={(event) => setOrdering(event.target.value as ProjectOrdering)}
+                            className={PLATFORM_SELECT_CLASS}
+                        >
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
+                            <option value="updated">Recently updated</option>
+                            <option value="popular">Most liked</option>
+                            <option value="discussed">Most discussed</option>
+                            <option value="needs-help">Needs help</option>
+                        </select>
+                    </label>
+                </div>
+            </section>
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-primarypurple">Community work</p>
+                    <h2 className="mt-1 text-2xl font-black tracking-tight">Project directory</h2>
+                </div>
+                <p className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-black/50 shadow-sm" role="status" aria-live="polite">
                 {isDebouncing || (isFetching && !isFetchingNextPage)
                     ? "Updating project results..."
                     : totalCount !== null && totalCount !== undefined
                         ? `Showing ${projects.length} of ${totalCount} projects.`
                         : `${projects.length} projects loaded.`}
-            </p>
+                </p>
+            </div>
 
             <ProjectCard
                 isError={initialError}
@@ -174,14 +234,14 @@ const Platform = () => {
 
             {isFetchNextPageError && (
                 <div
-                    className="flex items-center justify-center gap-3 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-red-50 p-4 text-sm text-red-700"
                     role="alert"
                 >
                     <span>Could not load more projects.</span>
                     <button
                         type="button"
                         onClick={() => void fetchNextPage()}
-                        className="font-semibold underline"
+                        className="font-bold underline underline-offset-4"
                     >
                         Retry
                     </button>
@@ -194,7 +254,7 @@ const Platform = () => {
                         type="button"
                         onClick={() => void fetchNextPage()}
                         disabled={isFetchingNextPage}
-                        className="rounded-xl bg-black px-6 py-2 font-semibold text-white hover:bg-black/80 disabled:opacity-60"
+                        className={PLATFORM_PRIMARY_BUTTON_CLASS}
                     >
                         {isFetchingNextPage ? "Loading more..." : "Load more projects"}
                     </button>

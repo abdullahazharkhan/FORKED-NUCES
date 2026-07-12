@@ -1,23 +1,11 @@
-import { Metadata } from "next";
-import Navbar from "../components/Navbar"
-import Footer from "../components/Footer"
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-    title: "FORKED NUCES",
-    description: "",
+    title: "Explore",
+    description: "Discover projects and contributors across FORKED NUCES.",
 };
 
-export default function PlatformLayout({
-    children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
-    return (
-        <>
-            <Navbar />
-            <div className="mt-24 min-h-[calc(100vh-128px)]">
-                {children}
-            </div>
-        </>
-    );
+export default function PlatformLayout({ children }: { children: ReactNode }) {
+    return children;
 }

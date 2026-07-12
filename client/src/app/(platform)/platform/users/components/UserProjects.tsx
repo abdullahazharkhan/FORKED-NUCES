@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { FolderKanban } from "lucide-react";
 
 import ProjectCard, {
     type ProjectSummary,
@@ -9,6 +10,7 @@ import ProjectCard, {
 import { authFetch } from "@/lib/authFetch";
 import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
 import { queryKeys } from "@/lib/queryKeys";
+import { PLATFORM_PRIMARY_BUTTON_CLASS } from "@/lib/platformStyles";
 
 const PAGE_SIZE = 20;
 
@@ -42,15 +44,19 @@ const UserProjects = ({ userid }: { userid: string }) => {
 
     return (
         <section
-            className="my-6 space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6"
+            className="space-y-6 rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-7"
             aria-labelledby="owned-projects-heading"
         >
-            <h2
-                id="owned-projects-heading"
-                className="text-3xl font-semibold underline decoration-4 decoration-primarypurple sm:text-4xl"
-            >
-                Projects Owned
-            </h2>
+            <div>
+                <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-primarypurple">
+                    <FolderKanban className="h-4 w-4" aria-hidden="true" />
+                    Portfolio
+                </p>
+                <h2 id="owned-projects-heading" className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+                    Projects owned
+                </h2>
+                <p className="mt-1 text-sm text-black/45">Original work this member has shared with the community.</p>
+            </div>
 
             <ProjectCard
                 isError={initialError}
@@ -68,7 +74,7 @@ const UserProjects = ({ userid }: { userid: string }) => {
 
             {projectsQuery.isFetchNextPageError && (
                 <div
-                    className="flex items-center justify-center gap-3 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-red-50 p-4 text-sm text-red-700"
                     role="alert"
                 >
                     <span>Could not load more owned projects.</span>
@@ -76,7 +82,7 @@ const UserProjects = ({ userid }: { userid: string }) => {
                         type="button"
                         onClick={() => void projectsQuery.fetchNextPage()}
                         disabled={projectsQuery.isFetchingNextPage}
-                        className="font-semibold underline disabled:opacity-60"
+                        className="font-bold underline underline-offset-4 disabled:opacity-60"
                     >
                         Retry
                     </button>
@@ -91,7 +97,7 @@ const UserProjects = ({ userid }: { userid: string }) => {
                             type="button"
                             onClick={() => void projectsQuery.fetchNextPage()}
                             disabled={projectsQuery.isFetchingNextPage}
-                            className="rounded-lg bg-primarypurple px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                            className={PLATFORM_PRIMARY_BUTTON_CLASS}
                         >
                             {projectsQuery.isFetchingNextPage
                                 ? "Loading..."

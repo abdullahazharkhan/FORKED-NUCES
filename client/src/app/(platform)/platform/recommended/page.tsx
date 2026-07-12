@@ -2,10 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { Search, Sparkles } from "lucide-react";
 
 import ProjectCard from "../../components/ProjectCard";
+import { PlatformPageHeader } from "../../components/PlatformPageHeader";
 import { authFetch } from "@/lib/authFetch";
 import type { PaginatedPage } from "@/lib/pagination";
+import {
+    PLATFORM_INPUT_CLASS,
+    PLATFORM_HEADER_BADGE_CLASS,
+    PLATFORM_PRIMARY_BUTTON_CLASS,
+    PLATFORM_SELECT_CLASS,
+} from "@/lib/platformStyles";
 import { queryKeys } from "@/lib/queryKeys";
 
 const PAGE_SIZE = 20;
@@ -192,48 +200,59 @@ const RecommendedProjects = () => {
     };
 
     return (
-        <div className="space-y-6 p-6 px-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <h1 className="text-4xl font-semibold underline decoration-4 decoration-primarypurple">
-                    Recommended FORK&apos;d Projects
-                </h1>
+        <div className="mx-auto w-full max-w-7xl space-y-7 px-5 py-8 sm:px-8 lg:space-y-9 lg:py-10">
+            <PlatformPageHeader
+                eyebrow="Made for you"
+                title={<>A smarter way to find your <span className="text-primarygreen">next build.</span></>}
+                description="Recommendations adapt to your skills, network, and the kinds of projects that need help right now."
+                actions={
+                    <div className={PLATFORM_HEADER_BADGE_CLASS}>
+                        <Sparkles className="h-6 w-6 text-primarygreen" aria-hidden="true" />
+                        <span className="text-sm font-bold">Personalized picks</span>
+                    </div>
+                }
+            />
 
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-                    <label className="sr-only" htmlFor="recommendation-search">
-                        Search loaded recommendations
-                    </label>
-                    <input
-                        id="recommendation-search"
-                        type="search"
-                        placeholder="Search loaded recommendations..."
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        className="w-full max-w-md rounded border-2 border-gray-300 p-2 text-sm outline-none transition-colors duration-200 focus:border-primarypurple/80"
-                    />
-
-                    <label className="sr-only" htmlFor="recommendation-tag">
-                        Filter loaded recommendations by tag
-                    </label>
-                    <select
-                        id="recommendation-tag"
-                        value={selectedTag}
-                        onChange={(event) => setSelectedTag(event.target.value)}
-                        className="w-full max-w-xs rounded border-2 border-gray-300 p-2 text-sm outline-none transition-colors duration-200 focus:border-primarypurple/80"
-                    >
-                        {allTags.map((tag) => (
-                            <option key={tag} value={tag}>
-                                {tag === "all" ? "All Tags" : tag}
-                            </option>
-                        ))}
-                    </select>
+            <section className="rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-6" aria-labelledby="recommendation-mode-heading">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <h2 id="recommendation-mode-heading" className="text-base font-black">Choose your discovery mode</h2>
+                        <p className="mt-1 text-xs text-black/45">Switch perspectives without losing your place.</p>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:w-[34rem]">
+                        <label className="block">
+                            <span className="mb-2 block text-xs font-bold text-black/55">Search loaded results</span>
+                            <span className="relative block">
+                                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" aria-hidden="true" />
+                                <input
+                                    id="recommendation-search"
+                                    type="search"
+                                    placeholder="Project or creator"
+                                    value={search}
+                                    onChange={(event) => setSearch(event.target.value)}
+                                    className={`${PLATFORM_INPUT_CLASS} pl-11`}
+                                />
+                            </span>
+                        </label>
+                        <label className="block">
+                            <span className="mb-2 block text-xs font-bold text-black/55">Technology</span>
+                            <select
+                                id="recommendation-tag"
+                                value={selectedTag}
+                                onChange={(event) => setSelectedTag(event.target.value)}
+                                className={PLATFORM_SELECT_CLASS}
+                            >
+                                {allTags.map((tag) => (
+                                    <option key={tag} value={tag}>
+                                        {tag === "all" ? "All tags" : tag}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Recommendation Mode
-                </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
                     {recommendationOptions.map((option) => {
                         const isActive = recommendationMode === option.id;
                         return (
@@ -242,39 +261,42 @@ const RecommendedProjects = () => {
                                 type="button"
                                 aria-pressed={isActive}
                                 onClick={() => selectMode(option.id)}
-                                className={`rounded-full border px-4 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primarypurple/40 ${
+                                className={`min-h-[4.5rem] rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/20 ${
                                     isActive
-                                        ? "border-primarypurple bg-primarypurple text-white"
-                                        : "border-gray-300 bg-white text-gray-700 hover:border-primarypurple/60"
+                                        ? "border-primarypurple bg-primarypurple text-white shadow-[0_12px_28px_rgba(111,67,254,0.2)]"
+                                        : "border-black/[0.08] bg-[#f8f7fb] text-black hover:border-primarypurple/30 hover:bg-primarypurple/[0.04]"
                                 }`}
-                                title={option.helper}
                             >
-                                <span className="font-semibold">
+                                <span className="block text-sm font-black">
                                     {option.label}
                                 </span>
-                                {isActive && (
-                                    <span className="ml-1 hidden text-xs text-white/80 sm:inline">
-                                        — {option.helper}
-                                    </span>
-                                )}
+                                <span className={`mt-1 block text-[0.68rem] leading-4 ${isActive ? "text-white/85" : "text-black/40"}`}>
+                                    {option.helper}
+                                </span>
                             </button>
                         );
                     })}
                 </div>
                 {modeMessage && (
-                    <div className="rounded-lg border border-primarypurple/20 bg-primarypurple/5 px-4 py-2 text-sm text-primarypurple">
+                    <div className="mt-4 rounded-2xl border border-primarypurple/15 bg-primarypurple/[0.05] px-4 py-3 text-sm font-medium text-primarypurple">
                         {modeMessage}
                     </div>
                 )}
-            </div>
+            </section>
 
-            <p className="text-sm text-gray-600" role="status" aria-live="polite">
-                {isFetching && !isFetchingNextPage
-                    ? "Updating recommendations..."
-                    : totalCount !== null && totalCount !== undefined
-                      ? `Showing ${projects.length} of ${totalCount} recommendations.`
-                      : `${projects.length} recommendations loaded.`}
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-primarypurple">Curated feed</p>
+                    <h2 className="mt-1 text-2xl font-black tracking-tight">Recommended projects</h2>
+                </div>
+                <p className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-black/50 shadow-sm" role="status" aria-live="polite">
+                    {isFetching && !isFetchingNextPage
+                        ? "Updating recommendations..."
+                        : totalCount !== null && totalCount !== undefined
+                          ? `Showing ${projects.length} of ${totalCount} recommendations.`
+                          : `${projects.length} recommendations loaded.`}
+                </p>
+            </div>
 
             <ProjectCard
                 isError={initialError}
@@ -289,7 +311,7 @@ const RecommendedProjects = () => {
 
             {isFetchNextPageError && (
                 <div
-                    className="flex items-center justify-center gap-3 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-red-50 p-4 text-sm text-red-700"
                     role="alert"
                 >
                     <span>Could not load more recommendations.</span>
@@ -297,7 +319,7 @@ const RecommendedProjects = () => {
                         type="button"
                         onClick={() => void fetchNextPage()}
                         disabled={isFetchingNextPage}
-                        className="font-semibold underline disabled:opacity-60"
+                        className="font-bold underline underline-offset-4 disabled:opacity-60"
                     >
                         Retry
                     </button>
@@ -310,7 +332,7 @@ const RecommendedProjects = () => {
                         type="button"
                         onClick={() => void fetchNextPage()}
                         disabled={isFetchingNextPage}
-                        className="rounded-xl bg-black px-6 py-2 font-semibold text-white hover:bg-black/80 disabled:opacity-60"
+                        className={PLATFORM_PRIMARY_BUTTON_CLASS}
                     >
                         {isFetchingNextPage
                             ? "Loading more..."

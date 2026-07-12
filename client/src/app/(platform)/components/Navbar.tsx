@@ -1,20 +1,28 @@
 "use client";
 
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import React, { useEffect, useState, useRef } from "react";
-import { Menu, X, User, LogOut, ChevronDown, ClipboardList } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+    ChevronDown,
+    ClipboardList,
+    LogOut,
+    Menu,
+    User,
+    X,
+} from "lucide-react";
+
 import { authFetch } from "@/lib/authFetch";
 import { passthroughImageLoader } from "@/lib/passthroughImageLoader";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/stores";
 import { NotificationBell } from "./NotificationBell";
 
 const NAV_LINKS = [
     { name: "Explore", href: "/platform" },
-    { name: "Users", href: "/platform/users" },
-    { name: "Recommended Projects", href: "/platform/recommended" },
+    { name: "Recommended", href: "/platform/recommended" },
+    { name: "People", href: "/platform/users" },
     { name: "Collaborations", href: "/collaborations" },
     { name: "Activity", href: "/activity" },
     { name: "Leaderboard", href: "/leaderboard" },
@@ -24,26 +32,17 @@ const DRAWER_FOCUSABLE_SELECTOR =
     'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const Navbar = () => {
+    const pathname = usePathname();
     const router = useRouter();
     const queryClient = useQueryClient();
     const user = useAuthStore((state) => state.user);
     const clearUser = useAuthStore((state) => state.clearUser);
-
-
-    const [scrolled, setScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
     const profileButtonRef = useRef<HTMLButtonElement>(null);
     const mobileToggleRef = useRef<HTMLButtonElement>(null);
     const mobileDrawerRef = useRef<HTMLElement>(null);
-
-    useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 10);
-        onScroll();
-        window.addEventListener("scroll", onScroll, { passive: true });
-        return () => window.removeEventListener("scroll", onScroll);
-    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -57,7 +56,6 @@ const Navbar = () => {
 
     useEffect(() => {
         if (!isProfileOpen) return;
-
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key !== "Escape") return;
             event.preventDefault();
@@ -73,13 +71,10 @@ const Navbar = () => {
         const drawer = mobileDrawerRef.current;
         if (!drawer) return;
         const returnFocusTo = mobileToggleRef.current;
-
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
-        const frame = window.requestAnimationFrame(() => {
-            drawer
-                .querySelector<HTMLElement>(DRAWER_FOCUSABLE_SELECTOR)
-                ?.focus();
+        const frame = requestAnimationFrame(() => {
+            drawer.querySelector<HTMLElement>(DRAWER_FOCUSABLE_SELECTOR)?.focus();
         });
 
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -89,17 +84,10 @@ const Navbar = () => {
                 return;
             }
             if (event.key !== "Tab") return;
-
             const focusable = Array.from(
-                drawer.querySelectorAll<HTMLElement>(
-                    DRAWER_FOCUSABLE_SELECTOR
-                )
+                drawer.querySelectorAll<HTMLElement>(DRAWER_FOCUSABLE_SELECTOR)
             ).filter((element) => element.getClientRects().length > 0);
-            if (focusable.length === 0) {
-                event.preventDefault();
-                drawer.focus();
-                return;
-            }
+            if (focusable.length === 0) return;
             const first = focusable[0];
             const last = focusable[focusable.length - 1];
             if (event.shiftKey && document.activeElement === first) {
@@ -113,7 +101,7 @@ const Navbar = () => {
 
         document.addEventListener("keydown", handleKeyDown);
         return () => {
-            window.cancelAnimationFrame(frame);
+            cancelAnimationFrame(frame);
             document.removeEventListener("keydown", handleKeyDown);
             document.body.style.overflow = previousOverflow;
             returnFocusTo?.focus();
@@ -122,16 +110,9 @@ const Navbar = () => {
 
     const logoutMutation = useMutation({
         mutationFn: async () => {
-            const res = await authFetch("/api/auth/logout/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            if (!res.ok) {
-                const payload = (await res.json().catch(() => null)) as {
-                    detail?: string;
-                } | null;
+            const response = await authFetch("/api/auth/logout/", { method: "POST" });
+            if (!response.ok) {
+                const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
                 throw new Error(payload?.detail ?? "Unable to complete logout. Please try again.");
             }
         },
@@ -144,174 +125,139 @@ const Navbar = () => {
         },
     });
 
+    const isActive = (href: string) =>
+        href === "/platform"
+            ? pathname === href || pathname.startsWith("/platform/projects/")
+            : pathname === href || pathname.startsWith(`${href}/`);
+
     return (
         <>
-            <nav
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 flex justify-between items-center px-6 py-4 font-poppins tracking-er
-        ${scrolled ? "bg-black/90 backdrop-blur-lg supports-[backdrop-filter]:bg-black/90 shadow-sm" : "bg-black"}`}
-            >
-                <div className="flex items-center gap-8">
+            <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-primarypurple/90 text-white shadow-[0_8px_30px_rgba(22,9,60,0.16)] backdrop-blur-xl">
+                <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
+                    <div className="flex min-w-0 items-center gap-8">
+                        <Link href="/platform" aria-label="FORKED NUCES dashboard" className="flex shrink-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+                            <Image src="/logos/forkednuces-logo-bw-invert.png" alt="" width={44} height={44} className="h-10 w-10 rounded-xl" />
+                            <span className="hidden text-lg font-black tracking-[-0.04em] sm:inline">
+                                FORK&apos;D <span className="text-primarygreen">NUCES</span>
+                            </span>
+                        </Link>
 
-                    <Link href="/platform" className="flex items-center gap-4">
-                        <Image
-                            src="/logos/forkednuces-logo-bw-invert.png"
-                            alt="FORKED NUCES home"
-                            width={200}
-                            height={200}
-                            className="w-14 h-14 rounded-xl"
-                        />
-                    </Link>
-
-                    <div className="hidden items-center gap-4 xl:flex">
-                        {NAV_LINKS.map((link) => (
-                            <Link
-                                href={link.href}
-                                key={link.href}
-                                className="text-base font-bold text-white hover:text-white/80 transition-colors"
-                            >
-                                {link.name}
-                            </Link>
-                        ))}
+                        <div className="hidden items-center gap-1 xl:flex">
+                            {NAV_LINKS.map((link) => (
+                                <Link
+                                    href={link.href}
+                                    key={link.href}
+                                    aria-current={isActive(link.href) ? "page" : undefined}
+                                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                                        isActive(link.href)
+                                            ? "bg-white/15 text-white"
+                                            : "text-white/65 hover:bg-white/10 hover:text-white"
+                                    }`}
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Mobile menu toggle */}
-                    <button
-                        ref={mobileToggleRef}
-                        type="button"
-                        aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-                        aria-expanded={isMenuOpen}
-                        aria-controls="mobile-drawer"
-                        className="flex h-14 cursor-pointer place-items-center xl:hidden"
-                        onClick={() => setIsMenuOpen((p) => !p)}
-                    >
-                        <Menu
-                            strokeWidth={4}
-                            className="text-white"
-                            size={35}
-                            aria-hidden="true"
-                        />
-                    </button>
-                </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            ref={mobileToggleRef}
+                            type="button"
+                            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                            aria-expanded={isMenuOpen}
+                            aria-controls="platform-mobile-drawer"
+                            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 xl:hidden"
+                            onClick={() => setIsMenuOpen((open) => !open)}
+                        >
+                            <Menu className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                        <NotificationBell />
 
-                <div className="flex items-center gap-2">
-                    <NotificationBell />
-                    <div className="relative" ref={profileRef}>
-                    <button
-                        ref={profileButtonRef}
-                        type="button"
-                        onClick={() => setIsProfileOpen((open) => !open)}
-                        aria-label={isProfileOpen ? "Close account menu" : "Open account menu"}
-                        aria-expanded={isProfileOpen}
-                        aria-controls="profile-menu"
-                        className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity cursor-pointer"
-                    >
-                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
-                            {
-                                user?.avatar_url ?
-                                    (<Image loader={passthroughImageLoader} unoptimized src={user.avatar_url} alt="User Avatar" width={40} height={40} className="w-10 h-10 rounded-full object-cover" />)
-                                    : (
-                                        <User className="text-white w-6 h-6" aria-hidden="true" />
-                                    )
-                            }
-                        </div>
-                        <p className="hidden text-lg font-bold sm:block">
-                            {user?.full_name.split(" ")[0] || "User"}
-                        </p>
-                        <ChevronDown
-                            className={`w-4 h-4 transition-transform ${isProfileOpen ? "rotate-180" : ""}`}
-                            aria-hidden="true"
-                        />
-                    </button>
-
-                    {isProfileOpen && (
-                        <div id="profile-menu" className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl p-2 animate-in fade-in slide-in-from-top-2">
-                            <Link onClick={() => setIsProfileOpen(false)} href="/profile" className="flex items-center gap-2 px-4 py-2 text-gray-800 rounded-xl hover:bg-gray-100 transition-colors">
-                                <User className="w-4 h-4" aria-hidden="true" />
-                                <span>Profile</span>
-                            </Link>
-                            <Link
-                                href="/profile/reports"
-                                onClick={() => setIsProfileOpen(false)}
-                                className="flex items-center gap-2 rounded-xl px-4 py-2 text-gray-800 transition-colors hover:bg-gray-100"
-                            >
-                                <ClipboardList className="h-4 w-4" aria-hidden="true" />
-                                <span>My Reports</span>
-                            </Link>
+                        <div className="relative" ref={profileRef}>
                             <button
+                                ref={profileButtonRef}
                                 type="button"
-                                onClick={() => {
-                                    logoutMutation.reset();
-                                    logoutMutation.mutate();
-                                }}
-                                disabled={logoutMutation.isPending}
-                                className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-left rounded-xl disabled:opacity-60">
-                                <LogOut className="w-4 h-4" aria-hidden="true" />
-                                <span>{logoutMutation.isPending ? "Logging out..." : "Logout"}</span>
+                                onClick={() => setIsProfileOpen((open) => !open)}
+                                aria-label={isProfileOpen ? "Close account menu" : "Open account menu"}
+                                aria-expanded={isProfileOpen}
+                                aria-controls="profile-menu"
+                                className="flex h-11 items-center gap-2 rounded-full border border-white/20 bg-white/10 p-1 pr-2 transition-colors hover:bg-white/15"
+                            >
+                                <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/15">
+                                    {user?.avatar_url ? (
+                                        <Image loader={passthroughImageLoader} unoptimized src={user.avatar_url} alt="" width={32} height={32} className="h-8 w-8 object-cover" />
+                                    ) : (
+                                        <User className="h-4 w-4" aria-hidden="true" />
+                                    )}
+                                </span>
+                                <span className="hidden max-w-24 truncate text-sm font-semibold sm:block">
+                                    {user?.full_name?.split(" ")[0] || "Account"}
+                                </span>
+                                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isProfileOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                             </button>
-                            {logoutMutation.isError && (
-                                <p className="px-4 py-2 text-sm text-red-700" role="alert">
-                                    {logoutMutation.error.message}
-                                </p>
+
+                            {isProfileOpen && (
+                                <div id="profile-menu" className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-black/10 bg-white p-2 text-black shadow-2xl">
+                                    <div className="border-b border-black/[0.07] px-3 py-2.5">
+                                        <p className="truncate text-sm font-bold">{user?.full_name || "Your account"}</p>
+                                        <p className="mt-0.5 truncate text-xs text-black/45">{user?.nu_email}</p>
+                                    </div>
+                                    <Link onClick={() => setIsProfileOpen(false)} href="/profile" className="mt-1 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-black/65 hover:bg-primarypurple/[0.06] hover:text-primarypurple">
+                                        <User className="h-4 w-4" aria-hidden="true" /> Profile
+                                    </Link>
+                                    <Link href="/profile/reports" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-black/65 hover:bg-primarypurple/[0.06] hover:text-primarypurple">
+                                        <ClipboardList className="h-4 w-4" aria-hidden="true" /> My reports
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            logoutMutation.reset();
+                                            logoutMutation.mutate();
+                                        }}
+                                        disabled={logoutMutation.isPending}
+                                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60"
+                                    >
+                                        <LogOut className="h-4 w-4" aria-hidden="true" />
+                                        {logoutMutation.isPending ? "Logging out..." : "Log out"}
+                                    </button>
+                                    {logoutMutation.isError && (
+                                        <p className="px-3 py-2 text-xs text-red-700" role="alert">{logoutMutation.error.message}</p>
+                                    )}
+                                </div>
                             )}
                         </div>
-                    )}
                     </div>
                 </div>
             </nav>
 
             {isMenuOpen && (
                 <>
-                    <button
-                        type="button"
-                        className="fixed inset-0 z-40 bg-black/50 xl:hidden"
-                        aria-label="Close navigation menu"
-                        onClick={() => setIsMenuOpen(false)}
-                    />
-
-                    <aside
-                        ref={mobileDrawerRef}
-                        id="mobile-drawer"
-                        className="fixed right-0 top-0 z-50 h-screen w-[80vw] max-w-[360px]
-                            bg-white/90 backdrop-blur-xl shadow-2xl border-l border-white/30 xl:hidden"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label="Mobile navigation"
-                        tabIndex={-1}
-                    >
-                        <div className="flex items-center justify-between px-5 h-16 mt-3">
-                            <div className="flex items-center gap-3">
-                                <span className="font-bold tracking-tighter text-2xl">Menu</span>
-                            </div>
-                            <button
-                                type="button"
-                                aria-label="Close menu"
-                                aria-controls="mobile-drawer"
-                                className="flex h-14 cursor-pointer place-items-center xl:hidden"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                <X
-                                    strokeWidth={4}
-                                    className="text-black"
-                                    size={35}
-                                    aria-hidden="true"
-                                />
+                    <button type="button" className="landing-overlay-in fixed inset-0 z-40 bg-black/60 backdrop-blur-sm xl:hidden" aria-label="Close navigation menu" onClick={() => setIsMenuOpen(false)} />
+                    <aside ref={mobileDrawerRef} id="platform-mobile-drawer" className="landing-drawer-in fixed left-0 top-0 z-50 h-dvh w-[86vw] max-w-[360px] bg-white shadow-2xl xl:hidden" role="dialog" aria-modal="true" aria-label="Platform navigation" tabIndex={-1}>
+                        <div className="flex h-20 items-center justify-between border-b border-black/10 px-5">
+                            <span className="text-lg font-black">FORK&apos;D <span className="text-primarypurple">NUCES</span></span>
+                            <button type="button" aria-label="Close navigation menu" className="flex h-10 w-10 items-center justify-center rounded-lg bg-black/[0.05]" onClick={() => setIsMenuOpen(false)}>
+                                <X className="h-5 w-5" aria-hidden="true" />
                             </button>
                         </div>
-
-                        <div className="px-5 py-4">
-                            <nav className="flex flex-col gap-4" aria-label="Mobile navigation links">
-                                {NAV_LINKS.map((link) => (
-                                    <Link
-                                        href={link.href}
-                                        key={link.href}
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="text-lg md:text-xl font-bold text-black hover:text-black/80 tracking-tighter transition-colors"
-                                    >
-                                        {link.name}
-                                    </Link>
-                                ))}
-                            </nav>
-                        </div>
+                        <nav className="space-y-1 px-5 py-6" aria-label="Mobile platform navigation">
+                            {NAV_LINKS.map((link) => (
+                                <Link
+                                    href={link.href}
+                                    key={link.href}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    aria-current={isActive(link.href) ? "page" : undefined}
+                                    className={`block rounded-xl px-3 py-3 text-base font-bold ${
+                                        isActive(link.href)
+                                            ? "bg-primarypurple text-white"
+                                            : "text-black/65 hover:bg-primarypurple/[0.06] hover:text-primarypurple"
+                                    }`}
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                        </nav>
                     </aside>
                 </>
             )}

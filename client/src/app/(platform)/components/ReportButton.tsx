@@ -89,7 +89,7 @@ export function ReportButton({
                 type="button"
                 aria-haspopup="dialog"
                 onClick={openDialog}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-red-200 bg-white px-3.5 text-xs font-bold text-red-700 transition-colors hover:border-red-300 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
             >
                 <Flag className="h-3.5 w-3.5" aria-hidden="true" />
                 Report
@@ -103,7 +103,7 @@ export function ReportButton({
                 >
                     {reportMutation.isSuccess ? (
                         <div className="space-y-4">
-                            <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
+                            <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
                                 Your report was submitted. You can track its status from
                                 your submitted reports page.
                             </p>
@@ -112,7 +112,7 @@ export function ReportButton({
                                     type="button"
                                     data-dialog-initial-focus="true"
                                     onClick={closeDialog}
-                                    className="rounded-lg bg-primarypurple px-4 py-2 text-sm font-semibold text-white"
+                                    className="inline-flex min-h-11 items-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                 >
                                     Done
                                 </button>
@@ -127,13 +127,13 @@ export function ReportButton({
                                 reportMutation.mutate();
                             }}
                         >
-                            <p className="text-sm text-gray-700">
+                            <p className="rounded-xl bg-[#f7f6fb] p-4 text-sm leading-6 text-black/65">
                                 Report <span className="font-semibold">{targetLabel}</span> for
                                 moderator review. Reports are private.
                             </p>
 
-                            <div className="space-y-1">
-                                <label htmlFor={`report-reason-${targetType}-${targetId}`} className="text-sm font-semibold">
+                            <div className="space-y-2">
+                                <label htmlFor={`report-reason-${targetType}-${targetId}`} className="text-sm font-bold text-black">
                                     Reason
                                 </label>
                                 <select
@@ -142,7 +142,7 @@ export function ReportButton({
                                     value={reason}
                                     disabled={reportMutation.isPending}
                                     onChange={(event) => setReason(event.target.value as ReportReason)}
-                                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-primarypurple"
+                                    className="min-h-12 w-full rounded-xl border border-black/15 bg-white px-3.5 text-sm text-black outline-none transition focus:border-primarypurple focus:ring-4 focus:ring-primarypurple/10"
                                 >
                                     {reasonOptions.map((option) => (
                                         <option key={option.value} value={option.value}>
@@ -152,15 +152,15 @@ export function ReportButton({
                                 </select>
                             </div>
 
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                                 <div className="flex items-center justify-between gap-3">
-                                    <label htmlFor={`report-details-${targetType}-${targetId}`} className="text-sm font-semibold">
+                                    <label htmlFor={`report-details-${targetType}-${targetId}`} className="text-sm font-bold text-black">
                                         Details{" "}
                                         <span className="font-normal text-gray-500">
                                             {reason === "other" ? "(required)" : "(optional)"}
                                         </span>
                                     </label>
-                                    <span className="text-xs text-gray-500">{details.length}/2000</span>
+                                    <span className="font-mono text-xs text-black/45">{details.length}/2000</span>
                                 </div>
                                 <textarea
                                     id={`report-details-${targetType}-${targetId}`}
@@ -171,12 +171,12 @@ export function ReportButton({
                                     value={details}
                                     onChange={(event) => setDetails(event.target.value)}
                                     placeholder="Describe the concern without including sensitive personal information."
-                                    className="w-full resize-y rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primarypurple"
+                                    className="w-full resize-y rounded-xl border border-black/15 px-3.5 py-3 text-sm leading-6 outline-none transition placeholder:text-black/35 focus:border-primarypurple focus:ring-4 focus:ring-primarypurple/10"
                                 />
                             </div>
 
                             {reportMutation.isError && (
-                                <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                                <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                                     {getAuthFormErrorMessage(
                                         reportMutation.error,
                                         "Unable to submit the report."
@@ -184,12 +184,12 @@ export function ReportButton({
                                 </p>
                             )}
 
-                            <div className="flex justify-end gap-2">
+                            <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
                                 <button
                                     type="button"
                                     disabled={reportMutation.isPending}
                                     onClick={closeDialog}
-                                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 disabled:opacity-50"
+                                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 px-4 text-sm font-bold text-black/65 transition-colors hover:bg-black/[0.04] disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
@@ -199,7 +199,7 @@ export function ReportButton({
                                         reportMutation.isPending ||
                                         (reason === "other" && !details.trim())
                                     }
-                                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white transition-colors hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {reportMutation.isPending ? "Submitting..." : "Submit Report"}
                                 </button>

@@ -99,16 +99,16 @@ const EditIssueForm = ({
     };
 
     const baseInputClasses =
-        "w-full p-2 rounded border-2 focus:border-primarypurple/80 focus:ring-0 outline-none transition-colors duration-200";
+        "min-h-12 w-full rounded-xl border bg-white px-3.5 text-sm outline-none transition focus:border-primarypurple focus:ring-4 focus:ring-primarypurple/10";
     const getInputClass = (fieldError?: unknown) =>
-        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-gray-300"
+        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-black/15"
         }`;
 
     return (
-        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {/* Title */}
-            <div className="flex flex-col">
-                <label className="text-sm font-semibold" htmlFor="edit-issue-title">
+            <div className="flex flex-col gap-2">
+                <label className="text-sm font-bold text-black" htmlFor="edit-issue-title">
                     Issue Title
                 </label>
                 <input
@@ -122,15 +122,15 @@ const EditIssueForm = ({
                     className={getInputClass(errors.title)}
                 />
                 {errors.title && (
-                    <p id="edit-issue-title-error" className="mt-1 text-xs text-red-500">
+                    <p id="edit-issue-title-error" className="text-xs font-medium text-red-600">
                         {errors.title.message}
                     </p>
                 )}
             </div>
 
             {/* Description (Markdown) */}
-            <div className="flex flex-col">
-                <p id="edit-issue-description-label" className="text-sm font-semibold">
+            <div className="flex flex-col gap-2">
+                <p id="edit-issue-description-label" className="text-sm font-bold text-black">
                     Issue Description
                 </p>
                 <Controller
@@ -145,7 +145,7 @@ const EditIssueForm = ({
                                     ? "edit-issue-description-error"
                                     : undefined
                             }
-                            className="mt-1 rounded-xl border-2 border-primarypurple/30 bg-white"
+                            className={`overflow-hidden rounded-xl border bg-white ${errors.description ? "border-red-500" : "border-black/15"}`}
                         >
                             <MdEditor
                                 {...untrustedMarkdownProps}
@@ -160,19 +160,19 @@ const EditIssueForm = ({
                     )}
                 />
                 {errors.description && (
-                    <p id="edit-issue-description-error" className="mt-1 text-xs text-red-500">
+                    <p id="edit-issue-description-error" className="text-xs font-medium text-red-600">
                         {errors.description.message}
                     </p>
                 )}
             </div>
 
             {/* Actions */}
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="flex flex-col-reverse gap-2 border-t border-black/[0.07] pt-5 sm:flex-row sm:justify-end">
                 <button
                     type="button"
                     onClick={onClose}
                     disabled={updateMutation.isPending}
-                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 px-4 text-sm font-bold text-black/65 transition hover:bg-black/[0.04]"
                 >
                     Cancel
                 </button>
@@ -181,14 +181,14 @@ const EditIssueForm = ({
                     disabled={
                         !isValid || isSubmitting || updateMutation.isPending
                     }
-                    className="rounded-lg bg-primarypurple px-4 py-2 text-sm font-semibold text-white hover:bg-primarypurple/90 disabled:opacity-60 transition"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {updateMutation.isPending ? "Saving..." : "Save Changes"}
                 </button>
             </div>
 
             {updateMutation.isError && (
-                <p className="mt-2 text-xs text-red-600" role="alert">
+                <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700" role="alert">
                     {(updateMutation.error as Error).message ||
                         "Failed to update issue."}
                 </p>

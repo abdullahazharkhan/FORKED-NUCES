@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { KeyRound, LogOut, ShieldCheck } from "lucide-react";
 
 import { authFetch } from "@/lib/authFetch";
 import {
@@ -19,6 +19,12 @@ import {
 } from "@/lib/authValidation";
 import { useAuthStore } from "@/stores";
 import { PasswordInput } from "@/components/PasswordInput";
+import {
+    PLATFORM_INPUT_CLASS,
+    PLATFORM_PANEL_CLASS,
+    PLATFORM_PRIMARY_BUTTON_CLASS,
+    PLATFORM_SECONDARY_BUTTON_CLASS,
+} from "@/lib/platformStyles";
 
 const passwordChangeSchema = z
     .object({
@@ -110,19 +116,29 @@ export default function ProfileSecurity() {
     };
 
     return (
-        <div className="my-6 space-y-8">
-            <section className="space-y-4 rounded-xl border border-gray-200 bg-primarypurple/5 p-6">
-                <div>
-                    <h2 className="text-2xl font-semibold">Change Password</h2>
-                    <p className="mt-1 text-sm text-gray-600">
+        <div className="space-y-6 pt-6">
+            <section className={`${PLATFORM_PANEL_CLASS} overflow-hidden`} aria-labelledby="change-password-heading">
+                <div className="h-1.5 bg-primarypurple" aria-hidden="true" />
+                <div className="p-5 sm:p-7">
+                <div className="flex items-start gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                        <KeyRound className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                    <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-primarypurple">
+                        Account security
+                    </p>
+                    <h2 id="change-password-heading" className="mt-1 text-2xl font-black tracking-[-0.03em] text-black">Change password</h2>
+                    <p className="mt-2 text-sm leading-6 text-black/55">
                         Choose a strong password you do not use on other services.
                     </p>
+                    </div>
                 </div>
 
-                <form className="space-y-4" onSubmit={handleSubmit(submitPasswordChange)}>
-                    <div className="flex flex-col">
-                        <label htmlFor="security-current-password" className="font-semibold">
-                            Current Password
+                <form className="mt-7 space-y-5" onSubmit={handleSubmit(submitPasswordChange)}>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="security-current-password" className="text-sm font-bold text-black">
+                            Current password
                         </label>
                         <PasswordInput
                             id="security-current-password"
@@ -134,19 +150,19 @@ export default function ProfileSecurity() {
                                     : undefined
                             }
                             {...register("currentPassword")}
-                            className={`rounded border-2 p-2 outline-none focus:border-primarypurple/80 ${errors.currentPassword ? "border-red-500" : "border-gray-300"}`}
+                            className={`${PLATFORM_INPUT_CLASS} ${errors.currentPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                         />
                         {errors.currentPassword && (
-                            <p id="security-current-password-error" className="mt-1 text-sm text-red-600">
+                            <p id="security-current-password-error" className="text-xs font-medium text-red-600">
                                 {errors.currentPassword.message}
                             </p>
                         )}
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                        <div className="flex flex-col">
-                            <label htmlFor="security-new-password" className="font-semibold">
-                                New Password
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="security-new-password" className="text-sm font-bold text-black">
+                                New password
                             </label>
                             <PasswordInput
                                 id="security-new-password"
@@ -158,18 +174,18 @@ export default function ProfileSecurity() {
                                         : undefined
                                 }
                                 {...register("newPassword")}
-                                className={`rounded border-2 p-2 outline-none focus:border-primarypurple/80 ${errors.newPassword ? "border-red-500" : "border-gray-300"}`}
+                                className={`${PLATFORM_INPUT_CLASS} ${errors.newPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                             />
                             {errors.newPassword && (
-                                <p id="security-new-password-error" className="mt-1 text-sm text-red-600">
+                                <p id="security-new-password-error" className="text-xs font-medium text-red-600">
                                     {errors.newPassword.message}
                                 </p>
                             )}
                         </div>
 
-                        <div className="flex flex-col">
-                            <label htmlFor="security-confirm-password" className="font-semibold">
-                                Confirm New Password
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="security-confirm-password" className="text-sm font-bold text-black">
+                                Confirm new password
                             </label>
                             <PasswordInput
                                 id="security-confirm-password"
@@ -181,28 +197,31 @@ export default function ProfileSecurity() {
                                         : undefined
                                 }
                                 {...register("confirmPassword")}
-                                className={`rounded border-2 p-2 outline-none focus:border-primarypurple/80 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}`}
+                                className={`${PLATFORM_INPUT_CLASS} ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                             />
                             {errors.confirmPassword && (
-                                <p id="security-confirm-password-error" className="mt-1 text-sm text-red-600">
+                                <p id="security-confirm-password-error" className="text-xs font-medium text-red-600">
                                     {errors.confirmPassword.message}
                                 </p>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex justify-end">
-                        <Button
+                    <div className="flex flex-col gap-3 border-t border-black/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-xs leading-5 text-black/45">
+                            Use at least 8 characters. Changing your password signs you out everywhere.
+                        </p>
+                        <button
                             type="submit"
-                            isDisabled={!isValid || passwordChange.isPending}
-                            className="bg-primarygreen font-bold text-black"
+                            disabled={!isValid || passwordChange.isPending}
+                            className={`${PLATFORM_PRIMARY_BUTTON_CLASS} shrink-0`}
                         >
-                            {passwordChange.isPending ? "Changing..." : "Change Password"}
-                        </Button>
+                            {passwordChange.isPending ? "Changing..." : "Change password"}
+                        </button>
                     </div>
 
                     {passwordChange.isError && (
-                        <p role="alert" className="rounded bg-red-100 p-3 text-sm text-red-700">
+                        <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                             {getAuthFormErrorMessage(
                                 passwordChange.error,
                                 "Unable to change your password."
@@ -210,67 +229,82 @@ export default function ProfileSecurity() {
                         </p>
                     )}
                 </form>
+                </div>
             </section>
 
-            <section className="space-y-4 rounded-xl border border-red-200 bg-red-50 p-6">
-                <div>
-                    <h2 className="text-2xl font-semibold text-red-800">
-                        Sign Out Everywhere
+            <section className={`${PLATFORM_PANEL_CLASS} overflow-hidden`} aria-labelledby="sign-out-everywhere-heading">
+                <div className="h-1.5 bg-[#0d0b12]" aria-hidden="true" />
+                <div className="p-5 sm:p-7">
+                <div className="flex items-start gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-black/[0.06] text-black">
+                        <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                    <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-black/40">
+                        Session control
+                    </p>
+                    <h2 id="sign-out-everywhere-heading" className="mt-1 text-2xl font-black tracking-[-0.03em] text-black">
+                        Sign out everywhere
                     </h2>
-                    <p className="mt-1 text-sm text-red-700">
+                    <p className="mt-2 text-sm leading-6 text-black/55">
                         Revoke all active sessions on every browser and device,
                         including this one.
                     </p>
+                    </div>
                 </div>
 
                 {!confirmLogoutAll ? (
-                    <Button
+                    <button
                         type="button"
-                        color="danger"
-                        onPress={() => {
+                        aria-expanded={false}
+                        aria-controls="logout-all-confirmation"
+                        onClick={() => {
                             logoutAll.reset();
                             setConfirmLogoutAll(true);
                         }}
+                        className={`${PLATFORM_SECONDARY_BUTTON_CLASS} mt-6 gap-2`}
                     >
-                        Sign Out All Devices
-                    </Button>
+                        <LogOut className="h-4 w-4" aria-hidden="true" />
+                        Sign out all devices
+                    </button>
                 ) : (
-                    <div className="space-y-3 rounded-lg border border-red-300 bg-white p-4">
-                        <p className="text-sm font-semibold text-red-800">
+                    <div id="logout-all-confirmation" className="mt-6 space-y-4 rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-5">
+                        <p className="text-sm font-bold leading-6 text-red-900">
                             Are you sure? You will need to log in again on every device.
                         </p>
-                        <div className="flex flex-wrap justify-end gap-2">
-                            <Button
+                        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                            <button
                                 type="button"
-                                variant="bordered"
-                                isDisabled={logoutAll.isPending}
-                                onPress={() => {
+                                disabled={logoutAll.isPending}
+                                onClick={() => {
                                     logoutAll.reset();
                                     setConfirmLogoutAll(false);
                                 }}
+                                className={PLATFORM_SECONDARY_BUTTON_CLASS}
                             >
                                 Cancel
-                            </Button>
-                            <Button
+                            </button>
+                            <button
                                 type="button"
-                                color="danger"
-                                isLoading={logoutAll.isPending}
-                                onPress={() => logoutAll.mutate()}
+                                disabled={logoutAll.isPending}
+                                onClick={() => logoutAll.mutate()}
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-200 disabled:pointer-events-none disabled:opacity-55"
                             >
-                                Confirm Sign Out
-                            </Button>
+                                {logoutAll.isPending ? "Signing out..." : "Confirm sign out"}
+                            </button>
                         </div>
                     </div>
                 )}
 
                 {logoutAll.isError && (
-                    <p role="alert" className="rounded bg-white p-3 text-sm text-red-700">
+                    <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                         {getAuthFormErrorMessage(
                             logoutAll.error,
                             "Unable to sign out all devices."
                         )}
                     </p>
                 )}
+                </div>
             </section>
         </div>
     );

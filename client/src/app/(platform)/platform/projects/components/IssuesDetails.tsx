@@ -4,7 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdPreview, MdEditor } from "md-editor-rt";
 import "md-editor-rt/lib/style.css";
 import { z } from "zod";
-import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import {
+    CheckCircle2,
+    ChevronRight,
+    CircleDot,
+    Inbox,
+    Pencil,
+    Plus,
+    Trash2,
+} from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
 import EditIssueForm from "@/app/(platform)/components/EditIssueForm";
 import CloseIssueForm from "@/app/(platform)/components/CloseIssueForm";
@@ -335,15 +343,22 @@ const IssuesDetails = ({
 
     return (
         <>
-            <div className="space-y-3 border-t border-primarypurple/20 pt-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                        <h2 className="text-lg font-semibold">Issues</h2>
-                        <div className="flex gap-3 text-xs text-gray-700">
-                            <span className="font-semibold text-primarypurple">
-                                Open: {openIssues.length}
+            <section className="rounded-[1.5rem] border border-black/[0.07] bg-white p-5 shadow-[0_16px_45px_rgba(44,27,92,0.06)] sm:p-8" aria-labelledby="project-issues-heading">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-primarypurple">
+                            Work ready to join
+                        </p>
+                        <div className="mt-2 flex flex-wrap items-center gap-3">
+                            <h2 id="project-issues-heading" className="text-2xl font-black tracking-[-0.03em] text-black">
+                                Project issues
+                            </h2>
+                            <span className="rounded-full bg-primarygreen/25 px-2.5 py-1 text-xs font-bold text-black">
+                                {openIssues.length} open
                             </span>
-                            <span>Closed: {closedIssues.length}</span>
+                            <span className="text-xs font-semibold text-black/45">
+                                {closedIssues.length} closed
+                            </span>
                         </div>
                     </div>
 
@@ -363,8 +378,11 @@ const IssuesDetails = ({
                                 setIsAddingIssue((prev) => !prev);
                                 setIssueErrors({});
                             }}
-                            className="rounded-lg border border-primarypurple/30 bg-primarypurple/10 px-3 py-1 text-xs font-semibold text-primarypurple transition hover:bg-primarypurple/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primarypurple px-4 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
                         >
+                            {!hasReachedIssueLimit && !isAddingIssue && (
+                                <Plus className="h-4 w-4" aria-hidden="true" />
+                            )}
                             {hasReachedIssueLimit
                                 ? "Issue limit reached"
                                 : isAddingIssue
@@ -379,18 +397,26 @@ const IssuesDetails = ({
                     <form
                         id="add-issue-form"
                         onSubmit={handleAddIssueSubmit}
-                        className="space-y-3 rounded-xl border border-primarypurple/25 bg-white/90 p-3 shadow-sm"
+                        className="mt-6 space-y-5 rounded-2xl border border-primarypurple/20 bg-[#f8f7fc] p-4 sm:p-6"
                     >
+                        <div>
+                            <h3 className="text-lg font-black tracking-[-0.02em] text-black">
+                                Create an issue
+                            </h3>
+                            <p className="mt-1 text-sm leading-6 text-black/50">
+                                Describe a focused task that another student can pick up.
+                            </p>
+                        </div>
                         {issueErrors.form && (
-                            <p className="text-xs text-red-600" role="alert">
+                            <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700" role="alert">
                                 {issueErrors.form}
                             </p>
                         )}
 
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                             <label
                                 htmlFor="new-issue-title"
-                                className="text-xs font-semibold uppercase tracking-wide text-gray-600"
+                                className="text-sm font-bold text-black"
                             >
                                 Issue Title
                             </label>
@@ -414,9 +440,9 @@ const IssuesDetails = ({
                                     }
                                 }}
                                 placeholder="Short summary of the issue"
-                                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 ${issueErrors.title
-                                    ? "border-red-400 focus:border-red-500 focus:ring-red-300"
-                                    : "border-gray-200 focus:border-primarypurple focus:ring-primarypurple/50"
+                                className={`min-h-12 w-full rounded-xl border bg-white px-3.5 text-sm outline-none transition focus:ring-4 ${issueErrors.title
+                                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                                    : "border-black/15 focus:border-primarypurple focus:ring-primarypurple/10"
                                     }`}
                             />
                             {issueErrors.title && (
@@ -429,10 +455,10 @@ const IssuesDetails = ({
                             )}
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                             <p
                                 id="new-issue-description-label"
-                                className="text-xs font-semibold uppercase tracking-wide text-gray-600"
+                                className="text-sm font-bold text-black"
                             >
                                 Issue Description
                             </p>
@@ -445,9 +471,9 @@ const IssuesDetails = ({
                                         ? "new-issue-description-error"
                                         : undefined
                                 }
-                                className={`rounded-lg border p-2 ${issueErrors.description
+                                className={`overflow-hidden rounded-xl border bg-white ${issueErrors.description
                                     ? "border-red-400"
-                                    : "border-gray-200"
+                                    : "border-black/15"
                                     }`}
                             >
                                 <MdEditor
@@ -478,7 +504,7 @@ const IssuesDetails = ({
                             )}
                         </div>
 
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                             <button
                                 type="button"
                                 onClick={() => {
@@ -487,14 +513,14 @@ const IssuesDetails = ({
                                     setNewIssueDescription("");
                                     setIssueErrors({});
                                 }}
-                                className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 bg-white px-4 text-sm font-bold text-black/65 transition hover:bg-black/[0.04]"
                                 disabled={createIssueMutation.isPending}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="rounded-lg bg-primarypurple px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primarypurple/90 disabled:opacity-60"
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition hover:bg-black disabled:cursor-wait disabled:opacity-60"
                                 disabled={createIssueMutation.isPending}
                             >
                                 {createIssueMutation.isPending
@@ -506,12 +532,20 @@ const IssuesDetails = ({
                 )}
 
                 {issues.length === 0 && !isAddingIssue && (
-                    <p className="text-sm text-gray-600">
-                        No issues have been created for this project yet.
-                    </p>
+                    <div className="mt-6 rounded-2xl border border-dashed border-black/15 bg-[#fbfaff] px-5 py-10 text-center">
+                        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                            <Inbox className="h-6 w-6" aria-hidden="true" />
+                        </span>
+                        <p className="mt-4 text-sm font-bold text-black">
+                            No issues yet
+                        </p>
+                        <p className="mt-1 text-sm text-black/50">
+                            There is no open work listed for this project.
+                        </p>
+                    </div>
                 )}
 
-                <div className="space-y-2">
+                <div className="mt-6 space-y-3">
                     {issues.map((issue) => {
                         const isOpenIssueRow =
                             openIssueId === issue.issue_id ||
@@ -528,35 +562,40 @@ const IssuesDetails = ({
                         return (
                             <div
                                 key={issueId}
-                                className="rounded-xl border border-primarypurple/20 bg-white/80 shadow-sm transition-colors hover:bg-primarypurple/5"
+                                className="overflow-hidden rounded-2xl border border-black/[0.08] bg-white transition-all hover:border-primarypurple/25 hover:shadow-[0_12px_30px_rgba(44,27,92,0.07)]"
                             >
-                                <div className="flex w-full flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex w-full flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
                                     {/* Left: title + date (click to expand) */}
                                     <button
                                         type="button"
                                         onClick={() => toggleIssue(issueId)}
                                         aria-expanded={isOpenIssueRow}
                                         aria-controls={contentId}
-                                        className="flex flex-1 items-center justify-between gap-2 text-left"
+                                        className="group flex min-h-11 flex-1 items-center justify-between gap-3 rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                     >
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-semibold">
+                                        <div className="flex min-w-0 items-start gap-3">
+                                            <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${statusOpen ? "bg-primarygreen/25 text-black" : "bg-black/[0.05] text-black/40"}`}>
+                                                <CircleDot className="h-4 w-4" aria-hidden="true" />
+                                            </span>
+                                            <span className="flex min-w-0 flex-col">
+                                            <span className="break-words text-sm font-bold text-black group-hover:text-primarypurple">
                                                 {issue.title}
                                             </span>
-                                            <span className="text-[11px] text-gray-500">
+                                            <span className="mt-1 text-xs text-black/40">
                                                 {issue.created_at
                                                     ? new Date(
                                                         issue.created_at
                                                     ).toLocaleDateString()
                                                     : ""}
                                             </span>
+                                            </span>
                                         </div>
 
                                         <div className="flex items-center gap-2">
                                             <span
-                                                className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusOpen
-                                                    ? "bg-primarypurple/15 text-primarypurple"
-                                                    : "bg-gray-200 text-gray-700"
+                                                className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${statusOpen
+                                                    ? "bg-primarypurple/10 text-primarypurple"
+                                                    : "bg-black/[0.06] text-black/50"
                                                     }`}
                                             >
                                                 {isOptimistic
@@ -571,17 +610,17 @@ const IssuesDetails = ({
                                                     rotate: isOpenIssueRow ? 90 : 0,
                                                 }}
                                                 transition={{ duration: 0.2 }}
-                                                className="text-xs text-gray-500"
+                                                className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/[0.035] text-black/45"
                                                 aria-hidden="true"
                                             >
-                                                ▸
+                                                <ChevronRight className="h-4 w-4" />
                                             </motion.span>
                                         </div>
                                     </button>
 
                                     {/* Right: owner controls or member reporting */}
                                     {!isOptimistic && (isOwner ? (
-                                        <div className="flex flex-wrap items-center justify-end gap-1 pl-2">
+                                        <div className="flex flex-wrap items-center gap-2 sm:justify-end sm:pl-2">
                                             {/* Mark as Done */}
                                             {statusOpen && (
                                                 <button
@@ -589,7 +628,7 @@ const IssuesDetails = ({
                                                     onClick={() =>
                                                         handleMarkDoneIssue(issueId)
                                                     }
-                                                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100"
+                                                    className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-[11px] font-bold text-emerald-700 transition-colors hover:bg-emerald-100"
                                                 >
                                                     <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
                                                     Mark as Closed
@@ -602,7 +641,7 @@ const IssuesDetails = ({
                                                 onClick={() =>
                                                     handleEditIssue(issue)
                                                 }
-                                                className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                                                className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 text-black/45 transition-colors hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                                 aria-label="Edit issue"
                                             >
                                                 <Pencil className="h-4 w-4" aria-hidden="true" />
@@ -614,7 +653,7 @@ const IssuesDetails = ({
                                                 onClick={() =>
                                                     handleDeleteIssue(issueId)
                                                 }
-                                                className="rounded-full p-1 text-red-500 hover:bg-red-50 hover:text-red-700"
+                                                className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
                                                 aria-label="Delete issue"
                                             >
                                                 <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -650,9 +689,9 @@ const IssuesDetails = ({
                                                 duration: 0.2,
                                                 ease: "easeOut",
                                             }}
-                                            className="overflow-hidden border-t border-gray-100 bg-gray-50"
+                                            className="overflow-hidden border-t border-black/[0.07] bg-[#fbfaff]"
                                         >
-                                            <div className="p-3">
+                                            <div className="p-4 sm:p-5">
                                                 <MdPreview
                                                     {...untrustedMarkdownProps}
                                                     editorId={`issue-${project.project_id ?? "p"}-${issueId}`}
@@ -670,7 +709,7 @@ const IssuesDetails = ({
                         );
                     })}
                 </div>
-            </div>
+            </section>
 
             {/* Close issue modal */}
             {isCloseIssueOpen && issueToClose !== null && (
@@ -708,24 +747,24 @@ const IssuesDetails = ({
                     closeDisabled={deleteIssueMutation.isPending}
                     onClose={() => setIsIssueDeleteOpen(false)}
                 >
-                    <p className="mb-4 text-sm text-gray-700">
+                    <p className="rounded-xl bg-red-50 p-4 text-sm leading-6 text-red-900">
                         Are you sure you want to delete this issue? This action
                         cannot be undone.
                     </p>
 
                     {deleteError && (
-                        <p className="mb-3 text-xs text-red-600" role="alert">
+                        <p className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700" role="alert">
                             {deleteError}
                         </p>
                     )}
 
-                    <div className="mt-2 flex justify-end gap-2">
+                    <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                         <button
                             type="button"
                             data-dialog-initial-focus="true"
                             disabled={deleteIssueMutation.isPending}
                             onClick={() => setIsIssueDeleteOpen(false)}
-                            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-60"
+                            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 px-4 text-sm font-bold text-black/65 transition hover:bg-black/[0.04] disabled:opacity-60"
                         >
                             Cancel
                         </button>
@@ -733,7 +772,7 @@ const IssuesDetails = ({
                             type="button"
                             onClick={handleConfirmDeleteIssue}
                             disabled={deleteIssueMutation.isPending}
-                            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
+                            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-60"
                         >
                             {deleteIssueMutation.isPending
                                 ? "Deleting..."

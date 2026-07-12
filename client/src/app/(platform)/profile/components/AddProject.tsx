@@ -8,9 +8,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { MdEditor } from "md-editor-rt";
 import "md-editor-rt/lib/style.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+    AlertCircle,
+    CheckCircle2,
+    FileText,
+    FolderPlus,
+    Github,
+    LoaderCircle,
+    Sparkles,
+    Tags,
+} from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
 import { queryKeys } from "@/lib/queryKeys";
 import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
+import { PLATFORM_INPUT_CLASS } from "@/lib/platformStyles";
 
 const AVAILABLE_TAGS = [
     "frontend",
@@ -107,12 +118,8 @@ const AddProject = () => {
     const shouldShowError = (field: keyof ProjectForm) =>
         Boolean(errors[field] && (isDirty || isSubmitted));
 
-    const baseInputClasses =
-        "p-2 rounded border-2 focus:border-primarypurple/80 focus:ring-0 outline-none transition-colors duration-200";
-
     const getInputClass = (fieldError?: unknown) =>
-        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-gray-300"
-        }`;
+        `${PLATFORM_INPUT_CLASS} ${fieldError ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`;
 
     const createProjectMutation = useMutation({
         mutationFn: async (data: ProjectForm) => {
@@ -185,38 +192,145 @@ const AddProject = () => {
     }
 
     return (
-        <div className="space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6 my-6">
-            <h2 className="text-3xl font-semibold md:text-4xl underline decoration-primarypurple decoration-4">
-                Add Project
-            </h2>
+        <section
+            className="relative isolate my-6 overflow-hidden rounded-[2rem] border border-primarypurple/15 bg-[#fbfaff] p-5 shadow-[0_22px_70px_rgba(24,15,48,0.08)] sm:p-7 lg:p-8"
+            aria-labelledby="add-project-heading"
+        >
+            <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primarypurple via-primarygreen to-primarypurple"
+                aria-hidden="true"
+            />
+            <div
+                className="pointer-events-none absolute -right-24 -top-24 -z-10 h-64 w-64 rounded-full bg-primarypurple/10 blur-3xl"
+                aria-hidden="true"
+            />
 
-            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                {/* Project Title */}
-                <div className="flex flex-col">
-                    <label htmlFor="title" className="font-semibold text-lg">
-                        Project Title
-                    </label>
-                    <input
-                        type="text"
-                        id="title"
-                        aria-invalid={Boolean(errors.title)}
-                        aria-describedby={
-                            errors.title ? "add-project-title-error" : undefined
-                        }
-                        {...register("title")}
-                        className={getInputClass(errors.title)}
-                    />
-                    {shouldShowError("title") && errors.title && (
-                        <p id="add-project-title-error" className="text-sm text-red-500 mt-1">
-                            {errors.title.message}
+            <div className="mb-7 flex items-start gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarypurple text-white shadow-[0_12px_28px_rgba(111,67,254,0.25)]">
+                    <FolderPlus className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div>
+                    <p className="text-[0.68rem] font-black uppercase tracking-[0.2em] text-primarypurple">
+                        Share your work
+                    </p>
+                    <h2
+                        id="add-project-heading"
+                        className="mt-1 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl"
+                    >
+                        Add a project
+                    </h2>
+                    <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">
+                        Give your project a clear home so contributors can
+                        discover it, understand it, and help move it forward.
+                    </p>
+                </div>
+            </div>
+
+            <form
+                className="space-y-5"
+                onSubmit={handleSubmit(onSubmit)}
+                aria-busy={createProjectMutation.isPending}
+            >
+                <div className="grid gap-5 rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_10px_30px_rgba(24,15,48,0.04)] sm:p-5 lg:grid-cols-2">
+                    {/* Project Title */}
+                    <div className="flex flex-col">
+                        <label
+                            htmlFor="title"
+                            className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"
+                        >
+                            <Sparkles
+                                className="h-4 w-4 text-primarypurple"
+                                aria-hidden="true"
+                            />
+                            Project title
+                        </label>
+                        <input
+                            type="text"
+                            id="title"
+                            placeholder="e.g. Campus navigation app"
+                            aria-invalid={shouldShowError("title")}
+                            aria-describedby={
+                                shouldShowError("title")
+                                    ? "add-project-title-error"
+                                    : "add-project-title-help"
+                            }
+                            {...register("title")}
+                            className={getInputClass(errors.title)}
+                        />
+                        <p
+                            id="add-project-title-help"
+                            className="mt-1.5 text-xs text-gray-500"
+                        >
+                            Use a short, recognizable name.
                         </p>
-                    )}
+                        {shouldShowError("title") && errors.title && (
+                            <p
+                                id="add-project-title-error"
+                                className="mt-1.5 text-xs font-medium text-red-600"
+                            >
+                                {errors.title.message}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* GitHub URL */}
+                    <div className="flex flex-col">
+                        <label
+                            htmlFor="github_url"
+                            className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"
+                        >
+                            <Github
+                                className="h-4 w-4 text-primarypurple"
+                                aria-hidden="true"
+                            />
+                            GitHub URL
+                        </label>
+                        <input
+                            type="url"
+                            id="github_url"
+                            inputMode="url"
+                            placeholder="https://github.com/you/project"
+                            aria-invalid={shouldShowError("github_url")}
+                            aria-describedby={
+                                shouldShowError("github_url")
+                                    ? "add-project-github-error"
+                                    : "add-project-github-help"
+                            }
+                            {...register("github_url")}
+                            className={getInputClass(errors.github_url)}
+                        />
+                        <p
+                            id="add-project-github-help"
+                            className="mt-1.5 text-xs text-gray-500"
+                        >
+                            Link directly to your public repository.
+                        </p>
+                        {shouldShowError("github_url") && errors.github_url && (
+                            <p
+                                id="add-project-github-error"
+                                className="mt-1.5 text-xs font-medium text-red-600"
+                            >
+                                {errors.github_url.message}
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 {/* Description (Markdown editor) */}
-                <div className="flex flex-col">
-                    <p id="add-project-description-label" className="font-semibold text-lg">
-                        Description
+                <div className="rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_10px_30px_rgba(24,15,48,0.04)] sm:p-5">
+                    <p
+                        id="add-project-description-label"
+                        className="flex items-center gap-2 text-sm font-bold text-gray-800"
+                    >
+                        <FileText
+                            className="h-4 w-4 text-primarypurple"
+                            aria-hidden="true"
+                        />
+                        Project description
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">
+                        Explain the problem, current progress, and how others can
+                        contribute. Markdown is supported.
                     </p>
                     <Controller
                         control={control}
@@ -226,18 +340,18 @@ const AddProject = () => {
                                 role="group"
                                 aria-labelledby="add-project-description-label"
                                 aria-describedby={
-                                    errors.description
+                                    shouldShowError("description")
                                         ? "add-project-description-error"
                                         : undefined
                                 }
                             >
-                            <MdEditor
-                                {...untrustedMarkdownProps}
+                                <MdEditor
+                                    {...untrustedMarkdownProps}
                                     editorId="add-project-description"
                                     language="en-US"
                                     modelValue={field.value || ""}
                                     onChange={field.onChange}
-                                    className="mt-2 rounded-xl border-2 border-primarypurple/30 bg-primarypurple/5"
+                                    className="mt-3 overflow-hidden rounded-2xl border border-black/10 bg-white"
                                     theme="light"
                                     previewTheme="github"
                                     style={{ height: "320px" }}
@@ -246,40 +360,30 @@ const AddProject = () => {
                         )}
                     />
                     {shouldShowError("description") && errors.description && (
-                        <p id="add-project-description-error" className="text-sm text-red-500 mt-1">
+                        <p
+                            id="add-project-description-error"
+                            className="mt-2 text-xs font-medium text-red-600"
+                        >
                             {errors.description.message}
                         </p>
                     )}
                 </div>
 
-                {/* GitHub URL */}
-                <div className="flex flex-col">
-                    <label htmlFor="github_url" className="font-semibold text-lg">
-                        GitHub URL
-                    </label>
-                    <input
-                        type="url"
-                        id="github_url"
-                        aria-invalid={Boolean(errors.github_url)}
-                        aria-describedby={
-                            errors.github_url
-                                ? "add-project-github-error"
-                                : undefined
-                        }
-                        {...register("github_url")}
-                        className={getInputClass(errors.github_url)}
-                    />
-                    {shouldShowError("github_url") && errors.github_url && (
-                        <p id="add-project-github-error" className="text-sm text-red-500 mt-1">
-                            {errors.github_url.message}
-                        </p>
-                    )}
-                </div>
-
                 {/* Tags (multi-select, design only changed here) */}
-                <div className="flex flex-col">
-                    <p id="add-project-tags-label" className="font-semibold text-lg">
-                        Tags
+                <div className="rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_10px_30px_rgba(24,15,48,0.04)] sm:p-5">
+                    <p
+                        id="add-project-tags-label"
+                        className="flex items-center gap-2 text-sm font-bold text-gray-800"
+                    >
+                        <Tags
+                            className="h-4 w-4 text-primarypurple"
+                            aria-hidden="true"
+                        />
+                        Project tags
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">
+                        Choose at least one area to help the right contributors
+                        find your work.
                     </p>
                     <Controller
                         control={control}
@@ -299,25 +403,25 @@ const AddProject = () => {
                                     role="group"
                                     aria-labelledby="add-project-tags-label"
                                     aria-describedby={
-                                        errors.tags
+                                        shouldShowError("tags")
                                             ? "add-project-tags-error"
                                             : undefined
                                     }
-                                    className="mt-2 flex flex-wrap gap-2"
+                                    className="mt-3 flex flex-wrap gap-2"
                                 >
                                     {AVAILABLE_TAGS.map((tag) => {
                                         const checked = value.includes(tag);
                                         return (
                                             <label
                                                 key={tag}
-                                                className={`flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs ${checked
-                                                    ? "border-primarypurple bg-primarypurple/15 text-primarypurple"
-                                                    : "border-gray-300 text-gray-700"
+                                                className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-3.5 text-xs font-bold transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primarypurple ${checked
+                                                    ? "border-primarypurple bg-primarypurple text-white shadow-[0_6px_16px_rgba(111,67,254,0.2)]"
+                                                    : "border-black/10 bg-[#f8f7fb] text-gray-600 hover:border-primarypurple/30 hover:text-primarypurple"
                                                     }`}
                                             >
                                                 <input
                                                     type="checkbox"
-                                                    className="h-3 w-3 accent-primarypurple"
+                                                    className="h-3.5 w-3.5 accent-primarypurple"
                                                     checked={checked}
                                                     onChange={(e) =>
                                                         toggleTag(tag, e.target.checked)
@@ -332,17 +436,33 @@ const AddProject = () => {
                         }}
                     />
                     {shouldShowError("tags") && errors.tags && (
-                        <p id="add-project-tags-error" className="text-sm text-red-500 mt-1">
+                        <p
+                            id="add-project-tags-error"
+                            className="mt-2 text-xs font-medium text-red-600"
+                        >
                             {errors.tags.message as string}
                         </p>
                     )}
                 </div>
 
-                <div className="flex w-full justify-end">
+                <div className="flex flex-col-reverse gap-3 border-t border-black/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs leading-5 text-gray-500">
+                        You can edit project details later from its project page.
+                    </p>
                     <Button
-                        className="bg-primarygreen text-black font-bold"
+                        className="min-h-12 w-full bg-primarypurple px-6 font-bold text-white shadow-[0_10px_26px_rgba(111,67,254,0.24)] sm:w-auto"
                         type="submit"
                         isDisabled={!isValid || createProjectMutation.isPending}
+                        startContent={
+                            createProjectMutation.isPending ? (
+                                <LoaderCircle
+                                    className="h-4 w-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                            ) : (
+                                <FolderPlus className="h-4 w-4" aria-hidden="true" />
+                            )
+                        }
                     >
                         {createProjectMutation.isPending ? "Adding..." : "Add Project"}
                     </Button>
@@ -351,16 +471,21 @@ const AddProject = () => {
                 {message && (
                     <div
                         role={isError ? "alert" : "status"}
-                        className={`mt-4 p-3 rounded text-sm ${isError
-                            ? "bg-red-100 text-red-700"
-                            : "bg-green-100 text-green-700"
+                        className={`flex items-start gap-3 rounded-2xl border p-4 text-sm ${isError
+                            ? "border-red-200 bg-red-50 text-red-700"
+                            : "border-green-200 bg-green-50 text-green-700"
                             }`}
                     >
-                        {message}
+                        {isError ? (
+                            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                        ) : (
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                        )}
+                        <span>{message}</span>
                     </div>
                 )}
             </form>
-        </div>
+        </section>
     );
 };
 

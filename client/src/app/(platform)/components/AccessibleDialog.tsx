@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useId, useRef } from "react";
+import { X } from "lucide-react";
 
 const FOCUSABLE_SELECTOR = [
     "a[href]",
@@ -121,7 +122,7 @@ export function AccessibleDialog({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-8"
+            className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#0d0b12]/70 px-4 py-5 backdrop-blur-sm sm:py-8"
             onMouseDown={handleBackdropMouseDown}
         >
             <div
@@ -130,19 +131,25 @@ export function AccessibleDialog({
                 aria-modal="true"
                 aria-labelledby={titleId}
                 tabIndex={-1}
-                className={`max-h-[calc(100vh-4rem)] w-full overflow-y-auto rounded-xl bg-white p-6 shadow-xl outline-none ${className}`}
+                className={`max-h-[calc(100svh-2.5rem)] w-full overflow-y-auto rounded-[1.5rem] border border-white/20 bg-white p-5 shadow-[0_32px_90px_rgba(22,9,60,0.35)] outline-none sm:max-h-[calc(100vh-4rem)] sm:rounded-[1.75rem] sm:p-7 ${className}`}
             >
-                <div className="mb-4 flex items-center justify-between gap-4">
-                    <h2 id={titleId} className="text-lg font-semibold">
-                        {title}
-                    </h2>
+                <div className="mb-6 flex items-center justify-between gap-4 border-b border-black/[0.07] pb-5">
+                    <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primarypurple">
+                            FORK&apos;D NUCES
+                        </p>
+                        <h2 id={titleId} className="mt-1 text-xl font-black tracking-[-0.025em] text-black sm:text-2xl">
+                            {title}
+                        </h2>
+                    </div>
                     <button
                         type="button"
+                        aria-label="Close dialog"
                         onClick={() => onCloseRef.current()}
                         disabled={closeDisabled}
-                        className="text-sm text-gray-500 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/[0.035] text-black/55 transition-colors hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        Close
+                        <X className="h-5 w-5" aria-hidden="true" />
                     </button>
                 </div>
                 {children}

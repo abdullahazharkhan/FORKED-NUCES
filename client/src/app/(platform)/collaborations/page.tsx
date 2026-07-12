@@ -2,8 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Inbox, Send, UserRoundCheck } from "lucide-react";
+import {
+    Clock3,
+    Inbox,
+    MessageSquareText,
+    Send,
+    Sparkles,
+    UserRoundCheck,
+} from "lucide-react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { UserAvatar } from "../components/UserAvatar";
 
 import { authFetch } from "@/lib/authFetch";
 import {
@@ -50,11 +59,11 @@ type DashboardTab = "incoming" | "outgoing";
 const pageSize = 20;
 const collaborationSkeletonIds = ["one", "two", "three", "four"] as const;
 const statusStyles: Record<CollaborationStatus, string> = {
-    pending: "bg-amber-100 text-amber-800",
-    accepted: "bg-green-100 text-green-800",
-    rejected: "bg-red-100 text-red-700",
-    withdrawn: "bg-gray-100 text-gray-700",
-    cancelled: "bg-gray-100 text-gray-700",
+    pending: "bg-amber-100 text-amber-800 ring-amber-200",
+    accepted: "bg-emerald-100 text-emerald-800 ring-emerald-200",
+    rejected: "bg-red-100 text-red-700 ring-red-200",
+    withdrawn: "bg-gray-100 text-gray-700 ring-gray-200",
+    cancelled: "bg-gray-100 text-gray-700 ring-gray-200",
 };
 const actionLabels: Record<CollaborationAction, string> = {
     accept: "Accept",
@@ -156,35 +165,51 @@ export default function CollaborationsPage() {
 
     if (!currentUser && (sessionStatus === "idle" || sessionStatus === "loading")) {
         return (
-            <div className="mx-auto max-w-5xl space-y-4 px-5 py-8 sm:px-8" role="status">
-                <div className="h-10 w-64 animate-pulse rounded bg-gray-200" />
-                <div className="h-40 animate-pulse rounded-xl bg-gray-100" />
+            <div className="mx-auto max-w-6xl space-y-4 px-5 py-8 sm:px-8 lg:py-12" role="status" aria-label="Loading collaborations">
+                <div className="h-48 animate-pulse rounded-[2rem] bg-primarypurple/20" />
+                <div className="h-40 animate-pulse rounded-[1.5rem] bg-black/[0.05]" />
             </div>
         );
     }
 
     return (
-        <div className="mx-auto max-w-5xl space-y-6 px-5 py-8 sm:px-8">
-            <header>
-                <h1 className="flex items-center gap-3 text-3xl font-semibold sm:text-4xl">
-                    <UserRoundCheck className="h-8 w-8 text-primarypurple" aria-hidden="true" />
-                    Collaborations
-                </h1>
-                <p className="mt-2 text-sm text-gray-600">
-                    Review applications you received and invitations or applications you sent.
-                </p>
+        <div className="relative isolate min-h-screen overflow-hidden px-5 py-8 sm:px-8 lg:py-12">
+            <div className="pointer-events-none absolute inset-0 -z-20 bg-[#f4f3f8]" aria-hidden="true" />
+            <div className="pointer-events-none absolute -left-40 bottom-16 -z-10 h-96 w-96 rounded-full bg-primarygreen/20 blur-3xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute -right-32 top-72 -z-10 h-80 w-80 rounded-full bg-primarypurple/10 blur-3xl" aria-hidden="true" />
+
+            <div className="mx-auto max-w-6xl space-y-6">
+            <header className="relative isolate overflow-hidden rounded-[2rem] bg-primarypurple px-6 py-8 text-white shadow-[0_24px_70px_rgba(75,40,175,0.22)] sm:px-9 sm:py-10 lg:px-12">
+                <div className="landing-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true" />
+                <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primarygreen/20 blur-3xl" aria-hidden="true" />
+                <div className="relative max-w-3xl">
+                    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/80 backdrop-blur-sm">
+                        <Sparkles className="h-4 w-4 text-primarygreen" aria-hidden="true" />
+                        Build together
+                    </div>
+                    <h1 className="flex items-center gap-3 text-balance text-3xl font-black tracking-[-0.04em] sm:text-4xl lg:text-5xl">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarygreen text-black shadow-lg shadow-black/10">
+                            <UserRoundCheck className="h-6 w-6" aria-hidden="true" />
+                        </span>
+                        Collaborations
+                    </h1>
+                    <p className="mt-4 max-w-2xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">
+                        Keep every collaboration request in one place, from the first
+                        invitation to the final decision.
+                    </p>
+                </div>
             </header>
 
-            <div role="group" aria-label="Collaboration request direction" className="flex gap-2">
+            <div role="group" aria-label="Collaboration request direction" className="flex w-full gap-1 rounded-2xl border border-black/[0.07] bg-white p-1.5 shadow-[0_10px_30px_rgba(35,20,75,0.06)] sm:w-fit">
                 {dashboardTabs.map(({ id, label, Icon }) => (
                     <button
                         key={id}
                         type="button"
                         aria-pressed={activeTab === id}
                         onClick={() => setActiveTab(id)}
-                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${activeTab === id
-                            ? "bg-primarypurple text-white"
-                            : "border border-gray-300 bg-white text-gray-700"
+                        className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple sm:flex-none ${activeTab === id
+                            ? "bg-primarypurple text-white shadow-[0_8px_20px_rgba(111,67,254,0.2)]"
+                            : "text-black/55 hover:bg-primarypurple/[0.06] hover:text-primarypurple"
                             }`}
                     >
                         <Icon className="h-4 w-4" aria-hidden="true" />
@@ -194,7 +219,7 @@ export default function CollaborationsPage() {
             </div>
 
             {actionMutation.isError && (
-                <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700 shadow-sm">
                     {getAuthFormErrorMessage(
                         actionMutation.error,
                         "Unable to update the collaboration request."
@@ -212,14 +237,14 @@ export default function CollaborationsPage() {
                         {collaborationSkeletonIds.map((id) => (
                             <div
                                 key={id}
-                                className="h-44 animate-pulse rounded-xl border border-gray-200 bg-gray-100"
+                            className="h-44 animate-pulse rounded-[1.5rem] border border-black/[0.07] bg-white shadow-sm"
                             />
                         ))}
                     </div>
                 )}
 
                 {requests.isError && (
-                    <div role="alert" className="flex items-center justify-between gap-3 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+                    <div role="alert" className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm sm:flex-row sm:items-center">
                         <span>
                             {getAuthFormErrorMessage(
                                 requests.error,
@@ -230,7 +255,7 @@ export default function CollaborationsPage() {
                             type="button"
                             onClick={() => void requests.refetch()}
                             disabled={requests.isFetching}
-                            className="font-semibold underline disabled:opacity-60"
+                            className="min-h-10 rounded-lg px-3 font-bold underline transition hover:bg-red-100 disabled:opacity-60"
                         >
                             Retry
                         </button>
@@ -238,8 +263,15 @@ export default function CollaborationsPage() {
                 )}
 
                 {!requests.isPending && !requests.isError && visibleRequests.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center">
-                        <p className="font-semibold">No {activeTab} requests in the loaded results</p>
+                    <div className="rounded-[1.75rem] border border-dashed border-primarypurple/25 bg-white p-10 text-center shadow-[0_12px_35px_rgba(35,20,75,0.05)]">
+                        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                            {activeTab === "incoming" ? (
+                                <Inbox className="h-7 w-7" aria-hidden="true" />
+                            ) : (
+                                <Send className="h-7 w-7" aria-hidden="true" />
+                            )}
+                        </span>
+                        <p className="mt-4 text-lg font-black tracking-[-0.02em]">No {activeTab} requests in the loaded results</p>
                         <p className="mt-1 text-sm text-gray-600">
                             {requests.hasNextPage
                                 ? "Load more to check older requests."
@@ -250,7 +282,7 @@ export default function CollaborationsPage() {
 
                 {visibleRequests.length > 0 && (
                     <>
-                        <p className="text-xs text-gray-500" aria-live="polite">
+                        <p className="px-1 text-xs font-medium text-black/50" aria-live="polite">
                             Loaded {allRequests.length}
                             {typeof totalCount === "number" ? ` of ${totalCount}` : ""} total requests
                         </p>
@@ -264,12 +296,15 @@ export default function CollaborationsPage() {
                             return (
                                 <article
                                     key={request.request_id}
-                                    className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                                    className="group relative space-y-5 overflow-hidden rounded-[1.5rem] border border-black/[0.07] bg-white p-5 shadow-[0_8px_28px_rgba(35,20,75,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primarypurple/25 hover:shadow-[0_18px_42px_rgba(35,20,75,0.1)] sm:p-6"
                                 >
+                                    {request.status === "pending" && (
+                                        <span className="absolute inset-y-0 left-0 w-1 bg-primarygreen" aria-hidden="true" />
+                                    )}
                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div className="min-w-0">
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusStyles[request.status]}`}>
+                                                <span className={`rounded-full px-2.5 py-1 text-xs font-bold capitalize ring-1 ${statusStyles[request.status]}`}>
                                                     {request.status}
                                                 </span>
                                                 <span className="text-xs font-medium capitalize text-gray-500">
@@ -278,7 +313,7 @@ export default function CollaborationsPage() {
                                             </div>
                                             <Link
                                                 href={`/platform/projects/${request.project_id}`}
-                                                className="mt-2 block text-lg font-semibold text-gray-900 hover:text-primarypurple hover:underline"
+                                                className="mt-3 block text-xl font-black tracking-[-0.025em] text-gray-900 transition-colors hover:text-primarypurple focus-visible:rounded focus-visible:outline-2 focus-visible:outline-primarypurple"
                                             >
                                                 {request.project_title}
                                             </Link>
@@ -288,21 +323,33 @@ export default function CollaborationsPage() {
                                         </div>
                                         <time
                                             dateTime={request.created_at}
-                                            className="shrink-0 text-xs text-gray-500"
+                                            className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-gray-500"
                                         >
+                                            <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
                                             {formatDate(request.created_at)}
                                         </time>
                                     </div>
 
-                                    <div className="rounded-lg bg-gray-50 p-3 text-sm">
-                                        <p className="font-semibold text-gray-800">
-                                            Contributor: {request.user_full_name}
-                                        </p>
-                                        <p className="text-gray-600">{request.user_nu_email}</p>
+                                    <div className="rounded-2xl border border-black/[0.05] bg-[#f8f7fb] p-4 text-sm">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <UserAvatar
+                                                avatarUrl={request.user_avatar_url}
+                                                name={request.user_full_name}
+                                            />
+                                            <div className="min-w-0">
+                                                <p className="truncate font-bold text-gray-900">
+                                                    {request.user_full_name}
+                                                </p>
+                                                <p className="truncate text-gray-600">{request.user_nu_email}</p>
+                                            </div>
+                                        </div>
                                         {request.message && (
-                                            <p className="mt-2 whitespace-pre-wrap text-gray-700">
-                                                “{request.message}”
-                                            </p>
+                                            <div className="mt-4 flex items-start gap-2 border-t border-black/[0.07] pt-4 text-gray-700">
+                                                <MessageSquareText className="mt-0.5 h-4 w-4 shrink-0 text-primarypurple" aria-hidden="true" />
+                                                <p className="whitespace-pre-wrap leading-6">
+                                                    “{request.message}”
+                                                </p>
+                                            </div>
                                         )}
                                     </div>
 
@@ -319,11 +366,11 @@ export default function CollaborationsPage() {
                                                             action,
                                                         })
                                                     }
-                                                    className={`rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50 ${action === "accept"
-                                                        ? "bg-green-600 text-white hover:bg-green-700"
+                                                    className={`min-h-11 rounded-xl px-5 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${action === "accept"
+                                                        ? "bg-primarypurple text-white shadow-[0_10px_24px_rgba(111,67,254,0.18)] hover:-translate-y-0.5 hover:bg-black focus-visible:outline-primarypurple"
                                                         : action === "reject"
-                                                            ? "bg-red-600 text-white hover:bg-red-700"
-                                                            : "border border-gray-300 text-gray-700 hover:bg-gray-100"
+                                                            ? "bg-red-600 text-white hover:-translate-y-0.5 hover:bg-red-700 focus-visible:outline-red-600"
+                                                            : "border border-black/15 text-gray-700 hover:-translate-y-0.5 hover:border-primarypurple/30 hover:bg-primarypurple/[0.05] hover:text-primarypurple focus-visible:outline-primarypurple"
                                                         }`}
                                                 >
                                                     {pendingAction && actionMutation.variables?.action === action
@@ -341,17 +388,18 @@ export default function CollaborationsPage() {
             </section>
 
             {requests.hasNextPage && (
-                <div className="flex justify-center">
+                <div className="flex justify-center pt-2">
                     <button
                         type="button"
                         onClick={() => void requests.fetchNextPage()}
                         disabled={requests.isFetchingNextPage}
-                        className="rounded-lg bg-primarypurple px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                        className="min-h-12 rounded-xl bg-primarypurple px-6 text-sm font-bold text-white shadow-[0_12px_28px_rgba(111,67,254,0.2)] transition-all hover:-translate-y-0.5 hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primarypurple disabled:opacity-60 disabled:hover:translate-y-0"
                     >
                         {requests.isFetchingNextPage ? "Loading..." : "Load more"}
                     </button>
                 </div>
             )}
+            </div>
         </div>
     );
 }

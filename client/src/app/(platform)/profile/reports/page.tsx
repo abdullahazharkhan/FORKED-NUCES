@@ -11,6 +11,11 @@ import {
 } from "@/lib/authFormResponse";
 import { reportQueryKeys } from "@/lib/engagementQueryKeys";
 import { readPaginatedArray } from "@/lib/pagination";
+import { PlatformPageHeader } from "@/app/(platform)/components/PlatformPageHeader";
+import {
+    PLATFORM_HEADER_BADGE_CLASS,
+    PLATFORM_PRIMARY_BUTTON_CLASS,
+} from "@/lib/platformStyles";
 
 type ReportStatus = "open" | "reviewing" | "actioned" | "dismissed";
 type ReportItem = {
@@ -108,32 +113,41 @@ export default function SubmittedReportsPage() {
     const totalCount = reports.data?.pages[0]?.totalCount;
 
     return (
-        <div className="mx-auto mt-6 max-w-4xl space-y-6">
-            <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mx-auto max-w-5xl space-y-7">
+            <PlatformPageHeader
+                eyebrow="Trust & safety"
+                title={<>Your submitted <span className="text-primarygreen">reports.</span></>}
+                description="Track every concern you have shared with moderators and see when it has been reviewed or resolved."
+                actions={
+                    <div className={PLATFORM_HEADER_BADGE_CLASS}>
+                        <ClipboardList className="h-6 w-6 text-primarygreen" aria-hidden="true" />
+                        <span className="text-sm font-bold">
+                            {typeof totalCount === "number" ? `${totalCount} submitted` : "Moderation center"}
+                        </span>
+                    </div>
+                }
+            />
+
+            <div className="flex items-center justify-between gap-3">
                 <div>
-                    <h1 className="flex items-center gap-3 text-3xl font-semibold sm:text-4xl">
-                        <ClipboardList className="h-8 w-8 text-primarypurple" aria-hidden="true" />
-                        Submitted Reports
-                    </h1>
-                    <p className="mt-2 text-sm text-gray-600">
-                        Track the moderation status of concerns you submitted.
-                    </p>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-primarypurple">Report history</p>
+                    <h2 className="mt-1 text-2xl font-black tracking-tight">Status updates</h2>
                 </div>
-                <Link href="/profile" className="text-sm font-semibold text-primarypurple underline">
+                <Link href="/profile" className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-primarypurple shadow-sm transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15">
                     Back to profile
                 </Link>
-            </header>
+            </div>
 
             {reports.isPending && (
                 <div className="space-y-3" role="status" aria-label="Loading submitted reports">
                     {reportSkeletonIds.map((id) => (
-                        <div key={id} className="h-40 animate-pulse rounded-xl bg-gray-100" />
+                        <div key={id} className="h-40 animate-pulse rounded-3xl border border-black/[0.06] bg-white" />
                     ))}
                 </div>
             )}
 
             {reports.isError && (
-                <div role="alert" className="flex items-center justify-between gap-3 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+                <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between">
                     <span>
                         {getAuthFormErrorMessage(
                             reports.error,
@@ -144,7 +158,7 @@ export default function SubmittedReportsPage() {
                         type="button"
                         onClick={() => void reports.refetch()}
                         disabled={reports.isFetching}
-                        className="font-semibold underline disabled:opacity-60"
+                        className="font-bold underline underline-offset-4 disabled:opacity-60"
                     >
                         Retry
                     </button>
@@ -152,9 +166,12 @@ export default function SubmittedReportsPage() {
             )}
 
             {!reports.isPending && !reports.isError && items.length === 0 && (
-                <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center">
-                    <p className="font-semibold">You have not submitted any reports.</p>
-                    <p className="mt-1 text-sm text-gray-600">
+                <div className="rounded-3xl border border-dashed border-primarypurple/25 bg-white p-12 text-center">
+                    <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primarypurple/[0.08] text-primarypurple">
+                        <ClipboardList className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                    <p className="mt-5 text-lg font-black">You have not submitted any reports.</p>
+                    <p className="mt-1 text-sm text-black/50">
                         Reports created from project or user pages will appear here.
                     </p>
                 </div>
@@ -162,7 +179,7 @@ export default function SubmittedReportsPage() {
 
             {items.length > 0 && (
                 <div className="space-y-4">
-                    <p className="text-xs text-gray-500" aria-live="polite">
+                    <p className="text-xs font-medium text-black/45" aria-live="polite">
                         Showing {items.length}
                         {typeof totalCount === "number" ? ` of ${totalCount}` : ""}
                     </p>
@@ -170,31 +187,31 @@ export default function SubmittedReportsPage() {
                         const href = reportLink(report);
                         const label = reportLabel(report);
                         return (
-                            <article key={report.report_id} className="space-y-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <article key={report.report_id} className="space-y-4 rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_16px_45px_rgba(24,15,48,0.05)] sm:p-6">
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
                                         <div className="flex flex-wrap items-center gap-2">
                                             <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusStyles[report.status]}`}>
                                                 {report.status}
                                             </span>
-                                            <span className="text-xs font-medium capitalize text-gray-500">
+                                            <span className="text-xs font-bold capitalize text-black/40">
                                                 {report.target_type}
                                             </span>
                                         </div>
                                         {href ? (
-                                            <Link href={href} className="mt-2 block text-lg font-semibold hover:text-primarypurple hover:underline">
+                                            <Link href={href} className="mt-2 block text-xl font-black tracking-tight transition hover:text-primarypurple focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15">
                                                 {label}
                                             </Link>
                                         ) : (
-                                            <h2 className="mt-2 text-lg font-semibold">{label}</h2>
+                                            <h2 className="mt-2 text-xl font-black tracking-tight">{label}</h2>
                                         )}
                                     </div>
-                                    <time dateTime={report.created_at} className="text-xs text-gray-500">
+                                    <time dateTime={report.created_at} className="text-xs font-medium text-black/40">
                                         {formatDate(report.created_at)}
                                     </time>
                                 </div>
 
-                                <div className="text-sm text-gray-700">
+                                <div className="text-sm leading-6 text-black/65">
                                     <p>
                                         <span className="font-semibold">Reason:</span>{" "}
                                         {reasonLabels[report.reason] ?? report.reason}
@@ -205,8 +222,8 @@ export default function SubmittedReportsPage() {
                                 </div>
 
                                 {report.resolution_notes && (
-                                    <div className="rounded-lg bg-primarypurple/5 p-3 text-sm text-gray-700">
-                                        <p className="font-semibold text-primarypurple">Moderator note</p>
+                                    <div className="rounded-2xl border border-primarypurple/10 bg-primarypurple/[0.05] p-4 text-sm text-black/65">
+                                        <p className="font-black text-primarypurple">Moderator note</p>
                                         <p className="mt-1 whitespace-pre-wrap">{report.resolution_notes}</p>
                                     </div>
                                 )}
@@ -222,7 +239,7 @@ export default function SubmittedReportsPage() {
                         type="button"
                         onClick={() => void reports.fetchNextPage()}
                         disabled={reports.isFetchingNextPage}
-                        className="rounded-lg bg-primarypurple px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                        className={PLATFORM_PRIMARY_BUTTON_CLASS}
                     >
                         {reports.isFetchingNextPage ? "Loading..." : "Load more"}
                     </button>

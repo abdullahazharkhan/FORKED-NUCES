@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { FolderKanban, Search } from "lucide-react";
 
 import ProjectCard, {
     type ProjectSummary,
@@ -9,6 +10,11 @@ import ProjectCard, {
 import { authFetch } from "@/lib/authFetch";
 import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
 import { queryKeys } from "@/lib/queryKeys";
+import {
+    PLATFORM_INPUT_CLASS,
+    PLATFORM_PRIMARY_BUTTON_CLASS,
+    PLATFORM_SELECT_CLASS,
+} from "@/lib/platformStyles";
 
 const PAGE_SIZE = 20;
 
@@ -64,40 +70,43 @@ const YourProjects = () => {
 
     return (
         <section
-            className="my-6 space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6"
+            className="my-6 space-y-6 rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-7"
             aria-labelledby="your-projects-heading"
         >
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                <h2
-                    id="your-projects-heading"
-                    className="text-3xl font-semibold underline decoration-4 decoration-primarypurple md:text-4xl"
-                >
-                    Your Projects
-                </h2>
+                <div>
+                    <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-primarypurple">
+                        <FolderKanban className="h-4 w-4" aria-hidden="true" />
+                        Your portfolio
+                    </p>
+                    <h2 id="your-projects-heading" className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+                        Projects you own
+                    </h2>
+                    <p className="mt-1 text-sm text-black/45">Open a project to manage its details, issues, and collaborators.</p>
+                </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row">
-                    <div>
-                        <label className="sr-only" htmlFor="your-project-search">
-                            Search your loaded projects
-                        </label>
-                        <input
-                            id="your-project-search"
-                            type="search"
-                            placeholder="Search loaded projects..."
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                            className="w-full rounded border-2 border-gray-300 p-2 text-sm outline-none transition-colors focus:border-primarypurple/80 sm:w-64"
-                        />
-                    </div>
-                    <div>
-                        <label className="sr-only" htmlFor="your-project-tag">
-                            Filter loaded projects by tag
-                        </label>
+                    <label className="block sm:w-64">
+                        <span className="sr-only">Search your loaded projects</span>
+                        <span className="relative block">
+                            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" aria-hidden="true" />
+                            <input
+                                id="your-project-search"
+                                type="search"
+                                placeholder="Search your projects"
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                className={`${PLATFORM_INPUT_CLASS} pl-11`}
+                            />
+                        </span>
+                    </label>
+                    <label className="block sm:w-44">
+                        <span className="sr-only">Filter loaded projects by tag</span>
                         <select
                             id="your-project-tag"
                             value={selectedTag}
                             onChange={(event) => setSelectedTag(event.target.value)}
-                            className="w-full rounded border-2 border-gray-300 p-2 text-sm outline-none transition-colors focus:border-primarypurple/80 sm:w-44"
+                            className={PLATFORM_SELECT_CLASS}
                         >
                             {allTags.map((tag) => (
                                 <option key={tag} value={tag}>
@@ -105,11 +114,11 @@ const YourProjects = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
+                    </label>
                 </div>
             </div>
 
-            <p className="text-xs text-gray-500" role="status" aria-live="polite">
+            <p className="text-xs font-medium text-black/45" role="status" aria-live="polite">
                 {projects.length} projects loaded; {filteredProjects.length} match
                 the current filters.
             </p>
@@ -153,7 +162,7 @@ const YourProjects = () => {
                             type="button"
                             onClick={() => void projectsQuery.fetchNextPage()}
                             disabled={projectsQuery.isFetchingNextPage}
-                            className="rounded-lg bg-primarypurple px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                            className={PLATFORM_PRIMARY_BUTTON_CLASS}
                         >
                             {projectsQuery.isFetchingNextPage
                                 ? "Loading..."
