@@ -15,10 +15,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-poppins: var(--font-poppins);
-  --font-jaro: var(--font-jaro);
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-poppins: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-jaro: "Jaro", ui-sans-serif, system-ui, sans-serif;
   --color-primarypurple: #6F43FE;
   --color-primaryyellow: #F2B705;
   --color-primarygreen: #C3FF00;

@@ -3,45 +3,95 @@
 import React from "react";
 import { useAuthStore } from "@/stores";
 import { Check } from "lucide-react";
+import Image from "next/image";
 
-interface UserDetailsProps {
-    user?: any;
-}
+import type { UserType } from "@/stores/auth/useAuthStore";
+import { passthroughImageLoader } from "@/lib/passthroughImageLoader";
+import { ReportButton } from "@/app/(platform)/components/ReportButton";
 
-const UserDetails: React.FC<{ user?: any; page: string }> = ({ user: propUser, page }) => {
+type UserDetailsProps = {
+    page: "profile" | "userDetails";
+    user?: UserType;
+};
+
+const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
     const storeUser = useAuthStore((s) => s.user);
+    const sessionStatus = useAuthStore((s) => s.sessionStatus);
     const user = propUser ?? storeUser;
 
-    const displayName =
-        user?.full_name?.trim().split(/\s+/).slice(0, 2).join(" ") || "John Doe";
+    if (!user) {
+        return (
+            <div
+                className="space-y-3 rounded-xl border border-gray-200 bg-primarypurple/5 p-6"
+                role={
+                    sessionStatus === "error" ||
+                    sessionStatus === "unauthenticated"
+                        ? "alert"
+                        : "status"
+                }
+            >
+                <div className="h-7 w-48 animate-pulse rounded bg-gray-300" />
+                <div className="h-4 w-64 animate-pulse rounded bg-gray-200" />
+                <p className="text-sm text-gray-600">
+                    {sessionStatus === "error" ||
+                    sessionStatus === "unauthenticated"
+                        ? "Unable to load your profile."
+                        : "Loading your profile…"}
+                </p>
+            </div>
+        );
+    }
 
-    const email = user?.nu_email || "johndoe@example.com";
+    const displayName =
+        user.full_name?.trim().split(/\s+/).slice(0, 2).join(" ") || "FASTian";
+
+    const email = user.nu_email || "Email unavailable";
 
     const avatarInitial =
         user?.full_name?.trim().charAt(0)?.toUpperCase() || "U";
+    const canReport =
+        page === "userDetails" &&
+        Boolean(storeUser) &&
+        storeUser?.user_id !== user.user_id;
 
     return (
         <div className="space-y-6 rounded-xl border border-gray-200 bg-primarypurple/5 p-6">
+            {canReport && (
+                <div className="flex justify-end">
+                    <ReportButton
+                        targetType="user"
+                        targetId={user.user_id}
+                        targetLabel={displayName}
+                    />
+                </div>
+            )}
             <div className="flex flex-col gap-6 md:flex-row">
                 <div className="flex flex-col gap-4 min-[450px]:flex-row">
                     <div className="flex items-center justify-center">
                         {user?.avatar_url ? (
-                            <img
+                            <Image
+                                loader={passthroughImageLoader}
+                                unoptimized
                                 src={user.avatar_url}
-                                alt="User Avatar"
+                                alt={`${displayName} avatar`}
+                                width={112}
+                                height={112}
                                 className="h-24 w-24 rounded-xl object-cover md:h-28 md:w-28"
                             />
                         ) : (
-                            <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gray-300 text-3xl font-semibold text-white md:h-28 md:w-28">
+                            <div
+                                className="flex h-24 w-24 items-center justify-center rounded-xl bg-gray-300 text-3xl font-semibold text-white md:h-28 md:w-28"
+                                aria-hidden="true"
+                            >
                                 {avatarInitial}
                             </div>
                         )}
                     </div>
 
                     <div className="flex flex-col justify-center gap-2">
-                        <h2 className="text-3xl font-semibold md:text-4xl">
+                        <h1 className="text-3xl font-semibold md:text-4xl">
                             {displayName}
-                        </h2>
+                        </h1>
                         <p className="text-sm text-gray-600 md:text-base">{email}</p>
 
                         {user?.is_github_connected && user.github_username && (
@@ -54,7 +104,7 @@ const UserDetails: React.FC<{ user?: any; page: string }> = ({ user: propUser, p
                             {user?.is_email_verified ? (
                                 <span className="inline-flex items-center rounded bg-primarypurple px-2 py-0.5 text-xs font-medium text-white">
                                     Verified
-                                    <Check className="ml-1 h-4 w-4" />
+                                    <Check className="ml-1 h-4 w-4" aria-hidden="true" />
                                 </span>
                             ) : (
                                 <span className="inline-flex items-center rounded bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
@@ -69,9 +119,9 @@ const UserDetails: React.FC<{ user?: any; page: string }> = ({ user: propUser, p
                     <h3 className="text-lg font-semibold">Skills</h3>
                     <div className="mt-2 flex flex-wrap gap-2">
                         {user?.skills && user.skills.length > 0 ? (
-                            user.skills.map((skill: string, index: number) => (
+                            user.skills.map((skill: string) => (
                                 <span
-                                    key={index}
+                                    key={skill}
                                     className="rounded bg-primarypurple/20 px-3 py-1 text-xs text-gray-800"
                                 >
                                     {skill}
@@ -96,8 +146,9 @@ const UserDetails: React.FC<{ user?: any; page: string }> = ({ user: propUser, p
                     </>
                 ) : (
                     <p className="text-sm leading-relaxed text-gray-700 md:text-base">
-                        {page === "profile" ? "You dont have a bio yet." : "User has not added their bio."}
-                        You don&apos;t have a bio yet.
+                        {page === "profile"
+                            ? "You don’t have a bio yet."
+                            : "User has not added a bio yet."}
                     </p>
                 )}
             </div>

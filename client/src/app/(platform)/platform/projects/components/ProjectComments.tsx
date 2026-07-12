@@ -1,10 +1,21 @@
 "use client";
 
 import React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+    type InfiniteData,
+    useInfiniteQuery,
+    useMutation,
+    useQueryClient,
+} from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
 import { useAuthStore } from "@/stores";
 import { Trash2 } from "lucide-react";
+import { queryKeys } from "@/lib/queryKeys";
+import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
+import { ReportButton } from "@/app/(platform)/components/ReportButton";
+
+const PAGE_SIZE = 20;
+const COMMENT_SKELETON_IDS = ["one", "two", "three"] as const;
 
 type Comment = {
     comment_id: number;
@@ -16,16 +27,75 @@ type Comment = {
 };
 
 type ProjectCommentsProps = {
-    projectid: string;
+    projectid: string | number;
     projectOwnerId?: number;
 };
 
-const CommentsSkeleton: React.FC = () => {
+const MAX_COMMENT_LENGTH = 2_000;
+
+type CommentPages = InfiniteData<PaginatedPage<Comment>, unknown>;
+
+function prependComment(
+    current: CommentPages | undefined,
+    comment: Comment
+): CommentPages {
+    if (!current) {
+        return {
+            pageParams: [0],
+            pages: [
+                {
+                    items: [comment],
+                    limit: PAGE_SIZE,
+                    nextOffset: null,
+                    offset: 0,
+                    totalCount: 1,
+                },
+            ],
+        };
+    }
+
+    return {
+        ...current,
+        pages: current.pages.map((page, index) => ({
+            ...page,
+            items: index === 0 ? [comment, ...page.items] : page.items,
+            totalCount:
+                page.totalCount === null ? null : page.totalCount + 1,
+        })),
+    };
+}
+
+function removeComment(
+    current: CommentPages | undefined,
+    commentId: number
+): CommentPages | undefined {
+    if (!current) return current;
+
+    return {
+        ...current,
+        pages: current.pages.map((page) => {
+            const items = page.items.filter(
+                (comment) => comment.comment_id !== commentId
+            );
+            const removed = items.length !== page.items.length;
+            return {
+                ...page,
+                items,
+                totalCount:
+                    removed && page.totalCount !== null
+                        ? Math.max(0, page.totalCount - 1)
+                        : page.totalCount,
+            };
+        }),
+    };
+}
+
+const CommentsSkeleton = () => {
     return (
         <div className="space-y-3 mt-3">
-            {Array.from({ length: 3 }).map((_, idx) => (
+            {COMMENT_SKELETON_IDS.map((id) => (
                 <div
-                    key={idx}
+                    key={id}
                     className="rounded-lg border border-primarypurple/10 bg-white/80 p-3 space-y-2 animate-pulse"
                 >
                     <div className="h-3 w-32 rounded bg-gray-200" />
@@ -44,34 +114,51 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
 
     const [newComment, setNewComment] = React.useState("");
     const [formError, setFormError] = React.useState<string | null>(null);
+    const [deleteError, setDeleteError] = React.useState<string | null>(null);
 
-    // Fetch comments
+    const invalidateProjectSurfaces = () => Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.project(projectid) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.projects }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.recommendedProjects }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.myProjects }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.allUserProjects }),
+    ]);
+
     const {
         data,
-        isLoading,
-        isError,
         error,
-    } = useQuery({
-        queryKey: ["project-comments", projectid],
-        queryFn: async () => {
-            const res = await authFetch(
-                `/api/projects/${projectid}/comments`,
-                {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                }
+        fetchNextPage,
+        hasNextPage,
+        isError,
+        isFetchNextPageError,
+        isFetching,
+        isFetchingNextPage,
+        isPending,
+        refetch,
+    } = useInfiniteQuery<PaginatedPage<Comment>>({
+        queryKey: queryKeys.projectComments(projectid),
+        initialPageParam: 0,
+        queryFn: async ({ pageParam, signal }) => {
+            const params = new URLSearchParams({
+                limit: String(PAGE_SIZE),
+                offset: String(pageParam),
+            });
+            const response = await authFetch(
+                `/api/projects/${projectid}/comments?${params.toString()}`,
+                { method: "GET", signal }
             );
 
-            if (!res.ok) {
-                throw new Error("Failed to fetch comments");
-            }
-
-            const body = await res.json();
-            return Array.isArray(body) ? body : [];
+            if (!response.ok) throw new Error("Failed to fetch comments");
+            return readPaginatedArray<Comment>(response);
         },
+        getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
     });
 
-    const comments: Comment[] = data || [];
+    const comments = React.useMemo(
+        () => data?.pages.flatMap((page) => page.items) ?? [],
+        [data]
+    );
+    const initialError = isError && comments.length === 0;
 
     // Create comment mutation
     const createCommentMutation = useMutation({
@@ -100,44 +187,56 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
             setFormError(null);
 
             await queryClient.cancelQueries({
-                queryKey: ["project-comments", projectid],
+                queryKey: queryKeys.projectComments(projectid),
             });
 
-            const previousComments =
-                queryClient.getQueryData<Comment[]>([
-                    "project-comments",
-                    projectid,
-                ]) || [];
-
-            const optimistic: Comment = {
-                comment_id: Date.now(),
-                comment_body: payload.comment_body,
-                created_at: new Date().toISOString(),
-            };
-
-            queryClient.setQueryData<Comment[]>(
-                ["project-comments", projectid],
-                [optimistic, ...previousComments]
+            const previousComments = queryClient.getQueryData<CommentPages>(
+                queryKeys.projectComments(projectid)
             );
 
-            return { previousComments };
+            const optimistic: Comment = {
+                comment_id: -Date.now(),
+                comment_body: payload.comment_body,
+                created_at: new Date().toISOString(),
+                user_id: loggedInUser?.user_id,
+                user_full_name: loggedInUser?.full_name,
+                user_nu_email: loggedInUser?.nu_email,
+            };
+
+            queryClient.setQueryData<CommentPages>(
+                queryKeys.projectComments(projectid),
+                (current) => prependComment(current, optimistic)
+            );
+
+            return {
+                optimisticId: optimistic.comment_id,
+                previousComments,
+            };
         },
         onError: (err, _vars, context) => {
-            if (context?.previousComments) {
+            if (context?.previousComments !== undefined) {
                 queryClient.setQueryData(
-                    ["project-comments", projectid],
+                    queryKeys.projectComments(projectid),
                     context.previousComments
+                );
+            } else if (context?.optimisticId !== undefined) {
+                queryClient.setQueryData<CommentPages>(
+                    queryKeys.projectComments(projectid),
+                    (current) => removeComment(current, context.optimisticId)
                 );
             }
             setFormError(
                 (err as Error)?.message || "Failed to add comment."
             );
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             setNewComment("");
-            queryClient.invalidateQueries({
-                queryKey: ["project-comments", projectid],
-            });
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.projectComments(projectid),
+                }),
+                invalidateProjectSurfaces(),
+            ]);
         },
     });
 
@@ -161,44 +260,60 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
             return body;
         },
         onMutate: async (commentId) => {
+            setDeleteError(null);
             await queryClient.cancelQueries({
-                queryKey: ["project-comments", projectid],
+                queryKey: queryKeys.projectComments(projectid),
             });
 
-            const previousComments =
-                queryClient.getQueryData<Comment[]>([
-                    "project-comments",
-                    projectid,
-                ]) || [];
+            const previousComments = queryClient.getQueryData<CommentPages>(
+                queryKeys.projectComments(projectid)
+            );
 
-            queryClient.setQueryData<Comment[]>(
-                ["project-comments", projectid],
-                previousComments.filter((c) => c.comment_id !== commentId)
+            queryClient.setQueryData<CommentPages>(
+                queryKeys.projectComments(projectid),
+                (current) => removeComment(current, commentId)
             );
 
             return { previousComments };
         },
-        onError: (_err, _vars, context) => {
-            if (context?.previousComments) {
+        onError: (mutationError, _vars, context) => {
+            if (context?.previousComments !== undefined) {
                 queryClient.setQueryData(
-                    ["project-comments", projectid],
+                    queryKeys.projectComments(projectid),
                     context.previousComments
                 );
             }
+            setDeleteError(
+                mutationError instanceof Error && mutationError.message
+                    ? mutationError.message
+                    : "Failed to delete comment. Please try again."
+            );
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["project-comments", projectid],
-            });
+        onSuccess: async () => {
+            setDeleteError(null);
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.projectComments(projectid),
+                }),
+                invalidateProjectSurfaces(),
+            ]);
         },
     });
 
     const canDeleteComment = (comment: Comment) => {
         if (!loggedInUser) return false;
+        if (comment.comment_id <= 0) return false;
         const isCommentAuthor = comment.user_id === loggedInUser.user_id;
         const isProjectOwner = projectOwnerId === loggedInUser.user_id;
         return isCommentAuthor || isProjectOwner;
     };
+
+    const canReportComment = (comment: Comment) =>
+        Boolean(
+            loggedInUser &&
+            comment.comment_id > 0 &&
+            comment.user_id !== loggedInUser.user_id
+        );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -206,6 +321,13 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
 
         if (!value) {
             setFormError("Comment cannot be empty.");
+            return;
+        }
+
+        if (value.length > MAX_COMMENT_LENGTH) {
+            setFormError(
+                `Comment must be ${MAX_COMMENT_LENGTH.toLocaleString()} characters or fewer.`
+            );
             return;
         }
 
@@ -228,11 +350,16 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                 onSubmit={handleSubmit}
                 className="space-y-2 rounded-xl border border-primarypurple/25 bg-white/90 p-3 shadow-sm"
             >
-                <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                <label
+                    htmlFor="project-comment-body"
+                    className="text-xs font-semibold uppercase tracking-wide text-gray-600"
+                >
                     Add a comment
                 </label>
                 <textarea
+                    id="project-comment-body"
                     value={newComment}
+                    maxLength={MAX_COMMENT_LENGTH}
                     onChange={(e) => {
                         setNewComment(e.target.value);
                         if (formError) setFormError(null);
@@ -242,7 +369,9 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                     className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primarypurple focus:ring-1 focus:ring-primarypurple/50"
                 />
                 {formError && (
-                    <p className="text-[11px] text-red-600">{formError}</p>
+                    <p className="text-[11px] text-red-600" role="alert">
+                        {formError}
+                    </p>
                 )}
 
                 <div className="flex justify-end">
@@ -259,25 +388,47 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
             </form>
 
             {/* Loading */}
-            {isLoading && <CommentsSkeleton />}
+            {isPending && <CommentsSkeleton />}
 
             {/* Error */}
-            {isError && !isLoading && (
-                <p className="text-sm text-red-600">
-                    {(error as Error)?.message ||
-                        "Failed to load comments."}
+            {initialError && (
+                <div
+                    className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                    role="alert"
+                >
+                    <span>
+                        {(error as Error)?.message ||
+                            "Failed to load comments."}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => void refetch()}
+                        disabled={isFetching}
+                        className="font-semibold underline disabled:opacity-60"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
+            {deleteError && (
+                <p
+                    className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                    role="alert"
+                >
+                    {deleteError}
                 </p>
             )}
 
             {/* Empty state */}
-            {!isLoading && !isError && comments.length === 0 && (
+            {!isPending && !initialError && comments.length === 0 && (
                 <p className="text-sm text-gray-600">
                     No comments yet. Be the first to comment on this project.
                 </p>
             )}
 
             {/* Comments list */}
-            {!isLoading && !isError && comments.length > 0 && (
+            {!isPending && !initialError && comments.length > 0 && (
                 <div className="space-y-2">
                     {comments.map((comment) => (
                         <div
@@ -305,22 +456,37 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                                     )}
                                 </div>
 
-                                {/* Delete button */}
-                                {canDeleteComment(comment) && (
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            deleteCommentMutation.mutate(
-                                                comment.comment_id
-                                            )
-                                        }
-                                        disabled={deleteCommentMutation.isPending}
-                                        className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
-                                        title="Delete comment"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-                                )}
+                                <div className="flex items-center gap-2">
+                                    {canReportComment(comment) && (
+                                        <ReportButton
+                                            targetId={comment.comment_id}
+                                            targetLabel={`comment by ${comment.user_full_name || "this user"}`}
+                                            targetType="comment"
+                                        />
+                                    )}
+
+                                    {canDeleteComment(comment) && (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                deleteCommentMutation.mutate(
+                                                    comment.comment_id
+                                                )
+                                            }
+                                            disabled={deleteCommentMutation.isPending}
+                                            className="rounded p-1 text-gray-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                                            title="Delete comment"
+                                            aria-label={`Delete comment by ${
+                                                comment.user_full_name || "this user"
+                                            }`}
+                                        >
+                                            <Trash2
+                                                className="h-4 w-4"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <p className="text-sm text-gray-800 whitespace-pre-wrap">
@@ -328,6 +494,36 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                             </p>
                         </div>
                     ))}
+
+                    {isFetchNextPageError && (
+                        <div
+                            className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                            role="alert"
+                        >
+                            <span>Could not load more comments.</span>
+                            <button
+                                type="button"
+                                onClick={() => void fetchNextPage()}
+                                disabled={isFetchingNextPage}
+                                className="font-semibold underline disabled:opacity-60"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    )}
+
+                    {hasNextPage && !isFetchNextPageError && (
+                        <button
+                            type="button"
+                            onClick={() => void fetchNextPage()}
+                            disabled={isFetchingNextPage}
+                            className="w-full rounded-lg border border-primarypurple/25 bg-white px-4 py-2 text-sm font-semibold text-primarypurple transition hover:bg-primarypurple/5 disabled:opacity-60"
+                        >
+                            {isFetchingNextPage
+                                ? "Loading more comments..."
+                                : "Load more comments"}
+                        </button>
+                    )}
                 </div>
             )}
         </div>

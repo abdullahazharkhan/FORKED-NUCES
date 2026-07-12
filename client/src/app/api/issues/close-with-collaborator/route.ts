@@ -1,58 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import {
+    isNextResponse,
+    parseJsonBody,
+    proxyAuthenticatedDjango,
+} from "@/lib/server/djangoBff";
 
-const DRF_BASE = process.env.DRF_API_BASE_URL || "http://localhost:8000";
+export async function POST(request: Request) {
+    const body = await parseJsonBody<unknown>(request);
+    if (isNextResponse(body)) return body;
 
-const DRF_CLOSEISSUE_URL = `${DRF_BASE}/api/projects/issues/close-with-collaborator/`;
-
-export async function POST(req: NextRequest) {
-    const cookieStore = await cookies();
-    const access = cookieStore.get("access_token")?.value;
-
-    if (!access) {
-        return NextResponse.json(
-            { detail: "Unauthenticated. Access token missing." },
-            { status: 401 }
-        );
-    }
-
-    let body: unknown;
-    try {
-        body = await req.json();
-    } catch {
-        return NextResponse.json(
-            { detail: "Invalid JSON body." },
-            { status: 400 }
-        );
-    }
-
-    const { issue_id, user_id, user_ids } = body as {
-        issue_id?: number;
-        user_id?: number;
-        user_ids?: number[];
-    };
-
-    const drfRes = await fetch(DRF_CLOSEISSUE_URL, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access}`,
-        },
-        body: JSON.stringify({
-            issue_id,
-            user_id,
-            user_ids,
-        }),
-    });
-
-    const drfBody = await drfRes.json().catch(() => null);
-
-    if (!drfRes.ok) {
-        return NextResponse.json(
-            drfBody || { detail: "Failed to create project" },
-            { status: drfRes.status }
-        );
-    }
-
-    return NextResponse.json(drfBody, { status: 201 });
+    return proxyAuthenticatedDjango(
+        "/api/projects/issues/close-with-collaborator/",
+        { method: "POST", body: JSON.stringify(body) },
+        "Failed to close issue."
+    );
 }
