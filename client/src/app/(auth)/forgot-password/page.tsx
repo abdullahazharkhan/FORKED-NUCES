@@ -21,7 +21,7 @@ type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 type ResetRequestResponse = { detail?: string; message?: string };
 
 const genericSuccessMessage =
-    "If an eligible account exists for that NU email, a password-reset link has been sent.";
+    "A password-reset link has been sent to your NU email.";
 
 export default function ForgotPassword() {
     const {
@@ -58,8 +58,8 @@ export default function ForgotPassword() {
                     Reset Password
                 </h1>
                 <p className="text-sm text-gray-600">
-                    Enter your NU email. If it belongs to an eligible account,
-                    we&apos;ll send a time-limited reset link.
+                    Enter the NU email associated with your account and
+                    we&apos;ll send you a time-limited reset link.
                 </p>
             </div>
 

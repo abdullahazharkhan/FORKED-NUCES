@@ -116,6 +116,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         max_length=MAX_PASSWORD_INPUT_LENGTH,
         style={"input_type": "password"},
     )
+    confirm_password = serializers.CharField(
+        write_only=True,
+        max_length=MAX_PASSWORD_INPUT_LENGTH,
+        style={"input_type": "password"},
+    )
     skills = EarlyBoundedListField(
         child=serializers.CharField(max_length=100),
         allow_empty=True,
@@ -126,7 +131,13 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["full_name", "nu_email", "password", "skills"]
+        fields = [
+            "full_name",
+            "nu_email",
+            "password",
+            "confirm_password",
+            "skills",
+        ]
         extra_kwargs = {"nu_email": {"validators": []}}
 
     def validate_nu_email(self, value):
@@ -137,6 +148,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
+        if attrs.get("password") != attrs.get("confirm_password"):
+            raise serializers.ValidationError(
+                {"confirm_password": ["Passwords do not match."]}
+            )
+
         candidate_user = User(
             nu_email=attrs.get("nu_email", ""),
             full_name=attrs.get("full_name", ""),
@@ -150,6 +166,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         skill_list = validated_data.pop("skills", [])
+        validated_data.pop("confirm_password")
         password = validated_data.pop("password")
         user = User.objects.create_user(
             password=password,
@@ -516,7 +533,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             User.objects.filter(
                 nu_email__iexact=self.validated_data["nu_email"],
                 is_active=True,
-                is_email_verified=True,
             )
             .only(
                 "user_id",
@@ -592,7 +608,17 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         _validate_new_password(validated_data["new_password"], user)
         user.set_password(validated_data["new_password"])
         user.password_changed_at = timezone.now()
-        user.save(update_fields=["password", "password_changed_at", "updated_at"])
+        # A valid reset token was delivered to this NU address, so completing
+        # the flow also proves control of the email for older/unverified users.
+        user.is_email_verified = True
+        user.save(
+            update_fields=[
+                "password",
+                "password_changed_at",
+                "is_email_verified",
+                "updated_at",
+            ]
+        )
         return invalidate_user_sessions(user)
 
 

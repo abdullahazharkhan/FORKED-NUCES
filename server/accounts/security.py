@@ -15,8 +15,7 @@ from rest_framework_simplejwt.token_blacklist.models import (
 
 
 PASSWORD_RESET_REQUEST_MESSAGE = (
-    "If an active account exists for this email, password reset instructions "
-    "have been requested."
+    "A password reset link has been sent to your NU email address."
 )
 SESSION_VERSION_CLAIM = "session_version"
 DELETED_USER_FULL_NAME = "Deleted User"

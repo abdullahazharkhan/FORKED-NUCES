@@ -15,6 +15,7 @@ import {
     nuEmailSchema,
 } from "@/lib/authValidation";
 import { getSafeInternalPath } from "@/lib/safeRedirect";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const loginSchema = z.object({
     nuemail: nuEmailSchema,
@@ -198,8 +199,7 @@ const LoginForm = () => {
                     <label htmlFor="password" className="font-semibold text-lg">
                         Password
                     </label>
-                    <input
-                        type="password"
+                    <PasswordInput
                         id="password"
                         autoComplete="current-password"
                         aria-invalid={Boolean(errors.password)}

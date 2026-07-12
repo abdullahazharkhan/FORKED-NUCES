@@ -6,6 +6,7 @@ export async function registerUser(payload: {
   full_name: string
   nu_email: string
   password: string
+  confirm_password: string
 }) {
   let res: Response
   try {

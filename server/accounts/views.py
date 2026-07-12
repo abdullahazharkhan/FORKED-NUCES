@@ -226,18 +226,23 @@ class PasswordResetRequestView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.get_user()
-        if user is not None and user.has_usable_password():
-            try:
-                send_password_reset_email(user)
-            except Exception:
-                logger.exception(
-                    "Password reset email delivery failed for user_id=%s",
-                    user.user_id,
-                )
-        else:
-            _deliver_neutral_account_notice(
-                serializer.validated_data["nu_email"],
-                "password_reset",
+        if user is None:
+            return Response(
+                {"detail": "No account exists for this NU email address."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if not user.has_usable_password():
+            return Response(
+                {"detail": "This account cannot use password reset."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            send_password_reset_email(user)
+        except Exception:
+            logger.exception(
+                "Password reset email delivery failed for user_id=%s",
+                user.user_id,
             )
 
         return Response(

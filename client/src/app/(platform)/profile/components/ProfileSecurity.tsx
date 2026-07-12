@@ -18,6 +18,7 @@ import {
     newPasswordSchema,
 } from "@/lib/authValidation";
 import { useAuthStore } from "@/stores";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const passwordChangeSchema = z
     .object({
@@ -123,9 +124,8 @@ export default function ProfileSecurity() {
                         <label htmlFor="security-current-password" className="font-semibold">
                             Current Password
                         </label>
-                        <input
+                        <PasswordInput
                             id="security-current-password"
-                            type="password"
                             autoComplete="current-password"
                             aria-invalid={Boolean(errors.currentPassword)}
                             aria-describedby={
@@ -148,9 +148,8 @@ export default function ProfileSecurity() {
                             <label htmlFor="security-new-password" className="font-semibold">
                                 New Password
                             </label>
-                            <input
+                            <PasswordInput
                                 id="security-new-password"
-                                type="password"
                                 autoComplete="new-password"
                                 aria-invalid={Boolean(errors.newPassword)}
                                 aria-describedby={
@@ -172,9 +171,8 @@ export default function ProfileSecurity() {
                             <label htmlFor="security-confirm-password" className="font-semibold">
                                 Confirm New Password
                             </label>
-                            <input
+                            <PasswordInput
                                 id="security-confirm-password"
-                                type="password"
                                 autoComplete="new-password"
                                 aria-invalid={Boolean(errors.confirmPassword)}
                                 aria-describedby={

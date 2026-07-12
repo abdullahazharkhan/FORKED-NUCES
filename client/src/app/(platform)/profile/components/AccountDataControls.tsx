@@ -15,6 +15,7 @@ import {
 } from "@/lib/authFormResponse";
 import { useAuthStore } from "@/stores";
 import { MAX_PASSWORD_INPUT_LENGTH } from "@/lib/authValidation";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const deletionSchema = z.object({
     currentPassword: z
@@ -172,9 +173,8 @@ export default function AccountDataControls() {
                             <label htmlFor="delete-current-password" className="font-semibold">
                                 Current Password
                             </label>
-                            <input
+                            <PasswordInput
                                 id="delete-current-password"
-                                type="password"
                                 autoComplete="current-password"
                                 autoFocus
                                 aria-invalid={Boolean(errors.currentPassword)}

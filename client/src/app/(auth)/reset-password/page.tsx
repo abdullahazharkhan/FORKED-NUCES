@@ -19,6 +19,7 @@ import {
     newPasswordSchema,
 } from "@/lib/authValidation";
 import { useAuthStore } from "@/stores";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const resetPasswordSchema = z
     .object({
@@ -146,9 +147,8 @@ function ResetPasswordFormContent() {
                     <label htmlFor="reset-new-password" className="text-lg font-semibold">
                         New Password
                     </label>
-                    <input
+                    <PasswordInput
                         id="reset-new-password"
-                        type="password"
                         autoComplete="new-password"
                         aria-invalid={Boolean(errors.newPassword)}
                         aria-describedby={
@@ -170,9 +170,8 @@ function ResetPasswordFormContent() {
                     <label htmlFor="reset-confirm-password" className="text-lg font-semibold">
                         Confirm New Password
                     </label>
-                    <input
+                    <PasswordInput
                         id="reset-confirm-password"
-                        type="password"
                         autoComplete="new-password"
                         aria-invalid={Boolean(errors.confirmPassword)}
                         aria-describedby={

@@ -8,13 +8,27 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { registerUser } from "@/lib/authClient";
-import { newPasswordSchema, nuEmailSchema } from "@/lib/authValidation";
+import {
+    MAX_PASSWORD_INPUT_LENGTH,
+    newPasswordSchema,
+    nuEmailSchema,
+} from "@/lib/authValidation";
+import { PasswordInput } from "@/components/PasswordInput";
 
-const getStartedSchema = z.object({
-    fullName: z.string().min(1, "Full Name is required"),
-    nuemail: nuEmailSchema,
-    password: newPasswordSchema,
-});
+const getStartedSchema = z
+    .object({
+        fullName: z.string().min(1, "Full Name is required"),
+        nuemail: nuEmailSchema,
+        password: newPasswordSchema,
+        confirmPassword: z
+            .string()
+            .min(1, "Please confirm your password")
+            .max(MAX_PASSWORD_INPUT_LENGTH),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+    });
 
 type GetStartedForm = z.infer<typeof getStartedSchema>;
 
@@ -76,6 +90,7 @@ const GetStarted = () => {
                 full_name: data.fullName,
                 nu_email: data.nuemail,
                 password: data.password,
+                confirm_password: data.confirmPassword,
             };
             return await registerUser(payload);
         },
@@ -193,8 +208,7 @@ const GetStarted = () => {
                     <label htmlFor="password" className="font-semibold text-lg">
                         Password
                     </label>
-                    <input
-                        type="password"
+                    <PasswordInput
                         id="password"
                         autoComplete="new-password"
                         aria-invalid={Boolean(errors.password)}
@@ -207,6 +221,30 @@ const GetStarted = () => {
                     {errors.password && (
                         <p id="registration-password-error" className="text-sm text-red-500 mt-1">
                             {errors.password.message}
+                        </p>
+                    )}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="flex flex-col">
+                    <label htmlFor="confirmPassword" className="font-semibold text-lg">
+                        Confirm Password
+                    </label>
+                    <PasswordInput
+                        id="confirmPassword"
+                        autoComplete="new-password"
+                        aria-invalid={Boolean(errors.confirmPassword)}
+                        aria-describedby={
+                            errors.confirmPassword
+                                ? "registration-confirm-password-error"
+                                : undefined
+                        }
+                        {...register("confirmPassword")}
+                        className={getInputClass(errors.confirmPassword)}
+                    />
+                    {errors.confirmPassword && (
+                        <p id="registration-confirm-password-error" className="text-sm text-red-500 mt-1">
+                            {errors.confirmPassword.message}
                         </p>
                     )}
                 </div>
