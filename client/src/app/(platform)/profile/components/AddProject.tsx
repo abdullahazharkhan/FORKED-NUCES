@@ -6,7 +6,6 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdEditor } from "md-editor-rt";
-import "md-editor-rt/lib/style.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     AlertCircle,
@@ -20,18 +19,15 @@ import {
 } from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
 import { queryKeys } from "@/lib/queryKeys";
-import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
+import { untrustedMarkdownEditorProps } from "@/lib/markdownSecurity";
 import { PLATFORM_INPUT_CLASS } from "@/lib/platformStyles";
-
-const AVAILABLE_TAGS = [
-    "frontend",
-    "backend",
-    "fullstack",
-    "machine-learning",
-    "devops",
-    "mobile",
-] as const;
-type ProjectTag = (typeof AVAILABLE_TAGS)[number];
+import {
+    GITHUB_REPOSITORY_URL_ERROR,
+    GITHUB_REPOSITORY_URL_REGEX,
+    PROJECT_TAG_LABELS,
+    PROJECT_TAGS,
+    type ProjectTag,
+} from "@/lib/projectMetadata";
 
 const projectSchema = z.object({
     title: z.string().min(1, "Project title is required"),
@@ -41,17 +37,12 @@ const projectSchema = z.object({
         .max(10_000, "Description must be 10,000 characters or fewer"),
     github_url: z
         .string()
+        .trim()
         .min(1, "GitHub URL is required")
         .url("Please enter a valid URL")
-        .refine(
-            (value) =>
-                value.startsWith("https://github.com/") ||
-                value.startsWith("https://www.github.com/") ||
-                value.startsWith("http://github.com/"),
-            "URL must be a GitHub repository or profile link"
-        ),
+        .regex(GITHUB_REPOSITORY_URL_REGEX, GITHUB_REPOSITORY_URL_ERROR),
     tags: z
-        .array(z.enum(AVAILABLE_TAGS))
+        .array(z.enum(PROJECT_TAGS))
         .min(1, "Please select at least one tag"),
 });
 
@@ -289,6 +280,9 @@ const AddProject = () => {
                             type="url"
                             id="github_url"
                             inputMode="url"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck={false}
                             placeholder="https://github.com/you/project"
                             aria-invalid={shouldShowError("github_url")}
                             aria-describedby={
@@ -303,7 +297,7 @@ const AddProject = () => {
                             id="add-project-github-help"
                             className="mt-1.5 text-xs text-gray-500"
                         >
-                            Link directly to your public repository.
+                            Required format: https://github.com/username/project_name
                         </p>
                         {shouldShowError("github_url") && errors.github_url && (
                             <p
@@ -346,7 +340,7 @@ const AddProject = () => {
                                 }
                             >
                                 <MdEditor
-                                    {...untrustedMarkdownProps}
+                                    {...untrustedMarkdownEditorProps}
                                     editorId="add-project-description"
                                     language="en-US"
                                     modelValue={field.value || ""}
@@ -409,7 +403,7 @@ const AddProject = () => {
                                     }
                                     className="mt-3 flex flex-wrap gap-2"
                                 >
-                                    {AVAILABLE_TAGS.map((tag) => {
+                                    {PROJECT_TAGS.map((tag) => {
                                         const checked = value.includes(tag);
                                         return (
                                             <label
@@ -427,7 +421,7 @@ const AddProject = () => {
                                                         toggleTag(tag, e.target.checked)
                                                     }
                                                 />
-                                                <span>{tag}</span>
+                                                <span>{PROJECT_TAG_LABELS[tag]}</span>
                                             </label>
                                         );
                                     })}

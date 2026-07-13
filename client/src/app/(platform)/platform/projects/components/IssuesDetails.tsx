@@ -2,7 +2,6 @@ import React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdPreview, MdEditor } from "md-editor-rt";
-import "md-editor-rt/lib/style.css";
 import { z } from "zod";
 import {
     CheckCircle2,
@@ -19,7 +18,10 @@ import CloseIssueForm from "@/app/(platform)/components/CloseIssueForm";
 import { AccessibleDialog } from "@/app/(platform)/components/AccessibleDialog";
 import { ReportButton } from "@/app/(platform)/components/ReportButton";
 import { queryKeys } from "@/lib/queryKeys";
-import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
+import {
+    untrustedMarkdownEditorProps,
+    untrustedMarkdownPreviewProps,
+} from "@/lib/markdownSecurity";
 
 const MAX_ISSUES_PER_PROJECT = 100;
 
@@ -477,7 +479,7 @@ const IssuesDetails = ({
                                     }`}
                             >
                                 <MdEditor
-                                    {...untrustedMarkdownProps}
+                                    {...untrustedMarkdownEditorProps}
                                     editorId={`new-issue-${project.project_id ?? "p"}`}
                                     modelValue={newIssueDescription}
                                     onChange={(val) => {
@@ -491,7 +493,7 @@ const IssuesDetails = ({
                                     }}
                                     language="en-US"
                                     previewTheme="github"
-                                    style={{ height: 200 }}
+                                    style={{ height: 260 }}
                                 />
                             </div>
                             {issueErrors.description && (
@@ -693,7 +695,7 @@ const IssuesDetails = ({
                                         >
                                             <div className="p-4 sm:p-5">
                                                 <MdPreview
-                                                    {...untrustedMarkdownProps}
+                                                    {...untrustedMarkdownPreviewProps}
                                                     editorId={`issue-${project.project_id ?? "p"}-${issueId}`}
                                                     modelValue={
                                                         issue.description || ""

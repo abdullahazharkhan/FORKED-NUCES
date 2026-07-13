@@ -7,18 +7,16 @@ import { MdEditor } from "md-editor-rt";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
 import { queryKeys } from "@/lib/queryKeys";
-import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
+import { untrustedMarkdownEditorProps } from "@/lib/markdownSecurity";
+import {
+    GITHUB_REPOSITORY_URL_ERROR,
+    GITHUB_REPOSITORY_URL_REGEX,
+    PROJECT_TAG_LABELS,
+    PROJECT_TAGS,
+    type ProjectTag,
+} from "@/lib/projectMetadata";
 
-const AVAILABLE_TAGS = [
-    "frontend",
-    "backend",
-    "fullstack",
-    "machine-learning",
-    "devops",
-    "mobile",
-] as const;
-type ProjectTag = (typeof AVAILABLE_TAGS)[number];
-const availableTagSet = new Set<string>(AVAILABLE_TAGS);
+const availableTagSet = new Set<string>(PROJECT_TAGS);
 
 const editProjectSchema = z.object({
     title: z.string().min(1, "Title is required"),
@@ -28,17 +26,12 @@ const editProjectSchema = z.object({
         .max(10_000, "Description must be 10,000 characters or fewer"),
     github_url: z
         .string()
+        .trim()
         .min(1, "GitHub URL is required")
         .url("Please enter a valid URL")
-        .refine(
-            (value) =>
-                value.startsWith("https://github.com/") ||
-                value.startsWith("https://www.github.com/") ||
-                value.startsWith("http://github.com/"),
-            "URL must be a GitHub repository or profile link"
-        ),
+        .regex(GITHUB_REPOSITORY_URL_REGEX, GITHUB_REPOSITORY_URL_ERROR),
     tags: z
-        .array(z.enum(AVAILABLE_TAGS))
+        .array(z.enum(PROJECT_TAGS))
         .min(1, "Select at least one tag"),
 });
 
@@ -172,13 +165,13 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
                             className={`overflow-hidden rounded-xl border bg-white ${errors.description ? "border-red-500" : "border-black/15"}`}
                         >
                             <MdEditor
-                                {...untrustedMarkdownProps}
+                                {...untrustedMarkdownEditorProps}
                                 editorId="edit-project-description"
                                 language="en-US"
                                 modelValue={field.value}
                                 onChange={field.onChange}
                                 previewTheme="github"
-                                style={{ height: "160px" }}
+                                style={{ height: "260px" }}
                             />
                         </div>
                     )}
@@ -198,15 +191,25 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
                 <input
                     id="edit-project-github-url"
                     type="url"
+                    inputMode="url"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    placeholder="https://github.com/username/project_name"
                     aria-invalid={Boolean(errors.github_url)}
                     aria-describedby={
                         errors.github_url
                             ? "edit-project-github-url-error"
-                            : undefined
+                            : "edit-project-github-url-help"
                     }
                     {...register("github_url")}
                     className={getInputClass(errors.github_url)}
                 />
+                {!errors.github_url && (
+                    <p id="edit-project-github-url-help" className="text-xs text-black/50">
+                        Required format: https://github.com/username/project_name
+                    </p>
+                )}
                 {errors.github_url && (
                     <p id="edit-project-github-url-error" className="text-xs font-medium text-red-600">
                         {errors.github_url.message}
@@ -243,7 +246,7 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
                                 }
                                 className="flex flex-wrap gap-2"
                             >
-                                {AVAILABLE_TAGS.map((tag) => {
+                                {PROJECT_TAGS.map((tag) => {
                                     const checked = value.includes(tag);
                                     return (
                                         <label
@@ -259,7 +262,7 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
                                                 checked={checked}
                                                 onChange={(e) => toggleTag(tag, e.target.checked)}
                                             />
-                                            <span>{tag}</span>
+                                            <span>{PROJECT_TAG_LABELS[tag]}</span>
                                         </label>
                                     );
                                 })}

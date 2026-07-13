@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { ArrowUpRight, CircleDot, Heart, SearchX } from "lucide-react";
 
+import { UserAvatar } from "./UserAvatar";
+
 export type ProjectSummary = {
     issues?: Array<{ status?: string }>;
     open_issues?: number;
@@ -10,6 +12,7 @@ export type ProjectSummary = {
     likes_count?: number;
     owner_full_name?: string;
     owner_nu_email?: string;
+    owner_avatar_url?: string | null;
     project_id: number;
     tags?: Array<{ tag: string }>;
     title: string;
@@ -94,8 +97,13 @@ const ProjectCard = ({
                                 <div className="h-7 w-16 rounded-full bg-primarypurple/10" />
                             </div>
                             <div className="mt-8 border-t border-black/[0.06] pt-5">
-                                <div className="h-4 w-2/5 rounded bg-black/10" />
-                                <div className="mt-2 h-3 w-3/5 rounded bg-black/[0.06]" />
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 shrink-0 rounded-full bg-black/10" />
+                                    <div className="flex-1">
+                                        <div className="h-4 w-2/5 rounded bg-black/10" />
+                                        <div className="mt-2 h-3 w-3/5 rounded bg-black/[0.06]" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -179,9 +187,11 @@ const ProjectCard = ({
 
                                 <div className="mt-auto flex items-end justify-between gap-4 border-t border-black/[0.06] pt-5">
                                     <div className="flex min-w-0 items-center gap-3">
-                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black text-xs font-black text-primarygreen">
-                                            {ownerName.charAt(0).toUpperCase()}
-                                        </span>
+                                        <UserAvatar
+                                            avatarUrl={project.owner_avatar_url ?? null}
+                                            name={ownerName}
+                                            size="sm"
+                                        />
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-bold text-black/75">{ownerName}</p>
                                             <p className="truncate text-xs text-black/40">

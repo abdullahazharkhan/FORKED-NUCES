@@ -5,6 +5,7 @@ import { passthroughImageLoader } from "@/lib/passthroughImageLoader";
 const avatarSizes = {
     lg: { className: "h-16 w-16 text-2xl", pixels: 64 },
     md: { className: "h-12 w-12 text-lg", pixels: 48 },
+    sm: { className: "h-10 w-10 text-sm", pixels: 40 },
 } as const;
 
 type UserAvatarProps = {

@@ -8,7 +8,6 @@ import { authFetch } from "@/lib/authFetch";
 import { useAuthStore } from "@/stores";
 import EditProjectForm from "../../../components/EditProjectForm";
 import { MdPreview } from "md-editor-rt";
-import "md-editor-rt/lib/style.css";
 import IssuesDetails from "./IssuesDetails";
 import ProjectCollaborators from "./ProjectCollaborators";
 import ProjectComments from "./ProjectComments";
@@ -26,7 +25,7 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { AccessibleDialog } from "@/app/(platform)/components/AccessibleDialog";
 import { ReportButton } from "@/app/(platform)/components/ReportButton";
-import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
+import { untrustedMarkdownPreviewProps } from "@/lib/markdownSecurity";
 
 type ProjectDetailsData = {
     project_id: number;
@@ -418,7 +417,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                     </div>
                     <div className="overflow-hidden rounded-2xl border border-black/[0.07] bg-[#fbfaff] p-3 sm:p-5">
                         <MdPreview
-                            {...untrustedMarkdownProps}
+                            {...untrustedMarkdownPreviewProps}
                             editorId={`project-description-${project.project_id ?? "preview"}`}
                             modelValue={project.description || ""}
                             previewTheme="github"

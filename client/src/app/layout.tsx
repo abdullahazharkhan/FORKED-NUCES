@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins, Jaro } from "next/font/google";
 import { Providers } from "./providers";
+import "md-editor-rt/lib/style.css";
 import "./globals.css";
 
 const geistSans = Geist({

@@ -8,7 +8,7 @@ import { MdEditor } from "md-editor-rt";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "@/lib/authFetch";
 import { queryKeys } from "@/lib/queryKeys";
-import { untrustedMarkdownProps } from "@/lib/markdownSecurity";
+import { untrustedMarkdownEditorProps } from "@/lib/markdownSecurity";
 
 const editIssueSchema = z.object({
     title: z
@@ -148,13 +148,13 @@ const EditIssueForm = ({
                             className={`overflow-hidden rounded-xl border bg-white ${errors.description ? "border-red-500" : "border-black/15"}`}
                         >
                             <MdEditor
-                                {...untrustedMarkdownProps}
+                                {...untrustedMarkdownEditorProps}
                                 editorId="edit-issue-description"
                                 language="en-US"
                                 modelValue={field.value}
                                 onChange={field.onChange}
                                 previewTheme="github"
-                                style={{ height: "180px" }}
+                                style={{ height: "260px" }}
                             />
                         </div>
                     )}

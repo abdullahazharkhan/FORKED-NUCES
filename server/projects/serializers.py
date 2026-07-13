@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 from django.db import transaction
 
@@ -11,6 +13,19 @@ MAX_ISSUE_DESCRIPTION_LENGTH = 10_000
 MAX_PROJECT_DESCRIPTION_LENGTH = 10_000
 MAX_CLOSE_COLLABORATORS = 50
 MAX_PROJECT_TAGS = 25
+GITHUB_REPOSITORY_URL_PATTERN = re.compile(
+	r"https://github\.com/[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/[A-Za-z0-9._-]{1,100}"
+)
+GITHUB_REPOSITORY_URL_ERROR = (
+	"Use the format https://github.com/<username>/<project_name>."
+)
+
+
+class GitHubRepositoryUrlValidationMixin:
+	def validate_github_url(self, value):
+		if GITHUB_REPOSITORY_URL_PATTERN.fullmatch(value) is None:
+			raise serializers.ValidationError(GITHUB_REPOSITORY_URL_ERROR)
+		return value
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -98,7 +113,7 @@ class ProjectDetailSerializer(ProjectSerializer):
 		fields = [*ProjectSerializer.Meta.fields, "issues"]
 		read_only_fields = [*ProjectSerializer.Meta.read_only_fields, "issues"]
 
-class ProjectCreateSerializer(serializers.ModelSerializer):
+class ProjectCreateSerializer(GitHubRepositoryUrlValidationMixin, serializers.ModelSerializer):
 	description = serializers.CharField(max_length=MAX_PROJECT_DESCRIPTION_LENGTH)
 	tags = EarlyBoundedListField(
 		child=serializers.CharField(max_length=100),
@@ -126,7 +141,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 		return project
 
 
-class ProjectUpdateSerializer(serializers.ModelSerializer):
+class ProjectUpdateSerializer(GitHubRepositoryUrlValidationMixin, serializers.ModelSerializer):
 	description = serializers.CharField(max_length=MAX_PROJECT_DESCRIPTION_LENGTH)
 	tags = EarlyBoundedListField(
 		child=serializers.CharField(max_length=100),
@@ -449,5 +464,4 @@ class IssueWithCollaboratorsSerializer(serializers.ModelSerializer):
 			}
 			for user in users
 		]
-
 

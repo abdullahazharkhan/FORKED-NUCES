@@ -30,6 +30,7 @@ type RecommendationProject = {
     title: string;
     owner_full_name: string;
     owner_nu_email: string;
+    owner_avatar_url?: string | null;
     created_at?: string;
     updated_at?: string;
     likes_count?: number;

@@ -110,13 +110,27 @@ body {
   }
 }
 
-.md-editor {
-  --md-color: var(--color-primarypurple) !important;
-  --md-hover-color: blue !important;
-  --md-bk-color: transparent !important;
-  --md-border-color: var(--color-primarypurple) !important;
+.md-editor,
+.md-editor-modal-container {
+  --md-color: #26222f;
+  --md-hover-color: #6f43fe;
+  --md-bk-color: #ffffff;
+  --md-bk-color-outstand: #f3efff;
+  --md-bk-hover-color: #f7f5ff;
+  --md-border-color: rgba(20, 16, 30, 0.12);
+  --md-border-hover-color: rgba(111, 67, 254, 0.45);
+  --md-border-active-color: #6f43fe;
+  --md-scrollbar-bg-color: #f0edf5;
+  --md-scrollbar-thumb-color: rgba(111, 67, 254, 0.3);
+  --md-scrollbar-thumb-hover-color: rgba(111, 67, 254, 0.45);
+  --md-scrollbar-thumb-active-color: rgba(111, 67, 254, 0.55);
 }
 
-.md-editor-custom-scrollbar__track {
-  background-color: var(--color-primarypurple) !important;
+.md-editor {
+  border: 0;
+  font-family: var(--font-poppins);
+}
+
+.md-editor-toolbar-wrapper {
+  background: #fbfaff;
 }

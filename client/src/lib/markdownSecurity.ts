@@ -1,4 +1,4 @@
-import { config } from "md-editor-rt";
+import { config, type ToolbarNames } from "md-editor-rt";
 import sanitizeHtml from "sanitize-html";
 
 type MarkdownItLike = {
@@ -58,10 +58,21 @@ export function sanitizeMarkdownHtml(html: string): string {
     });
 }
 
-export const untrustedMarkdownProps = {
+export const untrustedMarkdownPreviewProps = {
     noEcharts: true,
     noHighlight: true,
     noKatex: true,
     noMermaid: true,
     sanitize: sanitizeMarkdownHtml,
 } as const;
+
+const markdownToolbarExclusions: ToolbarNames[] = ["fullscreen"];
+
+export const untrustedMarkdownEditorProps = {
+    ...untrustedMarkdownPreviewProps,
+    // These optional tools otherwise download scripts and styles at runtime,
+    // which is intentionally blocked by the application's CSP.
+    noPrettier: true,
+    noUploadImg: true,
+    toolbarsExclude: markdownToolbarExclusions,
+};
