@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useId, useRef } from "react";
+import React, { useEffect, useId, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 const FOCUSABLE_SELECTOR = [
@@ -11,6 +12,8 @@ const FOCUSABLE_SELECTOR = [
     "textarea:not([disabled])",
     "[tabindex]:not([tabindex='-1'])",
 ].join(",");
+
+const subscribeToClientRuntime = () => () => {};
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
     return Array.from(
@@ -41,6 +44,12 @@ export function AccessibleDialog({
     const onCloseRef = useRef(onClose);
     const closeDisabledRef = useRef(closeDisabled);
     const titleId = useId();
+    const isClient = useSyncExternalStore(
+        subscribeToClientRuntime,
+        () => true,
+        () => false
+    );
+    const portalTarget = isClient ? document.body : null;
 
     useEffect(() => {
         onCloseRef.current = onClose;
@@ -107,7 +116,7 @@ export function AccessibleDialog({
             document.body.style.overflow = previousOverflow;
             if (previouslyFocused?.isConnected) previouslyFocused.focus();
         };
-    }, []);
+    }, [portalTarget]);
 
     const handleBackdropMouseDown = (
         event: React.MouseEvent<HTMLDivElement>
@@ -120,9 +129,11 @@ export function AccessibleDialog({
         }
     };
 
-    return (
+    if (!portalTarget) return null;
+
+    return createPortal(
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#0d0b12]/70 px-4 py-5 backdrop-blur-sm sm:py-8"
+            className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-[#0d0b12]/70 px-4 py-5 backdrop-blur-sm sm:py-8"
             onMouseDown={handleBackdropMouseDown}
         >
             <div
@@ -154,6 +165,7 @@ export function AccessibleDialog({
                 </div>
                 {children}
             </div>
-        </div>
+        </div>,
+        portalTarget
     );
 }
