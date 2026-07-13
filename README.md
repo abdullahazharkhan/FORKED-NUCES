@@ -34,15 +34,15 @@ Only users with a **`@nu.edu.pk` email** can register. Once verified, students c
 Browser (HTTPS)
   -> Vercel / Next.js 16 BFF (HTTP-only auth cookies)
   -> HTTPS API domain
-  -> Caddy (TLS termination)
+  -> External TLS terminator / load balancer
   -> Gunicorn / Django REST Framework
   -> Django ORM -> PostgreSQL 16
                 -> Redis 7 (shared cache and throttling)
 ```
 
-Only Caddy publishes public ports `80` and `443`. Gunicorn is bound to host
-loopback for local diagnostics and is otherwise reached through the private
-Compose network. PostgreSQL and Redis are never published to the host.
+Compose publishes Gunicorn on the configured backend port. Production deployments
+must restrict that port to a trusted external TLS terminator or load balancer.
+PostgreSQL and Redis are never published to the host.
 
 ---
 
@@ -55,7 +55,7 @@ Compose network. PostgreSQL and Redis are never published to the host.
 | ⚡ **Redis Rate Limiting** | Shared throttling across all workers — accurate at scale |
 | 🛡️ **Secure Auth** | Session-versioned JWTs, rotating refresh tokens, password recovery, and global revocation |
 | 🗄️ **ORM Data Layer** | Django ORM queries, annotations, and transactions with no hand-written runtime SQL |
-| 🐳 **Hardened Containers** | Non-root backend, health-gated startup, private data network, and automatic HTTPS |
+| 🐳 **Hardened Containers** | Non-root backend, health-gated startup, and a private data network |
 | 📧 **Branded Emails** | HTML verification emails via Gmail SMTP |
 | ⚛️ **Atomic Transactions** | All multi-step operations roll back on failure |
 
@@ -80,8 +80,7 @@ Compose network. PostgreSQL and Redis are never published to the host.
 | **PostgreSQL 16** | Relational database managed through Django models and migrations |
 | **Redis 7** | Rate limiting store + cache backend |
 | **Gunicorn** | Production WSGI server |
-| **Docker + Docker Compose** | Backend, migration/static jobs, PostgreSQL, Redis, and Caddy |
-| **Caddy** | Automatic TLS and reverse proxy; Gunicorn is not public |
+| **Docker + Docker Compose** | Backend, migration/static jobs, PostgreSQL, and Redis |
 | **Vercel** | Frontend CDN hosting |
 | **Gmail SMTP** | Transactional emails |
 
@@ -145,7 +144,7 @@ Compose network. PostgreSQL and Redis are never published to the host.
 
 ## 🔌 API Endpoints
 
-> **Base URL:** `https://api.example.com` (replace with your configured `API_DOMAIN`)
+> **Base URL:** `https://api.example.com` (replace with your external API endpoint)
 
 ### Auth — `/api/auth/`
 | Method | Endpoint | Auth | Description |
@@ -256,7 +255,7 @@ runtime SQL to provision separately.
 - **Owner-only mutations** — edit/delete enforced in every view
 - **BFF boundary** — the browser calls same-origin Next.js routes; only the BFF calls the HTTPS API
 - **CORS/CSRF allowlists** — explicit deployment environment variables, never wildcards
-- **TLS-only production path** — Caddy terminates HTTPS and Gunicorn stays private
+- **TLS-only production path** — the hosting platform or an external load balancer terminates HTTPS
 - **`DEBUG=False` in production** — no stack traces exposed
 - **Atomic transactions** — registration, project creation, issue closure, likes all roll back on failure
 - **Consent locking** — collaborator attribution re-checks accepted requests under consistent database locks
@@ -350,7 +349,7 @@ migration, seeds a disposable verified user, starts both servers, and retains
 Playwright traces/screenshots/video only when a test fails.
 
 The CI matrix also checks a clean PostgreSQL migration, Django deployment
-settings, dependency advisories, Compose/Caddy configuration, a non-root image,
+settings, dependency advisories, Compose configuration, a non-root image,
 and the production Next.js build.
 
 ---
@@ -376,10 +375,8 @@ Important variables:
 | `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS` | Exact HTTPS frontend/API origins |
 | `FRONTEND_BASE_URL` | Public HTTPS frontend used in verification links |
 | `EMAIL_*` | SMTP provider settings; console email is development-only |
-| `API_DOMAIN` | Public API hostname for Caddy certificates and routing |
 | `DRF_API_BASE_URL` | Server-only HTTPS API URL used by Next.js BFF routes |
-| `BACKUP_DIR`, `BACKUP_RETENTION_DAYS` | Host backup destination and rotation policy |
-| `BACKUP_MIRROR_DIR` | Separately mounted/off-host backup mirror destination |
+| `BACKEND_HOST_PORT` | Host port published by Gunicorn; restrict it to the trusted TLS endpoint in production |
 
 No Django URL or access token is exposed through a `NEXT_PUBLIC_*` variable.
 Production startup rejects missing secrets and unsafe HTTP/development settings.
@@ -393,27 +390,23 @@ For local containers, copy `.env.example` to `.env`, generate `SECRET_KEY`, set
 docker compose up --build
 ```
 
-The API is available only on `http://127.0.0.1:8000` for local diagnostics.
+The API is available on `http://localhost:8000` by default. Because the port is
+published on all interfaces, use a host firewall when access should stay local.
 
 For production, store the populated production template outside the repository
-and start the `production` profile:
+and configure an external HTTPS endpoint:
 
 ```bash
 sudo install -m 600 .env.production.example /etc/forked-nuces/production.env
-# Edit every placeholder, point API_DOMAIN DNS at this host, then:
+# Edit every placeholder and configure the external endpoint, then:
 docker compose \
   --env-file /etc/forked-nuces/production.env \
-  --profile production \
   up -d --build
 ```
 
-Caddy obtains and renews TLS certificates. Database migrations and static-file
-collection run as health-gated one-shot services before Gunicorn starts. See
-[`DEPLOYMENT.md`](DEPLOYMENT.md) for backup, health, upgrade, and rollback steps.
-
-The production runbook includes an atomic, checksummed `pg_dump` script and a
-daily systemd timer. A real restore drill remains mandatory; archive parsing is
-only the fast per-backup integrity gate.
+TLS and certificate renewal are the responsibility of the external endpoint.
+Database migrations and static-file collection run as health-gated one-shot
+services before Gunicorn starts.
 
 ---
 
@@ -442,9 +435,6 @@ FORKED-NUCES/
 │   ├── drf_backend/               # Settings, root URLs, WSGI
 │   └── gunicorn.conf.py           # Tunable production process settings
 │
-├── Caddyfile                      # Automatic HTTPS reverse proxy
-├── DEPLOYMENT.md                  # Production operations runbook
-├── ops/                            # Backup script and systemd timer
 └── docker-compose.yml             # Health-gated production/local topology
 ```
 

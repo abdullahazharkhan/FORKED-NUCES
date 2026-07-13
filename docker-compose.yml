@@ -133,10 +133,10 @@ services:
     restart: unless-stopped
     expose:
       - "8000"
-    # Loopback-only publishing keeps local development convenient without
-    # exposing Gunicorn directly to the public internet.
+    # Publish Gunicorn directly. In production, restrict this port at the
+    # firewall to the trusted external TLS terminator/load balancer.
     ports:
-      - "127.0.0.1:${BACKEND_HOST_PORT:-8000}:8000"
+      - "${BACKEND_HOST_PORT:-8000}:8000"
     volumes:
       - static_data:/app/staticfiles:ro
     depends_on:
@@ -161,32 +161,6 @@ services:
       start_period: 30s
     stop_grace_period: 45s
 
-  caddy:
-    image: caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
-    profiles: ["production"]
-    restart: unless-stopped
-    environment:
-      API_DOMAIN: ${API_DOMAIN:-localhost}
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    read_only: true
-    tmpfs:
-      - /tmp:size=32m,mode=1777
-    security_opt:
-      - no-new-privileges:true
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - app
-    logging: *default-logging
-
 networks:
   app:
   data:
@@ -195,5 +169,3 @@ networks:
 volumes:
   postgres_data:
   static_data:
-  caddy_data:
-  caddy_config:

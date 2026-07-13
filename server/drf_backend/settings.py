@@ -319,7 +319,7 @@ if PRODUCTION and not ALLOW_INSECURE_PRODUCTION:
 # Allow cookies/auth if needed (adjust in production as required)
 CORS_ALLOW_CREDENTIALS = True
 
-# Caddy terminates TLS and forwards the original scheme with this header.
+# Trust the standard scheme header from the deployment's TLS terminator.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = env_bool("USE_X_FORWARDED_HOST", PRODUCTION)
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", PRODUCTION)

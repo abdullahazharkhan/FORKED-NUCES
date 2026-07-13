@@ -153,19 +153,16 @@ jobs:
           npm audit --audit-level=high
 
   container:
-    name: Container and proxy config
+    name: Container config
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Validate backup automation syntax
-        run: bash -n ops/backup-postgres.sh
       - name: Validate Compose interpolation
         env:
           ENVIRONMENT: production
           DB_PASSWORD: ci-database-password
           SECRET_KEY: ci-only-not-a-production-secret-7cda7cfd467a4d61b46e348d84e9042c
-          API_DOMAIN: api.example.com
           ALLOWED_HOSTS: api.example.com
           CORS_ALLOWED_ORIGINS: https://app.example.com
           CSRF_TRUSTED_ORIGINS: https://app.example.com,https://api.example.com
@@ -178,14 +175,7 @@ jobs:
           CSRF_COOKIE_SECURE: "True"
           SECURE_HSTS_SECONDS: "31536000"
           SECURE_HSTS_INCLUDE_SUBDOMAINS: "True"
-        run: docker compose --profile production config --quiet
-      - name: Validate Caddy configuration
-        run: >-
-          docker run --rm
-          --env API_DOMAIN=api.example.com
-          --volume "${PWD}/Caddyfile:/etc/caddy/Caddyfile:ro"
-          caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
-          caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+        run: docker compose config --quiet
       - name: Build backend image
         run: docker build --tag forked-nuces-backend:ci ./server
       - name: Verify non-root runtime and excluded secrets
