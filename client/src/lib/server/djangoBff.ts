@@ -42,10 +42,6 @@ export function getDjangoBaseUrl(): string {
         throw new DjangoUpstreamError(502, "The backend service URL is invalid.");
     }
 
-    if (process.env.NODE_ENV === "production" && url.protocol !== "https:") {
-        throw new DjangoUpstreamError(502, "The backend service must use HTTPS in production.");
-    }
-
     return url.toString().replace(/\/$/, "");
 }
 
