@@ -101,13 +101,25 @@ const Navbar = () => {
         <>
             <nav
                 aria-label="Primary navigation"
-                className={`fixed left-0 right-0 top-0 z-50 font-poppins transition-all duration-300 ${
-                    solidNavigation
-                        ? "border-b border-white/10 bg-primarypurple/90 shadow-[0_8px_30px_rgba(22,9,60,0.12)] backdrop-blur-xl supports-[backdrop-filter]:bg-primarypurple/85"
-                        : "bg-transparent"
-                }`}
+                className="fixed inset-x-0 top-0 z-50 h-20 font-poppins"
             >
-                <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
+                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
+                    <div
+                        className={`h-20 transition-[width,transform,border-radius,background-color,box-shadow,backdrop-filter] duration-300 ease-out motion-reduce:transition-none ${
+                            scrolled
+                                ? "w-[calc(100%-1.5rem)] max-w-7xl translate-y-3 rounded-2xl bg-primarypurple/90 shadow-[0_12px_40px_rgba(22,9,60,0.24)] backdrop-blur-xl supports-[backdrop-filter]:bg-primarypurple/85 sm:w-[calc(100%-2.5rem)]"
+                                : solidNavigation
+                                  ? "w-full rounded-none bg-primarypurple/90 shadow-[0_8px_30px_rgba(22,9,60,0.12)] backdrop-blur-xl supports-[backdrop-filter]:bg-primarypurple/85"
+                                  : "w-full rounded-none bg-transparent"
+                        }`}
+                    />
+                </div>
+
+                <div
+                    className={`relative mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 transition-transform duration-300 ease-out motion-reduce:transition-none sm:px-8 ${
+                        scrolled ? "translate-y-3" : "translate-y-0"
+                    }`}
+                >
                     <div className="flex items-center gap-9">
                         <Link
                             href="/"

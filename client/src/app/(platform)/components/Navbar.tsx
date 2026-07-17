@@ -37,12 +37,20 @@ const Navbar = () => {
     const queryClient = useQueryClient();
     const user = useAuthStore((state) => state.user);
     const clearUser = useAuthStore((state) => state.clearUser);
+    const [scrolled, setScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
     const profileButtonRef = useRef<HTMLButtonElement>(null);
     const mobileToggleRef = useRef<HTMLButtonElement>(null);
     const mobileDrawerRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 10);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -132,8 +140,25 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-primarypurple/90 text-white shadow-[0_8px_30px_rgba(22,9,60,0.16)] backdrop-blur-xl">
-                <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
+            <nav
+                aria-label="Primary navigation"
+                className="fixed inset-x-0 top-0 z-50 h-20 text-white"
+            >
+                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
+                    <div
+                        className={`h-20 bg-primarypurple/90 backdrop-blur-xl transition-[width,transform,border-radius,box-shadow] duration-300 ease-out motion-reduce:transition-none supports-[backdrop-filter]:bg-primarypurple/85 ${
+                            scrolled
+                                ? "w-[calc(100%-1.5rem)] max-w-7xl translate-y-3 rounded-2xl shadow-[0_12px_40px_rgba(22,9,60,0.24)] sm:w-[calc(100%-2.5rem)]"
+                                : "w-full translate-y-0 rounded-none shadow-[0_8px_30px_rgba(22,9,60,0.16)]"
+                        }`}
+                    />
+                </div>
+
+                <div
+                    className={`relative mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 transition-transform duration-300 ease-out motion-reduce:transition-none sm:px-8 ${
+                        scrolled ? "translate-y-3" : "translate-y-0"
+                    }`}
+                >
                     <div className="flex min-w-0 items-center gap-8">
                         <Link href="/platform" aria-label="FORKED NUCES dashboard" className="flex shrink-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
                             <Image src="/logos/forkednuces-logo-bw-invert.png" alt="" width={44} height={44} className="h-10 w-10 rounded-xl" />

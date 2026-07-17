@@ -38,7 +38,7 @@ export function getDjangoBaseUrl(): string {
     let url: URL;
     try {
         url = new URL(raw);
-    } catch {
+    } catch {   
         throw new DjangoUpstreamError(502, "The backend service URL is invalid.");
     }
 
