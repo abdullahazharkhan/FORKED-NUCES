@@ -178,30 +178,25 @@ const AddProject = () => {
         isError = true;
     } else if (createProjectMutation.isSuccess) {
         const result = createProjectMutation.data as { message?: string } | undefined;
-        message = result?.message || "Project created successfully!";
+        message = result?.message || "Project created successfully.";
         isError = false;
     }
 
     return (
         <section
-            className="relative isolate my-6 overflow-hidden rounded-[2rem] border border-primarypurple/15 bg-[#fbfaff] p-5 shadow-[0_22px_70px_rgba(24,15,48,0.08)] sm:p-7 lg:p-8"
+            className="relative isolate my-6 overflow-hidden border-y border-primarypurple/20 bg-white/80 p-5 sm:p-7 lg:p-8"
             aria-labelledby="add-project-heading"
         >
             <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primarypurple via-primarygreen to-primarypurple"
+                className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primarygreen"
                 aria-hidden="true"
             />
-            <div
-                className="pointer-events-none absolute -right-24 -top-24 -z-10 h-64 w-64 rounded-full bg-primarypurple/10 blur-3xl"
-                aria-hidden="true"
-            />
-
             <div className="mb-7 flex items-start gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarypurple text-white shadow-[0_12px_28px_rgba(111,67,254,0.25)]">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primarypurple text-white">
                     <FolderPlus className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
-                    <p className="text-[0.68rem] font-black uppercase tracking-[0.2em] text-primarypurple">
+                    <p className="font-mono text-[0.68rem] font-black tracking-[0.17em] text-primarypurple">
                         Share your work
                     </p>
                     <h2
@@ -222,7 +217,7 @@ const AddProject = () => {
                 onSubmit={handleSubmit(onSubmit)}
                 aria-busy={createProjectMutation.isPending}
             >
-                <div className="grid gap-5 rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_10px_30px_rgba(24,15,48,0.04)] sm:p-5 lg:grid-cols-2">
+                <div className="grid gap-5 border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5 lg:grid-cols-2">
                     {/* Project Title */}
                     <div className="flex flex-col">
                         <label
@@ -311,7 +306,7 @@ const AddProject = () => {
                 </div>
 
                 {/* Description (Markdown editor) */}
-                <div className="rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_10px_30px_rgba(24,15,48,0.04)] sm:p-5">
+                <div className="border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5">
                     <p
                         id="add-project-description-label"
                         className="flex items-center gap-2 text-sm font-bold text-gray-800"
@@ -345,7 +340,7 @@ const AddProject = () => {
                                     language="en-US"
                                     modelValue={field.value || ""}
                                     onChange={field.onChange}
-                                    className="mt-3 overflow-hidden rounded-2xl border border-black/10 bg-white"
+                                    className="mt-3 overflow-hidden rounded-md border border-black/10 bg-white"
                                     theme="light"
                                     previewTheme="github"
                                     style={{ height: "320px" }}
@@ -364,7 +359,7 @@ const AddProject = () => {
                 </div>
 
                 {/* Tags (multi-select, design only changed here) */}
-                <div className="rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_10px_30px_rgba(24,15,48,0.04)] sm:p-5">
+                <div className="border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5">
                     <p
                         id="add-project-tags-label"
                         className="flex items-center gap-2 text-sm font-bold text-gray-800"
@@ -408,8 +403,8 @@ const AddProject = () => {
                                         return (
                                             <label
                                                 key={tag}
-                                                className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-3.5 text-xs font-bold transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primarypurple ${checked
-                                                    ? "border-primarypurple bg-primarypurple text-white shadow-[0_6px_16px_rgba(111,67,254,0.2)]"
+                                                className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-sm border px-3.5 text-xs font-bold transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primarypurple ${checked
+                                                    ? "border-primarypurple bg-primarypurple text-white"
                                                     : "border-black/10 bg-[#f8f7fb] text-gray-600 hover:border-primarypurple/30 hover:text-primarypurple"
                                                     }`}
                                             >
@@ -444,7 +439,7 @@ const AddProject = () => {
                         You can edit project details later from its project page.
                     </p>
                     <Button
-                        className="min-h-12 w-full bg-primarypurple px-6 font-bold text-white shadow-[0_10px_26px_rgba(111,67,254,0.24)] sm:w-auto"
+                        className="min-h-12 w-full rounded-md bg-primarypurple px-6 font-bold text-white shadow-none sm:w-auto"
                         type="submit"
                         isDisabled={!isValid || createProjectMutation.isPending}
                         startContent={
@@ -458,7 +453,7 @@ const AddProject = () => {
                             )
                         }
                     >
-                        {createProjectMutation.isPending ? "Adding..." : "Add Project"}
+                        {createProjectMutation.isPending ? "Adding..." : "Add project"}
                     </Button>
                 </div>
 

@@ -5,23 +5,23 @@ import "md-editor-rt/lib/style.css";
 import "./globals.css";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
+  variable: "--font-geist-face",
   subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-geist-mono-face",
   subsets: ["latin"],
 });
 
 const poppins = Poppins({
-  variable: "--font-poppins",
+  variable: "--font-poppins-face",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
 const jaro = Jaro({
-  variable: "--font-jaro",
+  variable: "--font-jaro-face",
   subsets: ["latin"],
 });
 
@@ -31,6 +31,16 @@ export const metadata: Metadata = {
     template: "%s | FORKED NUCES",
   },
   description: "Discover, share, and collaborate on student-built projects across FAST NUCES.",
+  openGraph: {
+    title: "FORKED NUCES",
+    description: "Discover, share, and collaborate on student-built projects across FAST NUCES.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "FORKED NUCES",
+    description: "Discover, share, and collaborate on student-built projects across FAST NUCES.",
+  },
 };
 
 export default function RootLayout({
@@ -44,7 +54,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${jaro.variable}`}
     >
       <body
-        className="bg-[#E8EAEC] font-poppins antialiased min-h-screen bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(4,178,217,0.3),rgba(255,255,255,0))]"
+        className="min-h-screen bg-[#E8EAEC] font-sans antialiased"
       >
         <Providers>
           {children}

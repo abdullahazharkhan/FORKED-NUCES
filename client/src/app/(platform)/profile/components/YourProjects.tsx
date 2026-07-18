@@ -70,7 +70,7 @@ const YourProjects = () => {
 
     return (
         <section
-            className="my-6 space-y-6 rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-7"
+            className="my-6 space-y-6 border-y border-black/15 bg-white/80 p-5 sm:p-7"
             aria-labelledby="your-projects-heading"
         >
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

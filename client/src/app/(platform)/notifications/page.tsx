@@ -9,7 +9,6 @@ import {
     Heart,
     MessageCircle,
     ShieldAlert,
-    Sparkles,
     UserRoundCheck,
 } from "lucide-react";
 import {
@@ -27,6 +26,7 @@ import {
 import { notificationQueryKeys } from "@/lib/engagementQueryKeys";
 import { readPaginatedArray } from "@/lib/pagination";
 import { getSafeInternalPath } from "@/lib/safeRedirect";
+import { PlatformPageHeader } from "../components/PlatformPageHeader";
 
 type NotificationItem = {
     notification_id: number;
@@ -146,53 +146,41 @@ export default function NotificationsPage() {
     const actionError = markRead.error ?? markAllRead.error;
 
     return (
-        <div className="relative isolate min-h-screen overflow-hidden px-5 py-8 sm:px-8 lg:py-12">
-            <div className="pointer-events-none absolute inset-0 -z-20 bg-[#f4f3f8]" aria-hidden="true" />
-            <div className="pointer-events-none absolute -left-32 bottom-16 -z-10 h-80 w-80 rounded-full bg-primarypurple/10 blur-3xl" aria-hidden="true" />
-            <div className="pointer-events-none absolute -right-32 top-72 -z-10 h-80 w-80 rounded-full bg-primarygreen/20 blur-3xl" aria-hidden="true" />
-
-            <div className="mx-auto max-w-5xl space-y-6">
-            <header className="relative isolate flex flex-col gap-7 overflow-hidden rounded-[2rem] bg-primarypurple px-6 py-8 text-white shadow-[0_24px_70px_rgba(75,40,175,0.22)] sm:px-9 sm:py-10 md:flex-row md:items-end md:justify-between lg:px-12">
-                <div className="landing-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true" />
-                <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primarygreen/20 blur-3xl" aria-hidden="true" />
-                <div className="relative max-w-2xl">
-                    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/80 backdrop-blur-sm">
-                        <Sparkles className="h-4 w-4 text-primarygreen" aria-hidden="true" />
-                        Your update centre
-                    </div>
-                    <h1 className="flex items-center gap-3 text-balance text-3xl font-black tracking-[-0.04em] sm:text-4xl lg:text-5xl">
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarygreen text-black shadow-lg shadow-black/10">
-                            <Bell className="h-6 w-6" aria-hidden="true" />
-                        </span>
-                        Notifications
-                    </h1>
-                    <p className="mt-4 text-sm leading-6 text-white/90 sm:text-base" role="status" aria-live="polite">
+        <div className="px-5 py-8 sm:px-8 lg:py-12">
+            <div className="mx-auto max-w-7xl space-y-8">
+            <PlatformPageHeader
+                eyebrow="Your update centre"
+                title={<>Notification <span className="text-primarygreen">inbox.</span></>}
+                description={
+                    <span role="status" aria-live="polite">
                         {unreadTotal > 0
                             ? `${unreadTotal} unread update${unreadTotal === 1 ? "" : "s"} waiting for you.`
                             : "You are all caught up. New activity will appear here."}
-                    </p>
-                </div>
+                    </span>
+                }
+                actions={
                 <button
                     type="button"
                     onClick={() => markAllRead.mutate()}
                     disabled={unreadTotal === 0 || markAllRead.isPending}
-                    className="relative inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+                    className="relative inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/25 bg-white/10 px-5 text-sm font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
                 >
                     <CheckCheck className="h-4 w-4" aria-hidden="true" />
                     {markAllRead.isPending ? "Marking..." : "Mark all as read"}
                 </button>
-            </header>
+                }
+            />
 
-            <div className="flex w-fit gap-1 rounded-2xl border border-black/[0.07] bg-white p-1.5 shadow-[0_10px_30px_rgba(35,20,75,0.06)]" role="group" aria-label="Notification filters">
+            <div className="flex w-fit border-b border-black/15" role="group" aria-label="Notification filters">
                 {notificationFilters.map((filter) => (
                     <button
                         key={filter.label}
                         type="button"
                         aria-pressed={unreadOnly === filter.value}
                         onClick={() => setUnreadOnly(filter.value)}
-                        className={`min-h-10 rounded-xl px-4 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple ${unreadOnly === filter.value
-                            ? "bg-primarypurple text-white shadow-[0_8px_20px_rgba(111,67,254,0.2)]"
-                            : "text-black/55 hover:bg-primarypurple/[0.06] hover:text-primarypurple"
+                        className={`relative min-h-11 px-5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:bg-primarypurple/10 ${unreadOnly === filter.value
+                            ? "text-primarypurple after:absolute after:inset-x-0 after:-bottom-px after:h-1 after:bg-primarygreen"
+                            : "text-black/60 hover:text-primarypurple"
                             }`}
                     >
                         {filter.label}
@@ -211,7 +199,7 @@ export default function NotificationsPage() {
                     {notificationSkeletonIds.map((id) => (
                         <div
                             key={id}
-                            className="h-28 animate-pulse rounded-2xl border border-black/[0.07] bg-white shadow-sm"
+                            className="h-28 animate-pulse border-b border-black/10 bg-white/75"
                         />
                     ))}
                 </div>
@@ -237,8 +225,8 @@ export default function NotificationsPage() {
             )}
 
             {!notifications.isPending && !notifications.isError && items.length === 0 && (
-                <div className="rounded-[1.75rem] border border-dashed border-primarypurple/25 bg-white p-10 text-center shadow-[0_12px_35px_rgba(35,20,75,0.05)]">
-                    <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                <div className="border-y border-dashed border-primarypurple/35 bg-white/70 p-10 text-center">
+                    <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-md bg-primarypurple/10 text-primarypurple">
                         <Bell className="h-7 w-7" aria-hidden="true" />
                     </span>
                     <p className="mt-4 text-lg font-black tracking-[-0.02em]">
@@ -251,7 +239,7 @@ export default function NotificationsPage() {
             )}
 
             {items.length > 0 && (
-                <div className="space-y-3">
+                <div>
                     <p className="px-1 text-xs font-medium text-black/50" aria-live="polite">
                         Showing {items.length}
                         {typeof totalCount === "number" ? ` of ${totalCount}` : ""}
@@ -266,16 +254,16 @@ export default function NotificationsPage() {
                         return (
                             <article
                                 key={notification.notification_id}
-                                className={`group relative overflow-hidden rounded-2xl border p-5 shadow-[0_8px_26px_rgba(35,20,75,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(35,20,75,0.09)] ${notification.is_read
-                                    ? "border-black/[0.07] bg-white hover:border-primarypurple/20"
-                                    : "border-primarypurple/25 bg-gradient-to-br from-white via-white to-primarypurple/[0.06]"
+                                className={`group relative overflow-hidden border-b p-5 transition-colors duration-200 active:bg-primarypurple/[0.035] ${notification.is_read
+                                    ? "border-black/10 bg-white/70 hover:bg-white"
+                                    : "border-primarypurple/25 bg-white hover:bg-primarypurple/[0.025]"
                                     }`}
                             >
                                 {!notification.is_read && (
                                     <span className="absolute inset-y-0 left-0 w-1 bg-primarygreen" aria-hidden="true" />
                                 )}
                                 <div className="flex items-start gap-3">
-                                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${notification.is_read ? "bg-black/[0.04] text-black/50" : "bg-primarypurple text-white shadow-[0_8px_20px_rgba(111,67,254,0.18)]"}`}>
+                                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md ${notification.is_read ? "bg-black/[0.04] text-black/55" : "bg-primarypurple text-white"}`}>
                                         <Icon className="h-5 w-5" aria-hidden="true" />
                                     </div>
                                     <div className="min-w-0 flex-1 space-y-1">
@@ -284,7 +272,7 @@ export default function NotificationsPage() {
                                                 {detail.label}
                                             </span>
                                             {!notification.is_read && (
-                                                <span className="rounded-full bg-primarygreen px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-black">
+                                                <span className="bg-primarygreen px-2 py-1 text-[10px] font-black uppercase tracking-wider text-black">
                                                     New
                                                 </span>
                                             )}
@@ -317,7 +305,7 @@ export default function NotificationsPage() {
                                                 markRead.variables === notification.notification_id
                                             }
                                             onClick={() => markRead.mutate(notification.notification_id)}
-                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-primarypurple/10 hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:opacity-50"
+                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-gray-500 transition hover:bg-primarypurple/10 hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px disabled:opacity-50"
                                         >
                                             <Check className="h-4 w-4" aria-hidden="true" />
                                         </button>
@@ -335,7 +323,7 @@ export default function NotificationsPage() {
                         type="button"
                         onClick={() => void notifications.fetchNextPage()}
                         disabled={notifications.isFetchingNextPage}
-                        className="min-h-12 rounded-xl bg-primarypurple px-6 text-sm font-bold text-white shadow-[0_12px_28px_rgba(111,67,254,0.2)] transition-all hover:-translate-y-0.5 hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primarypurple disabled:opacity-60 disabled:hover:translate-y-0"
+                        className="min-h-12 rounded-md bg-primarypurple px-6 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primarypurple active:translate-y-px disabled:opacity-60"
                     >
                         {notifications.isFetchingNextPage ? "Loading..." : "Load more"}
                     </button>

@@ -5,11 +5,17 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* --background: #171717;
-  --foreground: #ffffffde; */
-
-  --background: #E8EAEC;
-  --foreground: #000000de;
+  --background: #e8eaec;
+  --foreground: #17131f;
+  --surface: #f7f7f8;
+  --surface-strong: #ffffff;
+  --muted: #6d6875;
+  --line: rgba(23, 19, 31, 0.12);
+  --line-strong: rgba(23, 19, 31, 0.2);
+  --purple-shadow: rgba(45, 23, 102, 0.16);
+  /* Friendly aliases for components that address the loaded Next fonts directly. */
+  --font-geist-sans: var(--font-geist-face);
+  --font-geist-mono: var(--font-geist-mono-face);
 }
 
 html {
@@ -20,10 +26,13 @@ html {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --font-poppins: "Poppins", ui-sans-serif, system-ui, sans-serif;
-  --font-jaro: "Jaro", ui-sans-serif, system-ui, sans-serif;
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-geist-face), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono-face), ui-monospace, monospace;
+  --font-poppins: var(--font-poppins-face), ui-sans-serif, system-ui, sans-serif;
+  --font-jaro: var(--font-jaro-face), ui-sans-serif, system-ui, sans-serif;
   --color-primarypurple: #6F43FE;
   --color-primaryyellow: #F2B705;
   --color-primarygreen: #C3FF00;
@@ -39,16 +48,40 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-poppins);
+  font-family: var(--font-geist-face), ui-sans-serif, system-ui, sans-serif;
+  background-image: radial-gradient(circle at 1px 1px, rgba(111, 67, 254, 0.045) 1px, transparent 0);
+  background-size: 22px 22px;
   overflow-x: hidden;
+}
+
+::selection {
+  background: #c3ff00;
+  color: #17131f;
+}
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid #6f43fe;
+  outline-offset: 3px;
+}
+
+:where(button, [role="button"], a) {
+  -webkit-tap-highlight-color: transparent;
 }
 
 .landing-grid {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
-  background-size: 56px 56px;
+    linear-gradient(rgba(255, 255, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.075) 1px, transparent 1px);
+  background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.editorial-rule {
+  border-color: var(--line);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 .landing-fade-up {
@@ -102,11 +135,13 @@ body {
     scroll-behavior: auto;
   }
 
-  .landing-fade-up,
-  .landing-float,
-  .landing-overlay-in,
-  .landing-drawer-in {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

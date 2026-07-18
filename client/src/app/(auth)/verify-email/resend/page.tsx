@@ -4,14 +4,23 @@ import Link from "next/link";
 import { Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, MailCheck, MailPlus } from "lucide-react";
+import { ArrowLeft, ArrowRight, MailCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { resendVerificationEmail } from "@/lib/authClient";
 import {
+    AUTH_DESCRIPTION_CLASS,
+    AUTH_FOOTER_CLASS,
+    AUTH_FORM_SHELL_CLASS,
+    AUTH_INTRO_CLASS,
     AUTH_LABEL_CLASS,
+    AUTH_PAGE_CLASS,
     AUTH_PRIMARY_BUTTON_CLASS,
+    AUTH_STEP_CLASS,
+    AUTH_STEP_NUMBER_CLASS,
+    AUTH_TEXT_LINK_CLASS,
+    AUTH_TITLE_CLASS,
     getAuthInputClass,
 } from "@/lib/authFormStyles";
 
@@ -101,23 +110,30 @@ export default function ResendEmail() {
             : null;
 
     return (
-        <div className="landing-fade-up">
-            <div className="mb-7">
-                <div className="inline-flex items-center gap-2 rounded-full bg-primarypurple/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-primarypurple">
-                    <MailPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                    Email verification
-                </div>
-                <h1 className="mt-4 text-3xl font-black tracking-[-0.04em] text-black sm:text-4xl">
+        <div className={AUTH_PAGE_CLASS}>
+            <div className={AUTH_INTRO_CLASS}>
+                <p className={AUTH_STEP_CLASS}>
+                    <span className={AUTH_STEP_NUMBER_CLASS}>01</span>
+                    Verification request
+                </p>
+                <h1 className={AUTH_TITLE_CLASS}>
                     Send a fresh verification link.
                 </h1>
-                <p className="mt-3 max-w-lg text-sm leading-6 text-black/50">
+                <p className={AUTH_DESCRIPTION_CLASS}>
                     Didn&apos;t receive your first email or has the link expired? We&apos;ll
                     send another secure link to your NU inbox.
                 </p>
             </div>
 
-            <div className="rounded-3xl border border-black/[0.08] bg-white p-5 shadow-[0_24px_70px_rgba(31,21,67,0.08)] sm:p-7">
-                <form noValidate className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <div className={AUTH_FORM_SHELL_CLASS}>
+                <form noValidate className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+                    <div className="flex items-center justify-between gap-4 border-b border-black/10 pb-4">
+                        <p className="font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
+                            NU address
+                        </p>
+                        <span className="text-xs text-black/60">New link</span>
+                    </div>
+
                     <div className="space-y-2">
                         <label htmlFor="nuemail" className={AUTH_LABEL_CLASS}>
                             NU Email
@@ -137,11 +153,11 @@ export default function ResendEmail() {
                             {...register("nuemail")}
                             className={getAuthInputClass(Boolean(errors.nuemail))}
                         />
-                        <p id="resend-email-hint" className="text-xs leading-5 text-black/45">
+                        <p id="resend-email-hint" className="text-xs leading-5 text-black/60">
                             Use the @nu.edu.pk address from your registration.
                         </p>
                         {errors.nuemail && (
-                            <p id="resend-email-error" className="text-sm text-red-600">
+                            <p id="resend-email-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">
                                 {errors.nuemail.message}
                             </p>
                         )}
@@ -163,7 +179,7 @@ export default function ResendEmail() {
                     {message && (
                         <div
                             role={mutation.isError ? "alert" : "status"}
-                            className={`flex gap-3 rounded-xl border p-3.5 text-sm leading-6 ${mutation.isError
+                            className={`flex gap-3 border p-3.5 text-sm leading-6 ${mutation.isError
                                 ? "border-red-200 bg-red-50 text-red-700"
                                 : "border-green-200 bg-green-50 text-green-800"
                             }`}
@@ -177,11 +193,11 @@ export default function ResendEmail() {
                 </form>
             </div>
 
-            <p className="mt-6 text-center text-sm text-black/50">
+            <p className={AUTH_FOOTER_CLASS}>
                 Already verified?{" "}
                 <Link
                     href="/login"
-                    className="inline-flex items-center gap-1 font-bold text-primarypurple hover:text-black"
+                    className={`${AUTH_TEXT_LINK_CLASS} inline-flex items-center gap-1`}
                 >
                     <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
                     Back to login

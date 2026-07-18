@@ -345,10 +345,10 @@ const IssuesDetails = ({
 
     return (
         <>
-            <section className="rounded-[1.5rem] border border-black/[0.07] bg-white p-5 shadow-[0_16px_45px_rgba(44,27,92,0.06)] sm:p-8" aria-labelledby="project-issues-heading">
+            <section className="border-y border-black/15 bg-white/80 p-5 sm:p-8" aria-labelledby="project-issues-heading">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-primarypurple">
+                        <p className="font-mono text-xs font-bold tracking-[0.14em] text-primarypurple">
                             Work ready to join
                         </p>
                         <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -380,7 +380,7 @@ const IssuesDetails = ({
                                 setIsAddingIssue((prev) => !prev);
                                 setIssueErrors({});
                             }}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primarypurple px-4 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primarypurple px-4 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {!hasReachedIssueLimit && !isAddingIssue && (
                                 <Plus className="h-4 w-4" aria-hidden="true" />
@@ -399,7 +399,7 @@ const IssuesDetails = ({
                     <form
                         id="add-issue-form"
                         onSubmit={handleAddIssueSubmit}
-                        className="mt-6 space-y-5 rounded-2xl border border-primarypurple/20 bg-[#f8f7fc] p-4 sm:p-6"
+                        className="mt-6 space-y-5 border-l-2 border-primarypurple/30 bg-[#f8f7fc] p-4 sm:p-6"
                     >
                         <div>
                             <h3 className="text-lg font-black tracking-[-0.02em] text-black">
@@ -534,8 +534,8 @@ const IssuesDetails = ({
                 )}
 
                 {issues.length === 0 && !isAddingIssue && (
-                    <div className="mt-6 rounded-2xl border border-dashed border-black/15 bg-[#fbfaff] px-5 py-10 text-center">
-                        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                    <div className="mt-6 border-y border-dashed border-black/15 bg-[#fbfaff] px-5 py-10 text-center">
+                        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-md bg-primarypurple/10 text-primarypurple">
                             <Inbox className="h-6 w-6" aria-hidden="true" />
                         </span>
                         <p className="mt-4 text-sm font-bold text-black">
@@ -564,7 +564,7 @@ const IssuesDetails = ({
                         return (
                             <div
                                 key={issueId}
-                                className="overflow-hidden rounded-2xl border border-black/[0.08] bg-white transition-all hover:border-primarypurple/25 hover:shadow-[0_12px_30px_rgba(44,27,92,0.07)]"
+                                className="overflow-hidden border-b border-black/10 bg-white/70 transition-colors hover:bg-white hover:border-primarypurple/25"
                             >
                                 <div className="flex w-full flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
                                     {/* Left: title + date (click to expand) */}

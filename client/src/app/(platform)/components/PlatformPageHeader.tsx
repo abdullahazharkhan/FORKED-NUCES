@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type PlatformPageHeaderProps = {
     actions?: ReactNode;
-    description: string;
+    description: ReactNode;
     eyebrow: string;
     title: ReactNode;
 };
@@ -14,32 +14,35 @@ export function PlatformPageHeader({
     title,
 }: PlatformPageHeaderProps) {
     return (
-        <header className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#4820c7] via-primarypurple to-[#5225cf] px-6 py-8 text-white shadow-[0_24px_80px_rgba(45,19,118,0.28)] sm:px-9 sm:py-10 lg:px-12">
-            <div
-                className="landing-grid pointer-events-none absolute inset-0 opacity-35"
+        <header className="relative isolate h-[29rem] overflow-hidden border-y border-white/20 bg-primarypurple text-white sm:h-[27rem] lg:h-[22rem]">
+            <span
+                className="pointer-events-none absolute left-0 top-0 h-1 w-20 bg-primarygreen sm:w-32"
+                aria-hidden="true"
+            />
+            <span
+                className="pointer-events-none absolute bottom-8 right-8 hidden h-3 w-3 border border-primarygreen lg:block"
                 aria-hidden="true"
             />
             <div
-                className="absolute -right-16 -top-20 -z-10 h-64 w-64 rounded-full border-[45px] border-primarygreen/15"
-                aria-hidden="true"
-            />
-            <div
-                className="absolute -bottom-32 right-1/4 -z-10 h-56 w-56 rounded-full bg-white/[0.06] blur-2xl"
-                aria-hidden="true"
-            />
-            <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                <div className="max-w-3xl">
-                    <p className="mb-3 text-xs font-black uppercase tracking-[0.22em] text-primarygreen">
+                className={`relative grid h-full grid-rows-[minmax(0,1fr)_auto] lg:grid-rows-1 ${actions ? "lg:grid-cols-[minmax(0,1fr)_19rem]" : ""}`}
+            >
+                <div className="flex min-h-0 flex-col justify-center px-6 py-9 sm:px-9 sm:py-10 lg:px-12 lg:py-12">
+                    <p className="mb-7 flex items-center gap-3 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-primarygreen">
+                        <span className="h-px w-9 bg-primarygreen" aria-hidden="true" />
                         {eyebrow}
                     </p>
-                    <h1 className="text-3xl font-black leading-[1.04] tracking-[-0.045em] sm:text-4xl lg:text-5xl">
+                    <h1 className="max-w-4xl text-balance text-4xl font-black leading-[0.96] tracking-[-0.055em] sm:text-5xl lg:text-[4rem]">
                         {title}
                     </h1>
-                    <p className="mt-4 max-w-2xl text-sm leading-6 text-white/90 sm:text-base">
+                    <div className="mt-6 max-w-[62ch] text-pretty text-sm leading-6 text-white/90 sm:text-base sm:leading-7">
                         {description}
-                    </p>
+                    </div>
                 </div>
-                {actions && <div className="shrink-0">{actions}</div>}
+                {actions && (
+                    <div className="flex min-h-24 items-center border-t border-white/15 px-6 py-6 sm:px-9 lg:min-h-0 lg:items-end lg:border-l lg:border-t-0 lg:px-7 lg:py-10">
+                        <div className="w-full">{actions}</div>
+                    </div>
+                )}
             </div>
         </header>
     );

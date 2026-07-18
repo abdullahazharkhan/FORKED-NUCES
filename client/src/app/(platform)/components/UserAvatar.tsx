@@ -30,14 +30,14 @@ export function UserAvatar({
                 alt={`${name || "User"} avatar`}
                 width={config.pixels}
                 height={config.pixels}
-                className={`${config.className} shrink-0 rounded-full border border-primarypurple/20 object-cover`}
+                className={`${config.className} shrink-0 rounded-lg border border-primarypurple/20 object-cover`}
             />
         );
     }
 
     return (
         <span
-            className={`${config.className} flex shrink-0 items-center justify-center rounded-full bg-primarypurple/15 font-bold text-primarypurple`}
+            className={`${config.className} flex shrink-0 items-center justify-center rounded-lg border border-primarypurple/15 bg-primarypurple/10 font-mono font-bold text-primarypurple`}
             aria-hidden="true"
         >
             {(name || "U").charAt(0).toUpperCase()}

@@ -105,50 +105,51 @@ const Platform = () => {
     };
 
     return (
-        <div className="mx-auto w-full max-w-7xl space-y-7 px-5 py-8 sm:px-8 lg:space-y-9 lg:py-10">
+        <div className="mx-auto w-full max-w-[90rem] space-y-8 px-5 py-8 sm:px-8 lg:space-y-11 lg:py-12">
             <PlatformPageHeader
-                eyebrow="Build in public"
-                title={<>Find your next <span className="text-primarygreen">project.</span></>}
-                description="Explore what FASTians are building, discover open issues, and find a project where your skills can make an impact."
+                eyebrow="Campus build index"
+                title={<>Browse the work. <span className="text-primarygreen">Find your place.</span></>}
+                description="A working directory of what FASTians are shipping, the issues still open, and the teams looking for another set of hands."
                 actions={
                     <div className={PLATFORM_HEADER_BADGE_CLASS}>
-                        <span className="text-2xl font-black text-primarygreen">
+                        <span className="font-mono text-2xl font-black tabular-nums text-primarygreen">
                             {typeof totalCount === "number" ? totalCount : projects.length}
                         </span>
-                        <span className="text-xs font-bold uppercase leading-4 tracking-wider text-white/80">
-                            Projects<br />to explore
+                        <span className="font-mono text-[0.65rem] font-semibold uppercase leading-4 tracking-[0.12em] text-white/90">
+                            Project records<br />in this index
                         </span>
                     </div>
                 }
             />
 
             <section
-                className="rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-6"
+                className="border-y border-black/15 bg-white/75 px-5 py-6 sm:px-6"
                 aria-labelledby="explore-filter-heading"
             >
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <h2 id="explore-filter-heading" className="flex items-center gap-2 text-base font-black">
+                <div className="grid gap-7 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-0">
+                    <div className="flex flex-col items-start justify-between gap-5 lg:pr-6">
+                        <div>
+                            <h2 id="explore-filter-heading" className="flex items-center gap-2 text-base font-black tracking-[-0.02em]">
                             <SlidersHorizontal className="h-4 w-4 text-primarypurple" aria-hidden="true" />
-                            Refine your feed
-                        </h2>
-                        <p className="mt-1 text-xs text-black/45">Search by name or narrow projects by technology and activity.</p>
+                                Refine the index
+                            </h2>
+                            <p className="mt-2 max-w-[28ch] text-xs leading-5 text-black/60">Filter by technology, issue activity, or the people behind the work.</p>
+                        </div>
+                        {hasActiveFilters && (
+                            <button
+                                type="button"
+                                onClick={clearFilters}
+                                className="inline-flex min-h-9 items-center gap-1.5 border-b border-black/20 px-1 text-xs font-bold text-black/60 transition-colors hover:border-primarypurple hover:text-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                            >
+                                <X className="h-3.5 w-3.5" aria-hidden="true" />
+                                Clear filters
+                            </button>
+                        )}
                     </div>
-                    {hasActiveFilters && (
-                        <button
-                            type="button"
-                            onClick={clearFilters}
-                            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-bold text-black/50 transition hover:bg-black/[0.04] hover:text-primarypurple focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
-                        >
-                            <X className="h-3.5 w-3.5" aria-hidden="true" />
-                            Clear filters
-                        </button>
-                    )}
-                </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="grid gap-5 border-black/10 sm:grid-cols-2 lg:border-l lg:pl-6 xl:grid-cols-4">
                     <label className="block">
-                        <span className="mb-2 block text-xs font-bold text-black/55">Search projects</span>
+                        <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Search projects</span>
                         <span className="relative block">
                             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" aria-hidden="true" />
                             <input
@@ -163,7 +164,7 @@ const Platform = () => {
                     </label>
 
                     <label className="block">
-                        <span className="mb-2 block text-xs font-bold text-black/55">Technology tag</span>
+                        <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Technology tag</span>
                         <input
                             id="project-tag-filter"
                             type="search"
@@ -175,7 +176,7 @@ const Platform = () => {
                     </label>
 
                     <label className="block">
-                        <span className="mb-2 block text-xs font-bold text-black/55">Issue activity</span>
+                        <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Issue activity</span>
                         <select
                             id="project-issue-filter"
                             value={issueStatus}
@@ -190,7 +191,7 @@ const Platform = () => {
                     </label>
 
                     <label className="block">
-                        <span className="mb-2 block text-xs font-bold text-black/55">Sort by</span>
+                        <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Sort by</span>
                         <select
                             id="project-ordering"
                             value={ordering}
@@ -205,15 +206,16 @@ const Platform = () => {
                             <option value="needs-help">Needs help</option>
                         </select>
                     </label>
+                    </div>
                 </div>
             </section>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/15 pb-5">
                 <div>
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-primarypurple">Community work</p>
-                    <h2 className="mt-1 text-2xl font-black tracking-tight">Project directory</h2>
+                    <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-primarypurple">Directory / community work</p>
+                    <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] sm:text-3xl">Project directory</h2>
                 </div>
-                <p className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-black/50 shadow-sm" role="status" aria-live="polite">
+                <p className="border-l-2 border-primarygreen pl-3 font-mono text-[0.68rem] font-medium tabular-nums text-black/60" role="status" aria-live="polite">
                 {isDebouncing || (isFetching && !isFetchingNextPage)
                     ? "Updating project results..."
                     : totalCount !== null && totalCount !== undefined
@@ -234,7 +236,7 @@ const Platform = () => {
 
             {isFetchNextPageError && (
                 <div
-                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-red-50 p-4 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 border-y border-red-200 bg-red-50 p-4 text-sm text-red-700"
                     role="alert"
                 >
                     <span>Could not load more projects.</span>

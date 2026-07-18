@@ -229,11 +229,11 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
 
     return (
         <>
-            <article className="space-y-6">
+            <article className="space-y-9">
                 <nav aria-label="Project breadcrumb">
                     <Link
                         href="/platform"
-                        className="group inline-flex min-h-10 items-center gap-2 rounded-lg text-sm font-bold text-black/55 transition-colors hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                        className="group inline-flex min-h-10 items-center gap-2 rounded-md text-sm font-bold text-black/60 transition-colors hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px"
                     >
                         <ArrowLeft
                             className="h-4 w-4 transition-transform group-hover:-translate-x-1"
@@ -243,24 +243,24 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                     </Link>
                 </nav>
 
-                <header className="relative isolate overflow-hidden rounded-[1.75rem] bg-primarypurple p-6 text-white shadow-[0_24px_70px_rgba(44,27,92,0.18)] sm:p-8 lg:p-10">
+                <header className="relative isolate overflow-hidden rounded-lg border border-black/10 bg-primarypurple p-6 text-white shadow-[0_18px_50px_rgba(45,23,102,0.16)] sm:p-8 lg:p-10">
                     <div
                         className="landing-grid pointer-events-none absolute inset-0 opacity-20"
                         aria-hidden="true"
                     />
                     <div
-                        className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primarygreen/15 blur-3xl"
+                        className="pointer-events-none absolute -right-14 -top-24 h-56 w-56 rotate-12 border-[2.5rem] border-primarygreen/15"
                         aria-hidden="true"
                     />
 
                     <div className="relative">
-                        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
                             <div className="min-w-0">
-                                <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-primarygreen">
+                                <p className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-[0.14em] text-primarygreen">
                                     <GitFork className="h-4 w-4" aria-hidden="true" />
                                     Student project
                                 </p>
-                                <h1 className="mt-4 max-w-4xl break-words text-balance text-3xl font-black leading-tight tracking-[-0.045em] sm:text-4xl lg:text-5xl">
+                                <h1 className="mt-5 max-w-4xl break-words text-balance text-4xl font-bold leading-[0.98] tracking-[-0.055em] sm:text-5xl lg:text-6xl">
                                     {project.title}
                                 </h1>
                                 <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/90">
@@ -287,7 +287,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                             <button
                                                 type="button"
                                                 onClick={() => setIsEditOpen(true)}
-                                                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3.5 text-xs font-bold text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                                className="inline-flex min-h-10 items-center gap-2 rounded-md border border-white/25 bg-white/10 px-3.5 text-xs font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px"
                                             >
                                                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                                                 Edit project
@@ -296,7 +296,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                                 type="button"
                                                 onClick={handleDeleteClick}
                                                 disabled={deleteMutation.isPending}
-                                                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-red-200/30 bg-red-500/15 px-3.5 text-xs font-bold text-white transition-colors hover:bg-red-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-wait disabled:opacity-60"
+                                                className="inline-flex min-h-10 items-center gap-2 rounded-md border border-red-200/30 bg-red-500/15 px-3.5 text-xs font-bold text-white transition-colors hover:bg-red-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px disabled:cursor-wait disabled:opacity-60"
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                                                 {deleteMutation.isPending ? "Deleting..." : "Delete"}
@@ -313,9 +313,9 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                             )}
                         </div>
 
-                        <dl className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                            <div className="rounded-2xl border border-white/15 bg-white/[0.08] p-4 backdrop-blur-sm">
-                                <dt className="flex items-center gap-2 text-xs font-semibold text-white/75">
+                        <dl className="mt-10 grid gap-px border-y border-white/20 bg-white/20 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="bg-primarypurple p-4">
+                                <dt className="flex items-center gap-2 text-xs font-semibold text-white/90">
                                     <CalendarDays className="h-4 w-4 text-primarygreen" aria-hidden="true" />
                                     Created
                                 </dt>
@@ -323,8 +323,8 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     {createdAt || "Not available"}
                                 </dd>
                             </div>
-                            <div className="rounded-2xl border border-white/15 bg-white/[0.08] p-4 backdrop-blur-sm">
-                                <dt className="flex items-center gap-2 text-xs font-semibold text-white/75">
+                            <div className="bg-primarypurple p-4">
+                                <dt className="flex items-center gap-2 text-xs font-semibold text-white/90">
                                     <CalendarDays className="h-4 w-4 text-primarygreen" aria-hidden="true" />
                                     Last updated
                                 </dt>
@@ -332,8 +332,8 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     {updatedAt || "Not available"}
                                 </dd>
                             </div>
-                            <div className="rounded-2xl border border-white/15 bg-white/[0.08] p-4 backdrop-blur-sm">
-                                <dt className="flex items-center gap-2 text-xs font-semibold text-white/75">
+                            <div className="bg-primarypurple p-4">
+                                <dt className="flex items-center gap-2 text-xs font-semibold text-white/90">
                                     <CircleDot className="h-4 w-4 text-primarygreen" aria-hidden="true" />
                                     Issues
                                 </dt>
@@ -341,8 +341,8 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     {openIssues.length} open · {closedIssues.length} closed
                                 </dd>
                             </div>
-                            <div className="rounded-2xl border border-white/15 bg-white/[0.08] p-4 backdrop-blur-sm">
-                                <dt className="flex items-center gap-2 text-xs font-semibold text-white/75">
+                            <div className="bg-primarypurple p-4">
+                                <dt className="flex items-center gap-2 text-xs font-semibold text-white/90">
                                     <Heart
                                         className={`h-4 w-4 text-primarygreen ${hasLiked ? "fill-primarygreen" : ""}`}
                                         aria-hidden="true"
@@ -359,7 +359,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                         onClick={handleLikeClick}
                                         disabled={likeMutation.isPending || !loggedInUser || isOwner}
                                         title={isOwner ? "You cannot like your own project" : undefined}
-                                        className="rounded-lg bg-primarygreen px-3 py-1.5 text-xs font-black text-black transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/45"
+                                        className="rounded-md bg-primarygreen px-3 py-1.5 text-xs font-black text-black transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/45"
                                     >
                                         {hasLiked ? "Unlike" : "Like"}
                                     </button>
@@ -368,7 +368,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                         </dl>
 
                         {likeError && (
-                            <p className="mt-4 rounded-xl border border-red-200/20 bg-red-500/15 px-4 py-3 text-xs font-semibold text-white" role="alert">
+                            <p className="mt-4 border-l-2 border-red-200 bg-red-500/15 px-4 py-3 text-xs font-semibold text-white" role="alert">
                                 {likeError}
                             </p>
                         )}
@@ -379,13 +379,13 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     project.tags.map((tagObj) => (
                                         <span
                                             key={tagObj.tag}
-                                            className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-white/80"
+                                            className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-white/90"
                                         >
                                             {tagObj.tag}
                                         </span>
                                     ))
                                 ) : (
-                                    <span className="text-xs text-white/55">
+                                    <span className="text-xs text-white/90">
                                         No tags added yet
                                     </span>
                                 )}
@@ -396,7 +396,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     href={project.github_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-black text-black transition-all hover:-translate-y-0.5 hover:bg-primarygreen focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                                    className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-white px-4 text-sm font-black text-black transition-colors hover:bg-primarygreen focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-y-px"
                                 >
                                     View repository
                                     <ExternalLink className="h-4 w-4" aria-hidden="true" />
@@ -406,16 +406,16 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                     </div>
                 </header>
 
-                <section className="rounded-[1.5rem] border border-black/[0.07] bg-white p-5 shadow-[0_16px_45px_rgba(44,27,92,0.06)] sm:p-8">
-                    <div className="mb-5">
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-primarypurple">
+                <section className="border-y border-black/15 bg-white/80 p-5 sm:p-8">
+                    <div className="mb-6 grid gap-2 border-b border-black/10 pb-5 sm:grid-cols-[10rem_1fr] sm:items-end">
+                        <p className="font-mono text-xs font-bold tracking-[0.14em] text-primarypurple">
                             Project overview
                         </p>
-                        <h2 className="mt-2 text-2xl font-black tracking-[-0.03em] text-black">
+                        <h2 className="text-2xl font-black tracking-[-0.03em] text-black sm:text-3xl">
                             About this project
                         </h2>
                     </div>
-                    <div className="overflow-hidden rounded-2xl border border-black/[0.07] bg-[#fbfaff] p-3 sm:p-5">
+                    <div className="overflow-hidden border-l-2 border-primarypurple/25 bg-[#fbfaff] p-3 sm:p-5">
                         <MdPreview
                             {...untrustedMarkdownPreviewProps}
                             editorId={`project-description-${project.project_id ?? "preview"}`}

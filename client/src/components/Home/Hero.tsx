@@ -1,14 +1,5 @@
 import Link from "next/link";
-import {
-    ArrowRight,
-    Check,
-    CircleDot,
-    Code2,
-    GitFork,
-    Search,
-    Sparkles,
-    Users,
-} from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 
 const HERO_POINTS = [
     "NU-verified community",
@@ -16,173 +7,205 @@ const HERO_POINTS = [
     "Built for every skill level",
 ] as const;
 
+const LEDGER_ITEMS = [
+    {
+        number: "01",
+        title: "Add keyboard navigation",
+        meta: "good first issue",
+        state: "Open",
+    },
+    {
+        number: "02",
+        title: "Improve route matching",
+        meta: "2 contributors",
+        state: "In review",
+    },
+    {
+        number: "03",
+        title: "Document the map API",
+        meta: "docs · 45 min",
+        state: "Ready",
+    },
+] as const;
+
 const Hero = () => {
     return (
-        <section className="relative isolate min-h-[92svh] overflow-hidden bg-primarypurple pb-20 pt-32 text-white sm:pt-36 lg:flex lg:items-center lg:pb-24">
+        <section className="relative isolate min-h-[min(58rem,100dvh)] overflow-hidden bg-primarypurple pb-10 pt-28 font-sans text-white sm:pt-32 lg:flex lg:min-h-[52rem] lg:items-center lg:pb-16 lg:pt-36">
             <div
-                className="landing-grid pointer-events-none absolute inset-0 opacity-30"
+                className="landing-grid pointer-events-none absolute inset-0 opacity-25"
                 aria-hidden="true"
             />
             <div
-                className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-primarygreen/20 blur-3xl"
-                aria-hidden="true"
-            />
-            <div
-                className="pointer-events-none absolute -right-40 bottom-0 h-[32rem] w-[32rem] rounded-full bg-white/10 blur-3xl"
+                className="pointer-events-none absolute inset-x-0 top-20 border-t border-white/15"
                 aria-hidden="true"
             />
 
-            <div className="relative mx-auto grid w-full max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-                <div className="landing-fade-up max-w-3xl">
-                    <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur-sm sm:text-sm">
-                        <Sparkles className="h-4 w-4 text-primarygreen" aria-hidden="true" />
-                        Built by FASTians, for FASTians
-                    </div>
-
-                    <h1 className="max-w-4xl text-balance text-5xl font-black leading-[0.96] tracking-[-0.055em] sm:text-6xl md:text-7xl lg:text-[5.4rem]">
-                        Great projects deserve to be
-                        <span className="relative ml-3 inline-block text-primarygreen sm:ml-4">
-                            finished.
-                            <span
-                                className="absolute -bottom-1 left-0 h-1.5 w-full -rotate-1 rounded-full bg-primarygreen/35"
-                                aria-hidden="true"
-                            />
-                        </span>
-                    </h1>
-
-                    <p className="mt-7 max-w-2xl text-pretty text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
-                        Share what you&apos;re building, find contributors who know the
-                        missing piece, and turn every collaboration into proof of your
-                        skills.
+            <div className="relative mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
+                <div className="mb-9 flex items-center justify-between gap-6 border-b border-white/20 pb-4 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-white/90 sm:text-xs">
+                    <p>FAST NUCES · Open collaboration network</p>
+                    <p className="hidden font-mono tabular-nums sm:block">
+                        Field note / 001
                     </p>
-
-                    <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <Link
-                            href="/get-started"
-                            className="group inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-primarygreen px-6 text-base font-bold text-black shadow-[0_14px_40px_rgba(195,255,0,0.25)] transition-all hover:-translate-y-0.5 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                        >
-                            Start building together
-                            <ArrowRight
-                                className="h-5 w-5 transition-transform group-hover:translate-x-1"
-                                aria-hidden="true"
-                            />
-                        </Link>
-                        <Link
-                            href="#usecases"
-                            className="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/25 bg-white/10 px-6 text-base font-semibold text-white backdrop-blur-sm transition-all hover:border-white/50 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                        >
-                            See how it works
-                        </Link>
-                    </div>
-
-                    <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-sm text-white/70">
-                        {HERO_POINTS.map((point) => (
-                            <li key={point} className="flex items-center gap-2">
-                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primarygreen text-black">
-                                    <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
-                                </span>
-                                {point}
-                            </li>
-                        ))}
-                    </ul>
                 </div>
 
-                <div className="landing-fade-up landing-delay-2 relative mx-auto w-full max-w-xl lg:mx-0">
-                    <div
-                        className="absolute -inset-5 rotate-2 rounded-[2rem] border border-white/15 bg-white/5"
-                        aria-hidden="true"
-                    />
-                    <div className="relative overflow-hidden rounded-[1.65rem] border border-white/20 bg-[#f8f8fb] p-3 text-black shadow-[0_32px_90px_rgba(22,9,60,0.38)] sm:p-4">
-                        <div className="flex items-center justify-between px-2 pb-3 pt-1">
-                            <div className="flex items-center gap-1.5" aria-hidden="true">
-                                <span className="h-2.5 w-2.5 rounded-full bg-[#ff6b6b]" />
-                                <span className="h-2.5 w-2.5 rounded-full bg-primaryyellow" />
-                                <span className="h-2.5 w-2.5 rounded-full bg-primarygreen" />
-                            </div>
-                            <div className="flex items-center gap-2 rounded-full bg-black/[0.04] px-3 py-1.5 text-[11px] font-semibold text-black/55">
-                                <Search className="h-3.5 w-3.5" aria-hidden="true" />
-                                Explore projects
-                            </div>
+                <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.84fr)_minmax(32rem,1.16fr)] lg:gap-12 xl:gap-20">
+                    <div className="landing-fade-up max-w-[48rem]">
+                        <p className="mb-5 flex items-center gap-3 text-sm font-semibold text-white/90">
+                            <span className="h-2 w-2 bg-primarygreen" aria-hidden="true" />
+                            Built by FASTians, for FASTians
+                        </p>
+
+                        <h1 className="text-balance text-[clamp(3.7rem,8vw,7.6rem)] font-black leading-[0.83] tracking-[-0.07em]">
+                            Great projects
+                            <br />
+                            deserve to be
+                            <br />
+                            <span className="text-primarygreen">finished.</span>
+                        </h1>
+
+                        <p className="mt-7 max-w-[39rem] text-pretty text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
+                            Share what you&apos;re building, find contributors who know the
+                            missing piece, and turn every collaboration into proof of your
+                            skills.
+                        </p>
+
+                        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <Link
+                                href="/get-started"
+                                className="group inline-flex min-h-14 items-center justify-center gap-3 bg-primarygreen px-6 text-sm font-bold text-black transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                            >
+                                Start building together
+                                <ArrowRight
+                                    className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
+                                    aria-hidden="true"
+                                />
+                            </Link>
+                            <Link
+                                href="#usecases"
+                                className="inline-flex min-h-14 items-center justify-center border border-white/30 px-6 text-sm font-semibold text-white transition-[background-color,border-color,transform] duration-200 hover:border-white/70 hover:bg-white/10 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                            >
+                                Browse the field guide
+                            </Link>
                         </div>
 
-                        <div className="rounded-2xl border border-black/[0.08] bg-white p-4 shadow-sm sm:p-5">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex min-w-0 items-center gap-3">
-                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primarypurple text-white">
-                                        <Code2 className="h-5 w-5" aria-hidden="true" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="truncate text-sm font-bold sm:text-base">
-                                            Campus Navigator
-                                        </p>
-                                        <p className="text-xs text-black/50">Student utility platform</p>
-                                    </div>
+                        <ul className="mt-8 grid border-t border-white/20 text-xs text-white/90 sm:grid-cols-3">
+                            {HERO_POINTS.map((point) => (
+                                <li
+                                    key={point}
+                                    className="flex min-h-12 items-center gap-2 border-b border-white/15 py-3 sm:border-b-0 sm:border-r sm:px-3 first:sm:pl-0 last:sm:border-r-0"
+                                >
+                                    <Check
+                                        className="h-3.5 w-3.5 shrink-0 text-primarygreen"
+                                        strokeWidth={3}
+                                        aria-hidden="true"
+                                    />
+                                    {point}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div className="landing-fade-up landing-delay-2 relative lg:-translate-y-8">
+                        <div
+                            className="absolute -left-4 top-8 hidden h-[calc(100%-4rem)] w-4 border-y border-l border-primarygreen/70 lg:block"
+                            aria-hidden="true"
+                        />
+                        <article
+                            aria-label="Example open project ledger"
+                            className="border border-white/25 bg-white text-black"
+                        >
+                            <header className="flex items-center justify-between gap-5 border-b border-black/15 bg-primarygreen px-4 py-3 text-[0.65rem] font-bold uppercase tracking-[0.18em] sm:px-6 sm:text-xs">
+                                <p>Open project ledger</p>
+                                <p className="font-mono tabular-nums">Project / 024</p>
+                            </header>
+
+                            <div className="grid border-b border-black/15 sm:grid-cols-[1fr_auto]">
+                                <div className="p-5 sm:p-7">
+                                    <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primarypurple sm:text-xs">
+                                        Student utility platform
+                                    </p>
+                                    <h2 className="mt-3 text-3xl font-black tracking-[-0.045em] sm:text-4xl">
+                                        Campus Navigator
+                                    </h2>
+                                    <p className="mt-3 max-w-lg text-sm leading-6 text-black/60">
+                                        An accessible campus map with smarter route
+                                        recommendations for new students.
+                                    </p>
                                 </div>
-                                <span className="rounded-full bg-primarygreen/25 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
-                                    3 open issues
-                                </span>
+                                <div className="flex items-end justify-between gap-4 border-t border-black/15 px-5 py-4 sm:min-w-40 sm:flex-col sm:items-start sm:border-l sm:border-t-0 sm:px-6 sm:py-6">
+                                    <div>
+                                        <p className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-black/60">
+                                            Status
+                                        </p>
+                                        <p className="mt-1 flex items-center gap-2 text-sm font-bold">
+                                            <span
+                                                className="h-2 w-2 bg-primarypurple"
+                                                aria-hidden="true"
+                                            />
+                                            Recruiting
+                                        </p>
+                                    </div>
+                                    <p className="font-mono text-xs font-semibold text-black/60">
+                                        Updated 14:32
+                                    </p>
+                                </div>
                             </div>
 
-                            <p className="mt-4 text-sm leading-6 text-black/60">
-                                Help us ship an accessible campus map and smarter route
-                                recommendations for new students.
-                            </p>
-
-                            <div className="mt-4 flex flex-wrap gap-2">
-                                {['Next.js', 'Django', 'PostgreSQL'].map((tag) => (
+                            <div className="flex flex-wrap border-b border-black/15 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-black/60 sm:text-xs">
+                                {["Next.js", "Django", "PostgreSQL"].map((tag) => (
                                     <span
                                         key={tag}
-                                        className="rounded-md border border-black/10 bg-black/[0.025] px-2.5 py-1 text-[11px] font-semibold text-black/60"
+                                        className="border-r border-black/15 px-4 py-3 last:border-r-0 sm:px-6"
                                     >
                                         {tag}
                                     </span>
                                 ))}
                             </div>
 
-                            <div className="mt-5 space-y-2.5 border-t border-black/[0.07] pt-4">
-                                <div className="flex items-center justify-between rounded-xl bg-[#f5f3ff] p-3">
-                                    <div className="flex items-center gap-2.5">
-                                        <CircleDot className="h-4 w-4 text-primarypurple" aria-hidden="true" />
-                                        <span className="text-xs font-semibold sm:text-sm">
-                                            Add keyboard navigation
+                            <ol>
+                                {LEDGER_ITEMS.map((item) => (
+                                    <li
+                                        key={item.number}
+                                        className="group grid grid-cols-[2.2rem_minmax(0,1fr)] gap-x-3 border-b border-black/15 px-4 py-4 transition-colors duration-200 last:border-b-0 hover:bg-primarypurple/[0.055] sm:grid-cols-[2.5rem_minmax(0,1fr)_7rem] sm:items-center sm:px-6"
+                                    >
+                                        <span className="font-mono text-xs font-bold text-primarypurple">
+                                            {item.number}
                                         </span>
-                                    </div>
-                                    <span className="text-[10px] font-bold text-primarypurple">GOOD FIRST ISSUE</span>
-                                </div>
-                                <div className="flex items-center justify-between rounded-xl bg-black/[0.025] p-3">
-                                    <div className="flex items-center gap-2.5">
-                                        <GitFork className="h-4 w-4 text-black/50" aria-hidden="true" />
-                                        <span className="text-xs font-semibold sm:text-sm">
-                                            Improve route matching
-                                        </span>
-                                    </div>
-                                    <div className="flex -space-x-2" aria-label="Two contributors">
-                                        <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-primarypurple text-[9px] font-bold text-white">AK</span>
-                                        <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-primarygreen text-[9px] font-bold text-black">RM</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold tracking-tight sm:text-base">
+                                                {item.title}
+                                            </p>
+                                            <p className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-black/60">
+                                                {item.meta}
+                                            </p>
+                                        </div>
+                                        <p className="col-start-2 mt-2 text-xs font-bold text-black/55 sm:col-auto sm:mt-0 sm:text-right">
+                                            {item.state} <span aria-hidden="true">↗</span>
+                                        </p>
+                                    </li>
+                                ))}
+                            </ol>
 
-                        <div className="mt-3 grid grid-cols-2 gap-3">
-                            <div className="rounded-xl border border-black/[0.07] bg-white p-3.5">
-                                <Users className="h-4 w-4 text-primarypurple" aria-hidden="true" />
-                                <p className="mt-2 text-sm font-black">Skill match</p>
-                                <p className="text-[11px] text-black/50">find relevant builders</p>
-                            </div>
-                            <div className="rounded-xl bg-black p-3.5 text-white">
-                                <GitFork className="h-4 w-4 text-primarygreen" aria-hidden="true" />
-                                <p className="mt-2 text-sm font-black">Open issues</p>
-                                <p className="text-[11px] text-white/55">work ready to join</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="landing-float absolute -bottom-5 -left-3 hidden items-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-3 text-sm font-bold text-black shadow-xl sm:flex lg:-left-8">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primarygreen">
-                            <Check className="h-4 w-4" strokeWidth={3} aria-hidden="true" />
-                        </span>
-                        Contribution accepted
+                            <footer className="flex flex-col gap-4 border-t border-black bg-black px-5 py-5 text-white sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="grid h-10 w-10 place-items-center bg-primarypurple text-xs font-black"
+                                        aria-hidden="true"
+                                    >
+                                        AK
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold">Areeba joined the build</p>
+                                        <p className="mt-0.5 text-xs text-white/70">
+                                            accessibility · frontend
+                                        </p>
+                                    </div>
+                                </div>
+                                <p className="font-mono text-xs font-semibold text-primarygreen">
+                                    Contribution accepted
+                                </p>
+                            </footer>
+                        </article>
                     </div>
                 </div>
             </div>

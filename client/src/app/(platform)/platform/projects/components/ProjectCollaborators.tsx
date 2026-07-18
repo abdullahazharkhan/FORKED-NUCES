@@ -50,25 +50,20 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
 
     return (
         <section
-            className="relative isolate overflow-hidden rounded-[1.75rem] border border-primarypurple/15 bg-[#fbfaff] p-4 shadow-[0_18px_55px_rgba(24,16,54,0.07)] sm:p-6"
+            className="relative isolate overflow-hidden border-y border-black/15 bg-white/80 p-5 sm:p-7"
             aria-labelledby="project-collaborators-heading"
         >
             <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primarypurple via-primarygreen to-primarypurple"
+                className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primarygreen"
                 aria-hidden="true"
             />
-            <div
-                className="pointer-events-none absolute -right-16 -top-16 -z-10 h-48 w-48 rounded-full bg-primarypurple/10 blur-3xl"
-                aria-hidden="true"
-            />
-
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primarypurple text-white shadow-[0_10px_24px_rgba(111,67,254,0.22)]">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primarypurple text-white">
                         <UsersRound className="h-5 w-5" aria-hidden="true" />
                     </span>
                     <div>
-                        <p className="mb-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primarypurple">
+                        <p className="mb-1 font-mono text-[0.65rem] font-bold tracking-[0.18em] text-primarypurple">
                             Project community
                         </p>
                         <h2
@@ -85,7 +80,7 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                 </div>
 
                 {!collaboratorsQuery.isPending && !initialError && (
-                    <span className="w-fit rounded-full border border-primarypurple/15 bg-white px-3 py-1.5 text-xs font-bold text-primarypurple shadow-sm">
+                    <span className="w-fit border-l-2 border-primarygreen bg-primarypurple/[0.06] px-3 py-1.5 font-mono text-xs font-bold text-primarypurple">
                         {collaborators.length.toLocaleString()} loaded
                     </span>
                 )}
@@ -100,9 +95,9 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                     {SKELETON_IDS.map((id) => (
                         <div
                             key={id}
-                            className="flex animate-pulse items-center gap-3 rounded-2xl border border-primarypurple/10 bg-white p-4"
+                            className="flex animate-pulse items-center gap-3 border-b border-primarypurple/10 bg-white p-4"
                         >
-                            <div className="h-11 w-11 shrink-0 rounded-full bg-primarypurple/10" />
+                            <div className="h-11 w-11 shrink-0 rounded-md bg-primarypurple/10" />
                             <div className="flex min-w-0 flex-1 flex-col gap-2">
                                 <div className="h-3 w-2/3 rounded-full bg-gray-200" />
                                 <div className="h-2.5 w-4/5 rounded-full bg-gray-100" />
@@ -138,8 +133,8 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
             {!collaboratorsQuery.isPending &&
                 !initialError &&
                 collaborators.length === 0 && (
-                    <div className="rounded-2xl border border-dashed border-primarypurple/25 bg-white/70 px-5 py-10 text-center">
-                        <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                    <div className="border-y border-dashed border-primarypurple/30 bg-white/70 px-5 py-10 text-center">
+                        <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-primarypurple/10 text-primarypurple">
                             <UsersRound className="h-6 w-6" aria-hidden="true" />
                         </span>
                         <p className="font-bold text-gray-900">
@@ -153,12 +148,12 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                 )}
 
             {collaborators.length > 0 && (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid border-t border-black/10 sm:grid-cols-2 lg:grid-cols-3">
                     {collaborators.map((collaborator) => (
                         <Link
                             href={`/platform/users/${collaborator.user_id}`}
                             key={collaborator.user_id}
-                            className="group flex min-w-0 items-center gap-3 rounded-2xl border border-black/[0.07] bg-white p-3.5 shadow-[0_8px_24px_rgba(24,16,54,0.04)] transition duration-200 hover:-translate-y-0.5 hover:border-primarypurple/30 hover:shadow-[0_14px_32px_rgba(111,67,254,0.11)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                            className="group flex min-w-0 items-center gap-3 border-b border-black/10 bg-white/70 p-3.5 transition-colors duration-200 hover:bg-primarypurple/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:bg-primarypurple/[0.08]"
                         >
                             <span className="shrink-0 rounded-full ring-2 ring-primarypurple/10 ring-offset-2 transition group-hover:ring-primarypurple/25">
                                 <UserAvatar
@@ -204,7 +199,7 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                             type="button"
                             onClick={() => void collaboratorsQuery.fetchNextPage()}
                             disabled={collaboratorsQuery.isFetchingNextPage}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primarypurple px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(111,67,254,0.2)] transition hover:-translate-y-0.5 hover:bg-[#5e32f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primarypurple px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {collaboratorsQuery.isFetchingNextPage && (
                                 <LoaderCircle

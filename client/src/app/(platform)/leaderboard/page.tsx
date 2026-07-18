@@ -6,14 +6,13 @@ import {
     Award,
     FolderGit2,
     MessageCircle,
-    Sparkles,
-    Trophy,
     UserRoundCheck,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { RetryAlert } from "../components/RetryAlert";
 import { UserAvatar } from "../components/UserAvatar";
+import { PlatformPageHeader } from "../components/PlatformPageHeader";
 import { authFetch } from "@/lib/authFetch";
 import { readAuthResponse } from "@/lib/authFormResponse";
 import {
@@ -50,38 +49,17 @@ export default function LeaderboardPage() {
         leaderboard.isError && leaderboard.data === undefined;
 
     return (
-        <div className="relative isolate min-h-screen overflow-hidden px-5 py-8 sm:px-8 lg:py-12">
-            <div className="pointer-events-none absolute inset-0 -z-20 bg-[#f4f3f8]" aria-hidden="true" />
-            <div className="pointer-events-none absolute -left-40 bottom-20 -z-10 h-96 w-96 rounded-full bg-primarygreen/20 blur-3xl" aria-hidden="true" />
-            <div className="pointer-events-none absolute -right-32 top-64 -z-10 h-80 w-80 rounded-full bg-primarypurple/10 blur-3xl" aria-hidden="true" />
-
-            <div className="mx-auto max-w-7xl space-y-6">
-            <header className="relative isolate flex flex-col gap-8 overflow-hidden rounded-[2rem] bg-primarypurple px-6 py-8 text-white shadow-[0_24px_70px_rgba(75,40,175,0.22)] sm:px-9 sm:py-10 lg:flex-row lg:items-end lg:justify-between lg:px-12">
-                <div className="landing-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true" />
-                <div className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-primarygreen/20 blur-3xl" aria-hidden="true" />
-                <div className="relative max-w-3xl">
-                    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/80 backdrop-blur-sm">
-                        <Sparkles className="h-4 w-4 text-primarygreen" aria-hidden="true" />
-                        Community standouts
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarygreen text-black shadow-lg shadow-black/10">
-                            <Trophy className="h-6 w-6" aria-hidden="true" />
-                        </span>
-                        <h1 className="text-balance text-3xl font-black tracking-[-0.04em] sm:text-4xl lg:text-5xl">
-                            Contributor leaderboard
-                        </h1>
-                    </div>
-                    <p className="mt-4 max-w-2xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">
-                        Celebrate the builders creating projects, unblocking issues, and
-                        sharing the knowledge that keeps the community moving.
-                    </p>
-                </div>
-
-                <div className="relative space-y-1.5 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+        <div className="px-5 py-8 sm:px-8 lg:py-12">
+            <div className="mx-auto max-w-7xl space-y-8">
+            <PlatformPageHeader
+                eyebrow="Community standouts"
+                title={<>Contributor <span className="text-primarygreen">leaderboard.</span></>}
+                description="A working record of the builders creating projects, unblocking issues, and sharing useful knowledge across the community."
+                actions={
+                <div className="relative space-y-1.5 border-l border-white/25 pl-5">
                     <label
                         htmlFor="leaderboard-limit"
-                        className="block text-xs font-bold uppercase tracking-[0.14em] text-white/85"
+                        className="block text-xs font-bold tracking-wide text-white/90"
                     >
                         Contributors shown
                     </label>
@@ -93,7 +71,7 @@ export default function LeaderboardPage() {
                                 Number(event.target.value) as LeaderboardLimit
                             )
                         }
-                        className="min-h-11 w-full rounded-xl border border-white/20 bg-white px-3 py-2 text-sm font-bold text-black outline-none transition focus:border-primarygreen focus:ring-4 focus:ring-primarygreen/20 sm:w-48"
+                        className="min-h-11 w-full rounded-md border border-white/25 bg-white px-3 py-2 text-sm font-bold text-black outline-none transition hover:border-primarygreen focus:border-primarygreen focus:ring-4 focus:ring-primarygreen/20 sm:w-48"
                     >
                         {leaderboardLimits.map((option) => (
                             <option key={option} value={option}>
@@ -102,7 +80,8 @@ export default function LeaderboardPage() {
                         ))}
                     </select>
                 </div>
-            </header>
+                }
+            />
 
             <p className="px-1 text-sm font-medium text-black/55" role="status" aria-live="polite">
                 {initialLeaderboardError
@@ -123,9 +102,9 @@ export default function LeaderboardPage() {
                     {leaderboardSkeletonIds.map((id) => (
                         <div
                             key={id}
-                            className="grid animate-pulse gap-4 rounded-2xl border border-black/[0.07] bg-white p-5 shadow-sm sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:items-center"
+                            className="grid animate-pulse gap-4 border-b border-black/10 bg-white/75 p-5 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:items-center"
                         >
-                            <div className="h-12 w-12 rounded-full bg-gray-200" />
+                            <div className="h-12 w-12 rounded-md bg-gray-200" />
                             <div className="space-y-2">
                                 <div className="h-4 w-40 rounded bg-gray-200" />
                                 <div className="h-3 w-56 max-w-full rounded bg-gray-100" />
@@ -148,7 +127,7 @@ export default function LeaderboardPage() {
             {!leaderboard.isPending &&
                 !initialLeaderboardError &&
                 contributors.length === 0 && (
-                    <div className="rounded-[1.75rem] border border-dashed border-primarypurple/25 bg-white p-10 text-center shadow-[0_12px_35px_rgba(35,20,75,0.05)]">
+                    <div className="border-y border-dashed border-primarypurple/35 bg-white/70 p-10 text-center">
                         <Award
                             className="mx-auto h-9 w-9 text-gray-400"
                             aria-hidden="true"
@@ -170,14 +149,14 @@ export default function LeaderboardPage() {
                         <h2 id="rankings-heading" className="sr-only">
                             Ranked contributors
                         </h2>
-                        <ol className="space-y-3">
+                        <ol className="border-t border-black/15">
                             {contributors.map((contributor) => (
                                 <li key={contributor.user_id}>
                                     <article
-                                        className={`group relative grid gap-5 overflow-hidden rounded-[1.5rem] border bg-white p-5 shadow-[0_8px_28px_rgba(35,20,75,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(35,20,75,0.1)] sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:p-6 lg:grid-cols-[4.5rem_minmax(14rem,1fr)_minmax(20rem,1.2fr)_8rem] lg:items-center ${
+                                        className={`group relative grid gap-5 overflow-hidden border-b bg-white/80 p-5 transition-colors duration-200 hover:bg-white active:bg-primarypurple/[0.035] sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:p-6 lg:grid-cols-[4.5rem_minmax(14rem,1fr)_minmax(20rem,1.2fr)_8rem] lg:items-center ${
                                             contributor.rank <= 3
                                                 ? "border-primarypurple/25"
-                                                : "border-black/[0.07] hover:border-primarypurple/25"
+                                                : "border-black/10 hover:border-primarypurple/25"
                                         }`}
                                     >
                                         {contributor.rank <= 3 && (
@@ -187,8 +166,8 @@ export default function LeaderboardPage() {
                                             />
                                         )}
                                         <div className="flex items-center gap-3 sm:flex-col sm:justify-center sm:gap-1">
-                                            <span className={`font-mono text-xl font-black ${contributor.rank <= 3 ? "text-primarypurple" : "text-black/55"}`}>
-                                                #{contributor.rank}
+                                            <span className={`font-jaro text-4xl leading-none ${contributor.rank <= 3 ? "text-primarypurple" : "text-black/45"}`}>
+                                                {String(contributor.rank).padStart(2, "0")}
                                             </span>
                                             {contributor.rank <= 3 && (
                                                 <Award
@@ -219,7 +198,7 @@ export default function LeaderboardPage() {
                                         </div>
 
                                         <dl className="grid grid-cols-3 gap-2 text-center sm:col-start-2 lg:col-start-auto">
-                                            <div className="rounded-xl border border-black/[0.05] bg-[#f8f7fb] p-2.5 transition-colors group-hover:bg-primarypurple/[0.045]">
+                                            <div className="border-l border-black/10 px-2.5 py-1 transition-colors group-hover:border-primarypurple/25">
                                                 <FolderGit2
                                                     className="mx-auto h-4 w-4 text-primarypurple"
                                                     aria-hidden="true"
@@ -231,7 +210,7 @@ export default function LeaderboardPage() {
                                                     {contributor.projects_created}
                                                 </dd>
                                             </div>
-                                            <div className="rounded-xl border border-black/[0.05] bg-[#f8f7fb] p-2.5 transition-colors group-hover:bg-primarypurple/[0.045]">
+                                            <div className="border-l border-black/10 px-2.5 py-1 transition-colors group-hover:border-primarypurple/25">
                                                 <UserRoundCheck
                                                     className="mx-auto h-4 w-4 text-primarypurple"
                                                     aria-hidden="true"
@@ -243,7 +222,7 @@ export default function LeaderboardPage() {
                                                     {contributor.issues_collaborated}
                                                 </dd>
                                             </div>
-                                            <div className="rounded-xl border border-black/[0.05] bg-[#f8f7fb] p-2.5 transition-colors group-hover:bg-primarypurple/[0.045]">
+                                            <div className="border-l border-black/10 px-2.5 py-1 transition-colors group-hover:border-primarypurple/25">
                                                 <MessageCircle
                                                     className="mx-auto h-4 w-4 text-primarypurple"
                                                     aria-hidden="true"
@@ -257,8 +236,8 @@ export default function LeaderboardPage() {
                                             </div>
                                         </dl>
 
-                                        <div className={`rounded-2xl px-3 py-2.5 text-center sm:col-start-2 lg:col-start-auto ${contributor.rank === 1 ? "bg-primarygreen text-black" : "bg-primarypurple/10 text-primarypurple"}`}>
-                                            <p className="text-[11px] font-semibold uppercase tracking-wide">
+                                        <div className={`border-l-4 px-3 py-2.5 text-center sm:col-start-2 lg:col-start-auto ${contributor.rank === 1 ? "border-primarypurple bg-primarygreen text-black" : "border-primarypurple bg-primarypurple/10 text-primarypurple"}`}>
+                                            <p className="text-[11px] font-semibold tracking-wide">
                                                 Score
                                             </p>
                                             <p className="font-mono text-2xl font-bold">

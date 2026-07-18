@@ -195,30 +195,25 @@ const EditProfile = () => {
         const result = updateProfileMutation.data as
             | { message?: string }
             | undefined;
-        message = result?.message || "Profile updated successfully!";
+        message = result?.message || "Profile updated successfully.";
         isError = false;
     }
 
     return (
         <section
-            className="relative isolate my-6 overflow-hidden rounded-[2rem] border border-primarypurple/15 bg-[#fbfaff] p-5 shadow-[0_22px_70px_rgba(24,15,48,0.08)] sm:p-7 lg:p-8"
+            className="relative isolate my-6 overflow-hidden border-y border-primarypurple/20 bg-white/80 p-5 sm:p-7 lg:p-8"
             aria-labelledby="edit-profile-heading"
         >
             <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primarypurple via-primarygreen to-primarypurple"
+                className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primarygreen"
                 aria-hidden="true"
             />
-            <div
-                className="pointer-events-none absolute -right-24 -top-24 -z-10 h-64 w-64 rounded-full bg-primarygreen/15 blur-3xl"
-                aria-hidden="true"
-            />
-
             <div className="mb-7 flex items-start gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarypurple text-white shadow-[0_12px_28px_rgba(111,67,254,0.25)]">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primarypurple text-white">
                     <CircleUserRound className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
-                    <p className="text-[0.68rem] font-black uppercase tracking-[0.2em] text-primarypurple">
+                    <p className="font-mono text-[0.68rem] font-black tracking-[0.17em] text-primarypurple">
                         Public profile
                     </p>
                     <h2
@@ -239,7 +234,7 @@ const EditProfile = () => {
                 onSubmit={handleSubmit(onSubmit)}
                 aria-busy={updateProfileMutation.isPending}
             >
-                <div className="grid gap-5 rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_10px_30px_rgba(24,15,48,0.04)] sm:p-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+                <div className="grid gap-5 border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
                     {/* Name */}
                     <div className="flex flex-col">
                         <label
@@ -326,7 +321,7 @@ const EditProfile = () => {
                 </div>
 
                 {/* Skills */}
-                <div className="rounded-2xl border border-black/[0.06] bg-white p-4 shadow-[0_10px_30px_rgba(24,15,48,0.04)] sm:p-5">
+                <div className="border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5">
                     <div className="mb-3">
                         <p
                             id="edit-profile-skills-label"
@@ -361,7 +356,7 @@ const EditProfile = () => {
                             className={PLATFORM_INPUT_CLASS}
                         />
                         <Button
-                            className="min-h-12 w-full bg-primarygreen px-6 font-black text-black shadow-[0_8px_20px_rgba(195,255,0,0.18)] sm:w-auto"
+                            className="min-h-12 w-full rounded-md bg-primarygreen px-6 font-black text-black shadow-none sm:w-auto"
                             type="button"
                             isDisabled={
                                 !skillInput.trim() ||
@@ -369,7 +364,11 @@ const EditProfile = () => {
                             }
                             onPress={addSkill}
                             startContent={
-                                <Plus className="h-4 w-4" aria-hidden="true" />
+                                <Plus
+                                    className="h-5 w-5 shrink-0"
+                                    strokeWidth={3}
+                                    aria-hidden="true"
+                                />
                             }
                         >
                             Add skill
@@ -414,7 +413,7 @@ const EditProfile = () => {
                         Changes are visible to other signed-in community members.
                     </p>
                     <Button
-                        className="min-h-12 w-full bg-primarypurple px-6 font-bold text-white shadow-[0_10px_26px_rgba(111,67,254,0.24)] sm:w-auto"
+                        className="min-h-12 w-full rounded-md bg-primarypurple px-6 font-bold text-white shadow-none sm:w-auto"
                         type="submit"
                         isDisabled={!isValid || updateProfileMutation.isPending}
                         startContent={

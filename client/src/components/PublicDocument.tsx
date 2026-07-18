@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import {
-    ArrowLeft,
-    ArrowUpRight,
-    Clock3,
-    FileCheck2,
-    Sparkles,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export interface PublicDocumentSection {
     id: string;
@@ -37,106 +31,188 @@ export default function PublicDocument({
     sections,
     closing,
 }: PublicDocumentProps) {
+    const documentIndex = Math.max(
+        DOCUMENT_LINKS.findIndex((link) => link.label === title) + 1,
+        1
+    );
+
     return (
-        <article className="relative isolate overflow-hidden bg-[#f7f6fb] text-black">
-            <header className="relative overflow-hidden bg-primarypurple px-5 pb-24 pt-32 text-white sm:px-8 sm:pb-28 sm:pt-36">
+        <article className="bg-[#E8EAEC] font-sans text-black">
+            <header className="relative overflow-hidden border-b border-black bg-primarypurple px-5 pb-16 pt-32 text-white sm:px-8 sm:pb-20 sm:pt-36 lg:px-12">
                 <div
-                    className="landing-grid pointer-events-none absolute inset-0 opacity-30"
-                    aria-hidden="true"
-                />
-                <div
-                    className="pointer-events-none absolute -left-36 top-10 h-80 w-80 rounded-full bg-primarygreen/15 blur-3xl"
-                    aria-hidden="true"
-                />
-                <div
-                    className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-white/10 blur-3xl"
+                    className="landing-grid pointer-events-none absolute inset-0 opacity-20"
                     aria-hidden="true"
                 />
 
-                <div className="landing-fade-up relative mx-auto max-w-7xl">
-                    <Link
-                        href="/"
-                        className="group inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-white/70 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                    >
-                        <ArrowLeft
-                            className="h-4 w-4 transition-transform group-hover:-translate-x-1"
-                            aria-hidden="true"
-                        />
-                        Back to home
-                    </Link>
-
-                    <div className="mt-9 max-w-3xl">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold uppercase tracking-[0.16em] backdrop-blur-sm">
-                            <Sparkles className="h-3.5 w-3.5 text-primarygreen" aria-hidden="true" />
-                            Community standards
-                        </div>
-                        <h1 className="mt-6 text-balance text-4xl font-black leading-[1.02] tracking-[-0.045em] sm:text-5xl md:text-6xl">
-                            {title}
-                        </h1>
-                        <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
-                            {description}
+                <div className="landing-fade-up relative mx-auto max-w-[90rem]">
+                    <div className="flex items-center justify-between gap-6 border-b border-white/20 pb-4">
+                        <Link
+                            href="/"
+                            className="group inline-flex items-center gap-2 text-sm font-semibold text-white/90 transition-colors duration-200 hover:text-white active:text-primarygreen focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                        >
+                            <ArrowLeft
+                                className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1"
+                                aria-hidden="true"
+                            />
+                            Back to home
+                        </Link>
+                        <p className="hidden font-mono text-xs font-bold uppercase tracking-[0.16em] text-primarygreen sm:block">
+                            Field manual / 0{documentIndex}
                         </p>
+                    </div>
 
-                        <dl className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/70">
-                            <div className="flex items-center gap-2">
-                                <FileCheck2 className="h-4 w-4 text-primarygreen" aria-hidden="true" />
-                                <dt className="sr-only">Effective date</dt>
-                                <dd>Effective {effectiveDate}</dd>
+                    <div className="grid gap-10 pt-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end lg:gap-16 lg:pt-14">
+                        <div className="max-w-4xl">
+                            <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-primarygreen">
+                                <span className="h-2 w-2 bg-primarygreen" aria-hidden="true" />
+                                Community standards
+                            </p>
+                            <h1 className="mt-6 text-balance text-5xl font-black leading-[0.9] tracking-[-0.06em] sm:text-6xl lg:text-7xl">
+                                {title}
+                            </h1>
+                            <p className="mt-6 max-w-3xl text-pretty text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
+                                {description}
+                            </p>
+                        </div>
+
+                        <dl className="grid grid-cols-2 border-y border-white/25 lg:grid-cols-1 lg:border-b-0 lg:border-l lg:border-t lg:pl-6">
+                            <div className="py-4 pr-4 lg:border-b lg:border-white/20 lg:pr-0">
+                                <dt className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
+                                    Effective
+                                </dt>
+                                <dd className="mt-1 font-mono text-sm font-semibold tabular-nums text-white/90">
+                                    {effectiveDate}
+                                </dd>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Clock3 className="h-4 w-4 text-primarygreen" aria-hidden="true" />
-                                <dt className="sr-only">Estimated reading time</dt>
-                                <dd>{readTime} read</dd>
+                            <div className="border-l border-white/20 py-4 pl-4 lg:border-l-0 lg:pl-0">
+                                <dt className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
+                                    Reading time
+                                </dt>
+                                <dd className="mt-1 font-mono text-sm font-semibold text-white/90">
+                                    {readTime}
+                                </dd>
                             </div>
                         </dl>
                     </div>
                 </div>
             </header>
 
-            <div className="relative mx-auto -mt-12 grid max-w-7xl items-start gap-6 px-5 pb-20 sm:px-8 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-8 lg:pb-28">
-                <div className="overflow-hidden rounded-[1.5rem] border border-black/[0.08] bg-white shadow-[0_24px_70px_rgba(44,27,92,0.10)] sm:rounded-[1.75rem]">
+            <div className="mx-auto grid max-w-[90rem] items-start px-5 pb-20 sm:px-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:px-12 lg:pb-28">
+                <aside className="border-x border-b border-black/15 bg-white lg:sticky lg:top-20 lg:border-l lg:border-r-0">
+                    <div className="border-b border-black/15 p-5 sm:p-6">
+                        <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primarypurple sm:text-xs">
+                            Document library
+                        </p>
+                        <nav aria-label="Community documents" className="mt-4">
+                            <ul className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1">
+                                {DOCUMENT_LINKS.map((link, index) => (
+                                    <li key={link.href} className="shrink-0">
+                                        <Link
+                                            href={link.href}
+                                            aria-current={
+                                                link.label === title ? "page" : undefined
+                                            }
+                                            className="group grid min-h-11 grid-cols-[1.75rem_1fr_auto] items-center gap-2 border border-black/15 px-3 text-sm font-semibold text-black/55 transition-[background-color,color,border-color,transform] duration-200 hover:border-primarypurple/40 hover:text-primarypurple active:translate-y-px aria-[current=page]:border-primarypurple aria-[current=page]:bg-primarypurple aria-[current=page]:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple lg:border-transparent"
+                                        >
+                                            <span className="font-mono text-[0.65rem] opacity-55">
+                                                0{index + 1}
+                                            </span>
+                                            {link.label}
+                                            <span
+                                                className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                                                aria-hidden="true"
+                                            >
+                                                ↗
+                                            </span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
+                    </div>
+
                     <nav
                         aria-label={`Sections in ${title}`}
-                        className="border-b border-black/[0.07] bg-[#fbfaff] px-5 py-5 sm:px-8"
+                        className="hidden border-b border-black/15 p-6 lg:block"
                     >
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-primarypurple">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primarypurple">
                             On this page
                         </p>
-                        <ol className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+                        <ol className="mt-4 space-y-1">
                             {sections.map((section, index) => (
-                                <li key={section.id} className="shrink-0">
+                                <li key={section.id}>
                                     <a
                                         href={`#${section.id}`}
-                                        className="inline-flex min-h-10 items-center rounded-full border border-black/10 bg-white px-4 text-sm font-semibold text-black/65 transition-colors hover:border-primarypurple/35 hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                        className="grid min-h-10 grid-cols-[1.75rem_1fr] items-start gap-2 py-2 text-sm font-medium leading-5 text-black/60 transition-[color,transform] duration-200 hover:translate-x-1 hover:text-primarypurple active:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                     >
-                                        {index + 1}. {section.title}
+                                        <span className="font-mono text-[0.65rem] font-bold text-primarypurple">
+                                            {String(index + 1).padStart(2, "0")}
+                                        </span>
+                                        {section.title}
                                     </a>
                                 </li>
                             ))}
                         </ol>
-                        <p className="mt-2 hidden text-sm leading-6 text-black/50 lg:block">
-                            Clear, practical standards for a safer student community.
-                        </p>
                     </nav>
 
-                    <div className="divide-y divide-black/[0.07] px-5 sm:px-8">
+                    <div className="bg-primarygreen p-5 text-black sm:p-6">
+                        <p className="text-sm font-bold">Questions or concerns?</p>
+                        <p className="mt-2 text-xs leading-5 text-black/55">
+                            Contact the project team for help understanding these standards.
+                        </p>
+                        <Link
+                            href="mailto:k230544@nu.edu.pk"
+                            className="mt-5 inline-flex min-h-11 w-full items-center justify-between bg-black px-4 text-xs font-bold text-white transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                        >
+                            Contact the team
+                            <span aria-hidden="true">↗</span>
+                        </Link>
+                    </div>
+                </aside>
+
+                <div className="border-x border-b border-black/15 bg-white">
+                    <nav
+                        aria-label={`Sections in ${title}`}
+                        className="border-b border-black/15 p-5 lg:hidden"
+                    >
+                        <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primarypurple">
+                            On this page
+                        </p>
+                        <ol className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                            {sections.map((section, index) => (
+                                <li key={section.id} className="shrink-0">
+                                    <a
+                                        href={`#${section.id}`}
+                                        className="inline-flex min-h-10 items-center border border-black/15 px-3 text-sm font-semibold text-black/55 transition-[border-color,color,transform] duration-200 hover:border-primarypurple/40 hover:text-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                    >
+                                        <span className="mr-2 font-mono text-[0.65rem] text-primarypurple">
+                                            {String(index + 1).padStart(2, "0")}
+                                        </span>
+                                        {section.title}
+                                    </a>
+                                </li>
+                            ))}
+                        </ol>
+                    </nav>
+
+                    <div className="divide-y divide-black/15 px-5 sm:px-8 lg:px-12">
                         {sections.map((section, index) => (
                             <section
                                 id={section.id}
                                 key={section.id}
-                                className="scroll-mt-28 py-8 sm:grid sm:grid-cols-[2.75rem_minmax(0,1fr)] sm:gap-5 sm:py-10"
+                                className="scroll-mt-28 py-9 sm:grid sm:grid-cols-[3.5rem_minmax(0,1fr)] sm:gap-6 sm:py-12 lg:py-14"
                             >
                                 <span
-                                    className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-primarypurple/10 text-sm font-black text-primarypurple sm:mb-0"
+                                    className="mb-4 block font-mono text-sm font-bold tabular-nums text-primarypurple sm:mb-0"
                                     aria-hidden="true"
                                 >
                                     {String(index + 1).padStart(2, "0")}
                                 </span>
                                 <div>
-                                    <h2 className="text-xl font-black tracking-[-0.025em] text-black sm:text-2xl">
+                                    <h2 className="max-w-2xl text-2xl font-black leading-tight tracking-[-0.035em] text-black sm:text-3xl">
                                         {section.title}
                                     </h2>
-                                    <div className="mt-3 text-[0.95rem] leading-7 text-black/65 [&_a]:font-bold [&_a]:text-primarypurple [&_a]:underline [&_a]:decoration-primarypurple/30 [&_a]:underline-offset-4 [&_a]:transition-colors hover:[&_a]:text-black sm:text-base sm:leading-8">
+                                    <div className="mt-4 max-w-[68ch] text-[0.95rem] leading-7 text-black/60 [&_a]:font-bold [&_a]:text-primarypurple [&_a]:underline [&_a]:decoration-primarypurple/30 [&_a]:underline-offset-4 [&_a]:transition-colors hover:[&_a]:text-black sm:text-base sm:leading-8">
                                         {section.body}
                                     </div>
                                 </div>
@@ -145,51 +221,13 @@ export default function PublicDocument({
                     </div>
 
                     {closing && (
-                        <footer className="border-t border-black/[0.07] bg-primarygreen/15 px-5 py-7 sm:px-8">
-                            <div className="text-sm leading-7 text-black/65 [&_a]:font-bold [&_a]:text-primarypurple [&_a]:underline [&_a]:decoration-primarypurple/30 [&_a]:underline-offset-4 [&_a]:transition-colors hover:[&_a]:text-black">
+                        <footer className="border-t border-black bg-primarygreen/25 px-5 py-7 sm:px-8 lg:px-12">
+                            <div className="max-w-[68ch] text-sm leading-7 text-black/60 [&_a]:font-bold [&_a]:text-primarypurple [&_a]:underline [&_a]:decoration-primarypurple/30 [&_a]:underline-offset-4 [&_a]:transition-colors hover:[&_a]:text-black">
                                 {closing}
                             </div>
                         </footer>
                     )}
                 </div>
-
-                <aside className="rounded-[1.5rem] border border-black/[0.08] bg-[#0d0b12] p-6 text-white shadow-[0_20px_55px_rgba(13,11,18,0.14)] lg:sticky lg:top-28">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-primarygreen">
-                        Document library
-                    </p>
-                    <nav aria-label="Community documents" className="mt-4">
-                        <ul className="space-y-1">
-                            {DOCUMENT_LINKS.map((link) => (
-                                <li key={link.href}>
-                                    <Link
-                                        href={link.href}
-                                        aria-current={link.label === title ? "page" : undefined}
-                                        className="group flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 text-sm font-semibold text-white/65 transition-colors hover:bg-white/[0.07] hover:text-white aria-[current=page]:bg-white/10 aria-[current=page]:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarygreen"
-                                    >
-                                        {link.label}
-                                        <ArrowUpRight
-                                            className="h-4 w-4 text-white/35 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primarygreen"
-                                            aria-hidden="true"
-                                        />
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </nav>
-
-                    <div className="mt-6 border-t border-white/10 pt-6">
-                        <p className="text-sm font-bold">Questions or concerns?</p>
-                        <p className="mt-2 text-sm leading-6 text-white/50">
-                            Contact the project team for help understanding these standards.
-                        </p>
-                        <Link
-                            href="mailto:k230544@nu.edu.pk"
-                            className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primarygreen px-4 text-sm font-bold text-black transition-all hover:-translate-y-0.5 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                        >
-                            Contact the team
-                        </Link>
-                    </div>
-                </aside>
             </div>
         </article>
     );

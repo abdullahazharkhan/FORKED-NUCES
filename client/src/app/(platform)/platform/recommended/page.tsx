@@ -73,16 +73,16 @@ const recommendationOptions: Array<{
         label: "Spotlight",
         helper: "Fresh and noteworthy picks",
     },
-    { id: "skill-match", label: "Skill Match", helper: "Matches your skills" },
-    { id: "with-issues", label: "Open Issues", helper: "Needs contributors" },
+    { id: "skill-match", label: "Skill match", helper: "Matches your skills" },
+    { id: "with-issues", label: "Open issues", helper: "Needs contributors" },
     {
         id: "without-issues",
-        label: "Resolved & Stable",
+        label: "Resolved & stable",
         helper: "No open issues",
     },
     {
         id: "network",
-        label: "From Your Network",
+        label: "From your network",
         helper: "From connected contributors",
     },
 ];
@@ -201,28 +201,28 @@ const RecommendedProjects = () => {
     };
 
     return (
-        <div className="mx-auto w-full max-w-7xl space-y-7 px-5 py-8 sm:px-8 lg:space-y-9 lg:py-10">
+        <div className="mx-auto w-full max-w-[90rem] space-y-8 px-5 py-8 sm:px-8 lg:space-y-11 lg:py-12">
             <PlatformPageHeader
-                eyebrow="Made for you"
-                title={<>A smarter way to find your <span className="text-primarygreen">next build.</span></>}
-                description="Recommendations adapt to your skills, network, and the kinds of projects that need help right now."
+                eyebrow="Your signal desk"
+                title={<>A shorter route to <span className="text-primarygreen">relevant work.</span></>}
+                description="This feed reads your skills, network, and current project activity to surface work that is more likely to fit."
                 actions={
                     <div className={PLATFORM_HEADER_BADGE_CLASS}>
                         <Sparkles className="h-6 w-6 text-primarygreen" aria-hidden="true" />
-                        <span className="text-sm font-bold">Personalized picks</span>
+                        <span className="font-mono text-[0.68rem] font-semibold uppercase leading-4 tracking-[0.1em] text-white/90">Personalized<br />project picks</span>
                     </div>
                 }
             />
 
-            <section className="rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-6" aria-labelledby="recommendation-mode-heading">
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <h2 id="recommendation-mode-heading" className="text-base font-black">Choose your discovery mode</h2>
-                        <p className="mt-1 text-xs text-black/45">Switch perspectives without losing your place.</p>
+            <section className="border-y border-black/15 bg-white/75 px-5 py-6 sm:px-6" aria-labelledby="recommendation-mode-heading">
+                <div className="grid gap-7 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-0">
+                    <div className="lg:pr-6">
+                        <h2 id="recommendation-mode-heading" className="text-base font-black tracking-[-0.02em]">Tune the feed</h2>
+                        <p className="mt-2 max-w-[27ch] text-xs leading-5 text-black/60">Search the loaded set or choose the signal shaping this directory.</p>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:w-[34rem]">
+                    <div className="grid gap-5 border-black/10 sm:grid-cols-2 lg:border-l lg:pl-6">
                         <label className="block">
-                            <span className="mb-2 block text-xs font-bold text-black/55">Search loaded results</span>
+                            <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Search loaded results</span>
                             <span className="relative block">
                                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" aria-hidden="true" />
                                 <input
@@ -236,7 +236,7 @@ const RecommendedProjects = () => {
                             </span>
                         </label>
                         <label className="block">
-                            <span className="mb-2 block text-xs font-bold text-black/55">Technology</span>
+                            <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Technology</span>
                             <select
                                 id="recommendation-tag"
                                 value={selectedTag}
@@ -253,7 +253,7 @@ const RecommendedProjects = () => {
                     </div>
                 </div>
 
-                <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="mt-7 grid border-l border-t border-black/15 sm:grid-cols-2 lg:grid-cols-5">
                     {recommendationOptions.map((option) => {
                         const isActive = recommendationMode === option.id;
                         return (
@@ -262,16 +262,17 @@ const RecommendedProjects = () => {
                                 type="button"
                                 aria-pressed={isActive}
                                 onClick={() => selectMode(option.id)}
-                                className={`min-h-[4.5rem] rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/20 ${
+                                className={`relative min-h-[5rem] border-b border-r border-black/15 p-3 text-left transition-[background-color,color,transform] duration-200 active:translate-y-px focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-primarypurple ${
                                     isActive
-                                        ? "border-primarypurple bg-primarypurple text-white shadow-[0_12px_28px_rgba(111,67,254,0.2)]"
-                                        : "border-black/[0.08] bg-[#f8f7fb] text-black hover:border-primarypurple/30 hover:bg-primarypurple/[0.04]"
+                                        ? "bg-primarypurple text-white"
+                                        : "bg-white/50 text-black hover:bg-primarypurple/[0.05] hover:text-primarypurple"
                                 }`}
                             >
+                                {isActive && <span className="absolute inset-x-0 bottom-0 h-1 bg-primarygreen" aria-hidden="true" />}
                                 <span className="block text-sm font-black">
                                     {option.label}
                                 </span>
-                                <span className={`mt-1 block text-[0.68rem] leading-4 ${isActive ? "text-white/85" : "text-black/40"}`}>
+                                <span className={`mt-1.5 block font-mono text-[0.62rem] leading-4 ${isActive ? "text-white/90" : "text-black/60"}`}>
                                     {option.helper}
                                 </span>
                             </button>
@@ -279,18 +280,18 @@ const RecommendedProjects = () => {
                     })}
                 </div>
                 {modeMessage && (
-                    <div className="mt-4 rounded-2xl border border-primarypurple/15 bg-primarypurple/[0.05] px-4 py-3 text-sm font-medium text-primarypurple">
+                    <div className="mt-5 border-l-2 border-primarypurple bg-primarypurple/[0.05] px-4 py-3 text-sm font-medium text-primarypurple">
                         {modeMessage}
                     </div>
                 )}
             </section>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/15 pb-5">
                 <div>
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-primarypurple">Curated feed</p>
-                    <h2 className="mt-1 text-2xl font-black tracking-tight">Recommended projects</h2>
+                    <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-primarypurple">Directory / curated feed</p>
+                    <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] sm:text-3xl">Recommended projects</h2>
                 </div>
-                <p className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-black/50 shadow-sm" role="status" aria-live="polite">
+                <p className="border-l-2 border-primarygreen pl-3 font-mono text-[0.68rem] font-medium tabular-nums text-black/60" role="status" aria-live="polite">
                     {isFetching && !isFetchingNextPage
                         ? "Updating recommendations..."
                         : totalCount !== null && totalCount !== undefined
@@ -312,7 +313,7 @@ const RecommendedProjects = () => {
 
             {isFetchNextPageError && (
                 <div
-                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-red-50 p-4 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 border-y border-red-200 bg-red-50 p-4 text-sm text-red-700"
                     role="alert"
                 >
                     <span>Could not load more recommendations.</span>

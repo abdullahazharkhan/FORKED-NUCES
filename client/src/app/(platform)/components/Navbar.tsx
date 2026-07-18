@@ -142,46 +142,55 @@ const Navbar = () => {
         <>
             <nav
                 aria-label="Primary navigation"
-                className="fixed inset-x-0 top-0 z-50 h-20 text-white"
+                className={`fixed inset-x-0 top-0 z-50 h-20 border-b bg-primarypurple text-white transition-[border-color,background-color] duration-300 motion-reduce:transition-none ${
+                    scrolled
+                        ? "border-white/20 bg-primarypurple/95 backdrop-blur-md"
+                        : "border-transparent"
+                }`}
             >
-                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
-                    <div
-                        className={`h-20 bg-primarypurple/90 backdrop-blur-xl transition-[width,transform,border-radius,box-shadow] duration-300 ease-out motion-reduce:transition-none supports-[backdrop-filter]:bg-primarypurple/85 ${
-                            scrolled
-                                ? "w-[calc(100%-1.5rem)] max-w-7xl translate-y-3 rounded-2xl shadow-[0_12px_40px_rgba(22,9,60,0.24)] sm:w-[calc(100%-2.5rem)]"
-                                : "w-full translate-y-0 rounded-none shadow-[0_8px_30px_rgba(22,9,60,0.16)]"
-                        }`}
-                    />
-                </div>
-
-                <div
-                    className={`relative mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 transition-transform duration-300 ease-out motion-reduce:transition-none sm:px-8 ${
-                        scrolled ? "translate-y-3" : "translate-y-0"
-                    }`}
-                >
-                    <div className="flex min-w-0 items-center gap-8">
-                        <Link href="/platform" aria-label="FORKED NUCES dashboard" className="flex shrink-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-                            <Image src="/logos/forkednuces-logo-bw-invert.png" alt="" width={44} height={44} className="h-10 w-10 rounded-xl" />
-                            <span className="hidden text-lg font-black tracking-[-0.04em] sm:inline">
+                <div className="mx-auto flex h-20 w-full max-w-[90rem] items-center justify-between gap-4 px-5 sm:px-8">
+                    <div className="flex min-w-0 items-center gap-7">
+                        <Link
+                            href="/platform"
+                            aria-label="FORKED NUCES dashboard"
+                            className="flex shrink-0 items-center gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                        >
+                            <Image
+                                src="/logos/forkednuces-logo-bw-invert.png"
+                                alt=""
+                                width={44}
+                                height={44}
+                                className="h-9 w-9 rounded-sm border border-white/20"
+                            />
+                            <span className="hidden text-lg font-black tracking-[-0.045em] sm:inline">
                                 FORK&apos;D <span className="text-primarygreen">NUCES</span>
+                            </span>
+                            <span className="hidden border-l border-white/20 pl-3 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-white/90 lg:inline">
+                                Campus build index
                             </span>
                         </Link>
 
-                        <div className="hidden items-center gap-1 xl:flex">
-                            {NAV_LINKS.map((link) => (
-                                <Link
-                                    href={link.href}
-                                    key={link.href}
-                                    aria-current={isActive(link.href) ? "page" : undefined}
-                                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                                        isActive(link.href)
-                                            ? "bg-white/15 text-white"
-                                            : "text-white/65 hover:bg-white/10 hover:text-white"
-                                    }`}
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
+                        <div className="hidden h-20 items-stretch xl:flex">
+                            {NAV_LINKS.map((link) => {
+                                const active = isActive(link.href);
+                                return (
+                                    <Link
+                                        href={link.href}
+                                        key={link.href}
+                                        aria-current={active ? "page" : undefined}
+                                        className={`relative flex items-center px-2.5 font-mono text-[0.67rem] font-semibold uppercase tracking-[0.06em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-5px] focus-visible:outline-white ${
+                                            active
+                                                ? "text-white"
+                                                : "text-white/90 hover:text-white"
+                                        }`}
+                                    >
+                                        {link.name}
+                                        {active && (
+                                            <span className="absolute inset-x-2.5 bottom-0 h-1 bg-primarygreen" aria-hidden="true" />
+                                        )}
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -192,7 +201,7 @@ const Navbar = () => {
                             aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
                             aria-expanded={isMenuOpen}
                             aria-controls="platform-mobile-drawer"
-                            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 xl:hidden"
+                            className="flex h-10 w-10 items-center justify-center rounded-md border border-white/25 bg-white/10 transition hover:bg-white/20 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white xl:hidden"
                             onClick={() => setIsMenuOpen((open) => !open)}
                         >
                             <Menu className="h-5 w-5" aria-hidden="true" />
@@ -207,9 +216,9 @@ const Navbar = () => {
                                 aria-label={isProfileOpen ? "Close account menu" : "Open account menu"}
                                 aria-expanded={isProfileOpen}
                                 aria-controls="profile-menu"
-                                className="flex h-11 items-center gap-2 rounded-full border border-white/20 bg-white/10 p-1 pr-2 transition-colors hover:bg-white/15"
+                                className="flex h-11 items-center gap-2 rounded-md border border-white/25 bg-white/10 p-1 pr-2 transition-colors hover:bg-white/20 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                             >
-                                <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/15">
+                                <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-sm border border-white/15 bg-white/15">
                                     {user?.avatar_url ? (
                                         <Image loader={passthroughImageLoader} unoptimized src={user.avatar_url} alt="" width={32} height={32} className="h-8 w-8 object-cover" />
                                     ) : (
@@ -223,15 +232,15 @@ const Navbar = () => {
                             </button>
 
                             {isProfileOpen && (
-                                <div id="profile-menu" className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-black/10 bg-white p-2 text-black shadow-2xl">
-                                    <div className="border-b border-black/[0.07] px-3 py-2.5">
+                                <div id="profile-menu" className="absolute right-0 top-full mt-2 w-60 rounded-md border border-black/15 bg-white p-2 text-black shadow-[4px_4px_0_rgba(23,19,31,0.14)]">
+                                    <div className="border-b border-black/10 px-3 py-2.5">
                                         <p className="truncate text-sm font-bold">{user?.full_name || "Your account"}</p>
-                                        <p className="mt-0.5 truncate text-xs text-black/45">{user?.nu_email}</p>
+                                        <p className="mt-1 truncate font-mono text-[0.66rem] text-black/60">{user?.nu_email}</p>
                                     </div>
-                                    <Link onClick={() => setIsProfileOpen(false)} href="/profile" className="mt-1 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-black/65 hover:bg-primarypurple/[0.06] hover:text-primarypurple">
+                                    <Link onClick={() => setIsProfileOpen(false)} href="/profile" className="mt-1 flex items-center gap-2 rounded-sm px-3 py-2.5 text-sm font-semibold text-black/65 transition-colors hover:bg-primarypurple/[0.06] hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-primarypurple">
                                         <User className="h-4 w-4" aria-hidden="true" /> Profile
                                     </Link>
-                                    <Link href="/profile/reports" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-black/65 hover:bg-primarypurple/[0.06] hover:text-primarypurple">
+                                    <Link href="/profile/reports" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 rounded-sm px-3 py-2.5 text-sm font-semibold text-black/65 transition-colors hover:bg-primarypurple/[0.06] hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-primarypurple">
                                         <ClipboardList className="h-4 w-4" aria-hidden="true" /> My reports
                                     </Link>
                                     <button
@@ -241,7 +250,7 @@ const Navbar = () => {
                                             logoutMutation.mutate();
                                         }}
                                         disabled={logoutMutation.isPending}
-                                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60"
+                                        className="flex w-full items-center gap-2 rounded-sm px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
                                     >
                                         <LogOut className="h-4 w-4" aria-hidden="true" />
                                         {logoutMutation.isPending ? "Logging out..." : "Log out"}
@@ -259,29 +268,33 @@ const Navbar = () => {
             {isMenuOpen && (
                 <>
                     <button type="button" className="landing-overlay-in fixed inset-0 z-40 bg-black/60 backdrop-blur-sm xl:hidden" aria-label="Close navigation menu" onClick={() => setIsMenuOpen(false)} />
-                    <aside ref={mobileDrawerRef} id="platform-mobile-drawer" className="landing-drawer-in fixed left-0 top-0 z-50 h-dvh w-[86vw] max-w-[360px] bg-white shadow-2xl xl:hidden" role="dialog" aria-modal="true" aria-label="Platform navigation" tabIndex={-1}>
+                    <aside ref={mobileDrawerRef} id="platform-mobile-drawer" className="landing-drawer-in fixed right-0 top-0 z-50 h-dvh w-[86vw] max-w-[360px] border-l border-primarypurple/30 bg-white xl:hidden" role="dialog" aria-modal="true" aria-label="Platform navigation" tabIndex={-1}>
                         <div className="flex h-20 items-center justify-between border-b border-black/10 px-5">
-                            <span className="text-lg font-black">FORK&apos;D <span className="text-primarypurple">NUCES</span></span>
-                            <button type="button" aria-label="Close navigation menu" className="flex h-10 w-10 items-center justify-center rounded-lg bg-black/[0.05]" onClick={() => setIsMenuOpen(false)}>
+                            <span className="text-lg font-black tracking-[-0.04em]">FORK&apos;D <span className="text-primarypurple">NUCES</span></span>
+                            <button type="button" aria-label="Close navigation menu" className="flex h-10 w-10 items-center justify-center rounded-md border border-black/15 bg-black/[0.03] transition hover:border-primarypurple hover:text-primarypurple active:translate-y-px" onClick={() => setIsMenuOpen(false)}>
                                 <X className="h-5 w-5" aria-hidden="true" />
                             </button>
                         </div>
-                        <nav className="space-y-1 px-5 py-6" aria-label="Mobile platform navigation">
-                            {NAV_LINKS.map((link) => (
-                                <Link
-                                    href={link.href}
-                                    key={link.href}
-                                    onClick={() => setIsMenuOpen(false)}
-                                    aria-current={isActive(link.href) ? "page" : undefined}
-                                    className={`block rounded-xl px-3 py-3 text-base font-bold ${
-                                        isActive(link.href)
-                                            ? "bg-primarypurple text-white"
-                                            : "text-black/65 hover:bg-primarypurple/[0.06] hover:text-primarypurple"
-                                    }`}
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
+                        <nav className="px-5 py-6" aria-label="Mobile platform navigation">
+                            {NAV_LINKS.map((link) => {
+                                const active = isActive(link.href);
+                                return (
+                                    <Link
+                                        href={link.href}
+                                        key={link.href}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        aria-current={active ? "page" : undefined}
+                                        className={`relative flex items-center justify-between border-b border-black/10 px-3 py-3.5 text-base font-bold transition-colors focus-visible:outline-2 focus-visible:outline-primarypurple ${
+                                            active
+                                                ? "border-l-2 border-l-primarypurple bg-primarypurple/[0.06] text-primarypurple"
+                                                : "text-black/65 hover:bg-primarypurple/[0.04] hover:text-primarypurple"
+                                        }`}
+                                    >
+                                        {link.name}
+                                        {active && <span className="h-2 w-2 bg-primarygreen ring-1 ring-black/20" aria-hidden="true" />}
+                                    </Link>
+                                );
+                            })}
                         </nav>
                     </aside>
                 </>

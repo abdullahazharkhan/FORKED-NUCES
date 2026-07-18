@@ -7,12 +7,12 @@ import {
     Inbox,
     MessageSquareText,
     Send,
-    Sparkles,
     UserRoundCheck,
 } from "lucide-react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { UserAvatar } from "../components/UserAvatar";
+import { PlatformPageHeader } from "../components/PlatformPageHeader";
 
 import { authFetch } from "@/lib/authFetch";
 import {
@@ -165,51 +165,38 @@ export default function CollaborationsPage() {
 
     if (!currentUser && (sessionStatus === "idle" || sessionStatus === "loading")) {
         return (
-            <div className="mx-auto max-w-6xl space-y-4 px-5 py-8 sm:px-8 lg:py-12" role="status" aria-label="Loading collaborations">
-                <div className="h-48 animate-pulse rounded-[2rem] bg-primarypurple/20" />
-                <div className="h-40 animate-pulse rounded-[1.5rem] bg-black/[0.05]" />
+            <div className="mx-auto max-w-7xl space-y-4 px-5 py-8 sm:px-8 lg:py-12" role="status" aria-label="Loading collaborations">
+                <div className="h-48 animate-pulse rounded-lg bg-primarypurple/20" />
+                <div className="h-40 animate-pulse border-y border-black/10 bg-black/[0.05]" />
             </div>
         );
     }
 
     return (
-        <div className="relative isolate min-h-screen overflow-hidden px-5 py-8 sm:px-8 lg:py-12">
-            <div className="pointer-events-none absolute inset-0 -z-20 bg-[#f4f3f8]" aria-hidden="true" />
-            <div className="pointer-events-none absolute -left-40 bottom-16 -z-10 h-96 w-96 rounded-full bg-primarygreen/20 blur-3xl" aria-hidden="true" />
-            <div className="pointer-events-none absolute -right-32 top-72 -z-10 h-80 w-80 rounded-full bg-primarypurple/10 blur-3xl" aria-hidden="true" />
-
-            <div className="mx-auto max-w-6xl space-y-6">
-            <header className="relative isolate overflow-hidden rounded-[2rem] bg-primarypurple px-6 py-8 text-white shadow-[0_24px_70px_rgba(75,40,175,0.22)] sm:px-9 sm:py-10 lg:px-12">
-                <div className="landing-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true" />
-                <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primarygreen/20 blur-3xl" aria-hidden="true" />
-                <div className="relative max-w-3xl">
-                    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/80 backdrop-blur-sm">
-                        <Sparkles className="h-4 w-4 text-primarygreen" aria-hidden="true" />
-                        Build together
+        <div className="px-5 py-8 sm:px-8 lg:py-12">
+            <div className="mx-auto max-w-7xl space-y-8">
+            <PlatformPageHeader
+                eyebrow="Build together"
+                title={<>Collaboration <span className="text-primarygreen">desk.</span></>}
+                description="Keep every request in one place, from the first invitation to the final decision."
+                actions={
+                    <div className="flex items-center gap-3 border-l border-white/25 pl-5 text-white">
+                        <UserRoundCheck className="h-5 w-5 text-primarygreen" aria-hidden="true" />
+                        <span className="text-sm font-semibold">Requests & invitations</span>
                     </div>
-                    <h1 className="flex items-center gap-3 text-balance text-3xl font-black tracking-[-0.04em] sm:text-4xl lg:text-5xl">
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarygreen text-black shadow-lg shadow-black/10">
-                            <UserRoundCheck className="h-6 w-6" aria-hidden="true" />
-                        </span>
-                        Collaborations
-                    </h1>
-                    <p className="mt-4 max-w-2xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">
-                        Keep every collaboration request in one place, from the first
-                        invitation to the final decision.
-                    </p>
-                </div>
-            </header>
+                }
+            />
 
-            <div role="group" aria-label="Collaboration request direction" className="flex w-full gap-1 rounded-2xl border border-black/[0.07] bg-white p-1.5 shadow-[0_10px_30px_rgba(35,20,75,0.06)] sm:w-fit">
+            <div role="group" aria-label="Collaboration request direction" className="flex w-full border-b border-black/15 sm:w-fit">
                 {dashboardTabs.map(({ id, label, Icon }) => (
                     <button
                         key={id}
                         type="button"
                         aria-pressed={activeTab === id}
                         onClick={() => setActiveTab(id)}
-                        className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple sm:flex-none ${activeTab === id
-                            ? "bg-primarypurple text-white shadow-[0_8px_20px_rgba(111,67,254,0.2)]"
-                            : "text-black/55 hover:bg-primarypurple/[0.06] hover:text-primarypurple"
+                        className={`relative inline-flex min-h-12 flex-1 items-center justify-center gap-2 px-5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:bg-primarypurple/10 sm:flex-none ${activeTab === id
+                            ? "text-primarypurple after:absolute after:inset-x-0 after:-bottom-px after:h-1 after:bg-primarygreen"
+                            : "text-black/60 hover:text-primarypurple"
                             }`}
                     >
                         <Icon className="h-4 w-4" aria-hidden="true" />
@@ -237,7 +224,7 @@ export default function CollaborationsPage() {
                         {collaborationSkeletonIds.map((id) => (
                             <div
                                 key={id}
-                            className="h-44 animate-pulse rounded-[1.5rem] border border-black/[0.07] bg-white shadow-sm"
+                            className="h-44 animate-pulse border-b border-black/10 bg-white/75"
                             />
                         ))}
                     </div>
@@ -263,8 +250,8 @@ export default function CollaborationsPage() {
                 )}
 
                 {!requests.isPending && !requests.isError && visibleRequests.length === 0 && (
-                    <div className="rounded-[1.75rem] border border-dashed border-primarypurple/25 bg-white p-10 text-center shadow-[0_12px_35px_rgba(35,20,75,0.05)]">
-                        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                    <div className="border-y border-dashed border-primarypurple/35 bg-white/70 p-10 text-center">
+                        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-md bg-primarypurple/10 text-primarypurple">
                             {activeTab === "incoming" ? (
                                 <Inbox className="h-7 w-7" aria-hidden="true" />
                             ) : (
@@ -296,7 +283,7 @@ export default function CollaborationsPage() {
                             return (
                                 <article
                                     key={request.request_id}
-                                    className="group relative space-y-5 overflow-hidden rounded-[1.5rem] border border-black/[0.07] bg-white p-5 shadow-[0_8px_28px_rgba(35,20,75,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primarypurple/25 hover:shadow-[0_18px_42px_rgba(35,20,75,0.1)] sm:p-6"
+                                    className="group relative space-y-5 overflow-hidden border-b border-black/10 bg-white/80 p-5 transition-colors duration-200 hover:bg-white active:bg-primarypurple/[0.035] sm:p-6"
                                 >
                                     {request.status === "pending" && (
                                         <span className="absolute inset-y-0 left-0 w-1 bg-primarygreen" aria-hidden="true" />
@@ -330,7 +317,7 @@ export default function CollaborationsPage() {
                                         </time>
                                     </div>
 
-                                    <div className="rounded-2xl border border-black/[0.05] bg-[#f8f7fb] p-4 text-sm">
+                                    <div className="border-l-2 border-primarypurple/25 bg-primarypurple/[0.035] p-4 text-sm">
                                         <div className="flex min-w-0 items-center gap-3">
                                             <UserAvatar
                                                 avatarUrl={request.user_avatar_url}
@@ -366,11 +353,11 @@ export default function CollaborationsPage() {
                                                             action,
                                                         })
                                                     }
-                                                    className={`min-h-11 rounded-xl px-5 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${action === "accept"
-                                                        ? "bg-primarypurple text-white shadow-[0_10px_24px_rgba(111,67,254,0.18)] hover:-translate-y-0.5 hover:bg-black focus-visible:outline-primarypurple"
+                                                    className={`min-h-11 rounded-md px-5 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 ${action === "accept"
+                                                        ? "bg-primarypurple text-white hover:bg-black focus-visible:outline-primarypurple"
                                                         : action === "reject"
-                                                            ? "bg-red-600 text-white hover:-translate-y-0.5 hover:bg-red-700 focus-visible:outline-red-600"
-                                                            : "border border-black/15 text-gray-700 hover:-translate-y-0.5 hover:border-primarypurple/30 hover:bg-primarypurple/[0.05] hover:text-primarypurple focus-visible:outline-primarypurple"
+                                                            ? "bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600"
+                                                            : "border border-black/15 text-gray-700 hover:border-primarypurple/30 hover:bg-primarypurple/[0.05] hover:text-primarypurple focus-visible:outline-primarypurple"
                                                         }`}
                                                 >
                                                     {pendingAction && actionMutation.variables?.action === action
@@ -393,7 +380,7 @@ export default function CollaborationsPage() {
                         type="button"
                         onClick={() => void requests.fetchNextPage()}
                         disabled={requests.isFetchingNextPage}
-                        className="min-h-12 rounded-xl bg-primarypurple px-6 text-sm font-bold text-white shadow-[0_12px_28px_rgba(111,67,254,0.2)] transition-all hover:-translate-y-0.5 hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primarypurple disabled:opacity-60 disabled:hover:translate-y-0"
+                        className="min-h-12 rounded-md bg-primarypurple px-6 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primarypurple active:translate-y-px disabled:opacity-60"
                     >
                         {requests.isFetchingNextPage ? "Loading..." : "Load more"}
                     </button>

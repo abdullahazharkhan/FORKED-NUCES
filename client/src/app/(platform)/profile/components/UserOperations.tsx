@@ -9,11 +9,11 @@ import ProfileSecurity from "./ProfileSecurity";
 import YourProjects from "./YourProjects";
 
 const operations = [
-    { id: "projects", label: "Your Projects", icon: FolderKanban },
-    { id: "edit", label: "Edit Profile", icon: UserPen },
-    { id: "add", label: "Add Project", icon: Plus },
+    { id: "projects", label: "Your projects", icon: FolderKanban },
+    { id: "edit", label: "Edit profile", icon: UserPen },
+    { id: "add", label: "Add project", icon: Plus },
     { id: "security", label: "Security", icon: ShieldCheck },
-    { id: "data", label: "Your Data", icon: Database },
+    { id: "data", label: "Your data", icon: Database },
 ] as const;
 
 type OperationId = (typeof operations)[number]["id"];
@@ -61,11 +61,11 @@ const UserOperations = () => {
     return (
         <section aria-labelledby="profile-workspace-heading">
             <div className="mb-5 flex items-start gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primarygreen text-black shadow-[0_10px_24px_rgba(195,255,0,0.18)]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primarygreen text-black">
                     <UserPen className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
-                    <p className="text-[0.68rem] font-black uppercase tracking-[0.2em] text-primarypurple">
+                    <p className="font-mono text-[0.68rem] font-black tracking-[0.17em] text-primarypurple">
                         Account workspace
                     </p>
                     <h2
@@ -80,12 +80,12 @@ const UserOperations = () => {
                     </p>
                 </div>
             </div>
-            <div className="overflow-x-auto rounded-2xl border border-primarypurple/15 bg-[#fbfaff] p-1.5 shadow-[0_12px_36px_rgba(24,15,48,0.06)]">
+            <div className="overflow-x-auto border-b border-primarypurple/20">
                 <div
                     role="tablist"
                     aria-label="Profile operations"
                     aria-orientation="horizontal"
-                    className="flex min-w-max gap-1"
+                    className="flex min-w-max"
                 >
                     {operations.map((operation, index) => {
                         const Icon = operation.icon;
@@ -99,10 +99,10 @@ const UserOperations = () => {
                                 aria-selected={isSelected}
                                 aria-controls="profile-operation-panel"
                                 tabIndex={isSelected ? 0 : -1}
-                                className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/20 ${
+                                className={`relative inline-flex min-h-12 items-center gap-2 px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/20 active:bg-primarypurple/10 ${
                                     isSelected
-                                        ? "bg-primarypurple text-white shadow-[0_8px_22px_rgba(111,67,254,0.24)]"
-                                        : "text-gray-500 hover:bg-white hover:text-primarypurple"
+                                        ? "text-primarypurple after:absolute after:inset-x-0 after:-bottom-px after:h-1 after:bg-primarygreen"
+                                        : "text-gray-600 hover:text-primarypurple"
                                 }`}
                                 onClick={() => setSelectedOperation(operation.id)}
                                 onKeyDown={(event) => handleTabKeyDown(event, index)}
@@ -119,7 +119,7 @@ const UserOperations = () => {
                 role="tabpanel"
                 aria-labelledby={`profile-tab-${selectedOperation}`}
                 tabIndex={0}
-                className="rounded-[2rem] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
+                className="focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
             >
                 {renderOperation()}
             </div>

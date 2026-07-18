@@ -4,14 +4,12 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@heroui/react";
-import { Spinner } from "@heroui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     ArrowRight,
     CheckCircle2,
     CircleAlert,
-    KeyRound,
     RotateCcw,
     ShieldCheck,
 } from "lucide-react";
@@ -23,8 +21,20 @@ import {
     readAuthResponse,
 } from "@/lib/authFormResponse";
 import {
+    AUTH_ACTION_LINK_CLASS,
+    AUTH_DESCRIPTION_CLASS,
+    AUTH_ERROR_STEP_CLASS,
+    AUTH_ERROR_STEP_NUMBER_CLASS,
+    AUTH_FORM_SHELL_CLASS,
+    AUTH_INTRO_CLASS,
     AUTH_LABEL_CLASS,
+    AUTH_PAGE_CLASS,
     AUTH_PRIMARY_BUTTON_CLASS,
+    AUTH_STATUS_SHELL_CLASS,
+    AUTH_STEP_CLASS,
+    AUTH_STEP_NUMBER_CLASS,
+    AUTH_TEXT_LINK_CLASS,
+    AUTH_TITLE_CLASS,
     getAuthInputClass,
 } from "@/lib/authFormStyles";
 import {
@@ -106,79 +116,86 @@ function ResetPasswordFormContent() {
 
     if (!uid || !token) {
         return (
-            <div className="landing-fade-up text-center">
-                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-600">
-                    <CircleAlert className="h-8 w-8" aria-hidden="true" />
-                </span>
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-red-600">
-                    Link problem
-                </p>
-                <h1 className="mt-2 text-3xl font-black tracking-[-0.04em] text-black sm:text-4xl">
-                    This reset link is incomplete.
-                </h1>
-                <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-black/55" role="alert">
-                    Request a fresh link and open the full URL from your email. For
-                    your security, reset links may only be used once.
-                </p>
-                <Link
-                    href="/forgot-password"
-                    className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-black"
-                >
-                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                    Request a fresh link
-                </Link>
-                <p className="mt-5 text-sm text-black/50">
-                    <Link href="/login" className="font-bold text-primarypurple hover:text-black">
-                        Return to login
+            <div className={AUTH_PAGE_CLASS}>
+                <div className={AUTH_STATUS_SHELL_CLASS}>
+                    <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                        <p className={AUTH_ERROR_STEP_CLASS}>
+                            <span className={AUTH_ERROR_STEP_NUMBER_CLASS}>ERR</span>
+                            Link problem
+                        </p>
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-red-50 text-red-600">
+                            <CircleAlert className="h-6 w-6" aria-hidden="true" />
+                        </span>
+                    </div>
+                    <h1 className={AUTH_TITLE_CLASS}>This reset link is incomplete.</h1>
+                    <p className="mt-5 max-w-md text-sm leading-6 text-black/55" role="alert">
+                        Request a fresh link and open the full URL from your email. For
+                        your security, reset links may only be used once.
+                    </p>
+                    <Link href="/forgot-password" className={`${AUTH_ACTION_LINK_CLASS} mt-7`}>
+                        <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                        Request a fresh link
                     </Link>
-                </p>
+                    <p className="mt-5 border-t border-black/10 pt-5 text-center text-sm text-black/60">
+                        <Link href="/login" className={AUTH_TEXT_LINK_CLASS}>
+                            Return to login
+                        </Link>
+                    </p>
+                </div>
             </div>
         );
     }
 
     if (successMessage) {
         return (
-            <div className="landing-fade-up text-center">
-                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primarygreen/25 text-primarypurple">
-                    <CheckCircle2 className="h-8 w-8" aria-hidden="true" />
-                </span>
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primarypurple">
-                    Reset complete
-                </p>
-                <h1 className="mt-2 text-3xl font-black tracking-[-0.04em] text-black sm:text-4xl">
-                    Your password is updated.
-                </h1>
-                <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-black/55" role="status">
-                    {successMessage} You can now use it to log in to your account.
-                </p>
-                <Link
-                    href="/login"
-                    className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-black"
-                >
-                    Continue to login
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
+            <div className={AUTH_PAGE_CLASS}>
+                <div className={AUTH_STATUS_SHELL_CLASS}>
+                    <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                        <p className={AUTH_STEP_CLASS}>
+                            <span className={AUTH_STEP_NUMBER_CLASS}>02</span>
+                            Reset complete
+                        </p>
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-primarygreen text-black">
+                            <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
+                        </span>
+                    </div>
+                    <h1 className={AUTH_TITLE_CLASS}>Your password is updated.</h1>
+                    <p className="mt-5 max-w-md text-sm leading-6 text-black/55" role="status">
+                        {successMessage} You can now use it to log in to your account.
+                    </p>
+                    <Link href="/login" className={`${AUTH_ACTION_LINK_CLASS} mt-7`}>
+                        Continue to login
+                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="landing-fade-up">
-            <div className="mb-7">
-                <div className="inline-flex items-center gap-2 rounded-full bg-primarypurple/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-primarypurple">
-                    <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />
-                    Secure your account
-                </div>
-                <h1 className="mt-4 text-3xl font-black tracking-[-0.04em] text-black sm:text-4xl">
+        <div className={AUTH_PAGE_CLASS}>
+            <div className={AUTH_INTRO_CLASS}>
+                <p className={AUTH_STEP_CLASS}>
+                    <span className={AUTH_STEP_NUMBER_CLASS}>02</span>
+                    Set new credentials
+                </p>
+                <h1 className={AUTH_TITLE_CLASS}>
                     Choose a new password.
                 </h1>
-                <p className="mt-3 max-w-lg text-sm leading-6 text-black/50">
+                <p className={AUTH_DESCRIPTION_CLASS}>
                     Make it memorable to you and difficult for anyone else to guess.
                 </p>
             </div>
 
-            <div className="rounded-3xl border border-black/[0.08] bg-white p-5 shadow-[0_24px_70px_rgba(31,21,67,0.08)] sm:p-7">
-                <form noValidate className="space-y-5" onSubmit={handleSubmit(submitReset)}>
+            <div className={AUTH_FORM_SHELL_CLASS}>
+                <form noValidate className="space-y-6" onSubmit={handleSubmit(submitReset)}>
+                    <div className="flex items-center justify-between gap-4 border-b border-black/10 pb-4">
+                        <p className="font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
+                            New access key
+                        </p>
+                        <span className="text-xs text-black/60">Step 2 of 2</span>
+                    </div>
+
                     <div className="space-y-2">
                         <label htmlFor="reset-new-password" className={AUTH_LABEL_CLASS}>
                             New password
@@ -197,12 +214,12 @@ function ResetPasswordFormContent() {
                             {...register("newPassword")}
                             className={getAuthInputClass(Boolean(errors.newPassword))}
                         />
-                        <p id="reset-new-password-hint" className="flex items-center gap-1.5 text-xs leading-5 text-black/45">
+                        <p id="reset-new-password-hint" className="flex items-center gap-1.5 text-xs leading-5 text-black/60">
                             <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-primarypurple" aria-hidden="true" />
                             Use at least 8 characters.
                         </p>
                         {errors.newPassword && (
-                            <p id="reset-new-password-error" className="text-sm text-red-600">
+                            <p id="reset-new-password-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">
                                 {errors.newPassword.message}
                             </p>
                         )}
@@ -227,7 +244,7 @@ function ResetPasswordFormContent() {
                             className={getAuthInputClass(Boolean(errors.confirmPassword))}
                         />
                         {errors.confirmPassword && (
-                            <p id="reset-confirm-password-error" className="text-sm text-red-600">
+                            <p id="reset-confirm-password-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">
                                 {errors.confirmPassword.message}
                             </p>
                         )}
@@ -247,14 +264,14 @@ function ResetPasswordFormContent() {
                     </Button>
 
                     {mutation.isError && (
-                        <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm leading-6 text-red-700">
+                        <div role="alert" className="border border-red-200 bg-red-50 p-3.5 text-sm leading-6 text-red-700">
                             {getAuthFormErrorMessage(
                                 mutation.error,
                                 "Unable to reset the password. The link may be invalid or expired."
                             )}
                             <Link
                                 href="/forgot-password"
-                                className="mt-2 block font-bold underline underline-offset-2"
+                                className="mt-2 block font-semibold underline underline-offset-4"
                             >
                                 Request a new reset link
                             </Link>
@@ -270,9 +287,12 @@ export default function ResetPassword() {
     return (
         <Suspense
             fallback={
-                <div className="flex min-h-80 items-center justify-center gap-3" role="status">
-                    <Spinner size="sm" color="secondary" />
-                    <span className="text-sm text-black/50">Preparing password reset...</span>
+                <div className="mx-auto w-full max-w-[36rem] animate-pulse" role="status">
+                    <span className="sr-only">Preparing password reset...</span>
+                    <div className="h-7 w-48 bg-black/[0.06]" />
+                    <div className="mt-5 h-11 w-4/5 bg-black/[0.06]" />
+                    <div className="mt-4 h-5 w-2/3 bg-black/[0.06]" />
+                    <div className="mt-8 h-80 border border-black/[0.06] bg-white/60" />
                 </div>
             }
         >
