@@ -30,7 +30,7 @@ const LEDGER_ITEMS = [
 
 const Hero = () => {
     return (
-        <section className="relative isolate min-h-[min(58rem,100dvh)] overflow-hidden bg-primarypurple pb-10 pt-28 font-sans text-white sm:pt-32 lg:flex lg:min-h-[52rem] lg:items-center lg:pb-16 lg:pt-36">
+        <section className="relative isolate min-h-[min(58rem,100dvh)] overflow-hidden bg-primarypurple pb-10 pt-28 font-sans text-white sm:pt-32 lg:flex lg:h-dvh lg:min-h-0 lg:items-center lg:pb-2 lg:pt-20">
             <div
                 className="landing-grid pointer-events-none absolute inset-0 opacity-25"
                 aria-hidden="true"
@@ -41,21 +41,23 @@ const Hero = () => {
             />
 
             <div className="relative mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
-                <div className="mb-9 flex items-center justify-between gap-6 border-b border-white/20 pb-4 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-white/90 sm:text-xs">
-                    <p>FAST NUCES · Open collaboration network</p>
-                    <p className="hidden font-mono tabular-nums sm:block">
+                <div className="mb-9 flex items-center justify-between gap-6 border-b border-white/20 pb-4 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-white/90 sm:text-xs lg:mb-2 lg:grid lg:grid-cols-[minmax(0,0.84fr)_minmax(32rem,1.16fr)] lg:items-end lg:gap-10 lg:border-b-0 lg:pb-0 xl:gap-16">
+                    <p className="lg:border-b lg:border-white/20 lg:pb-2">
+                        FAST NUCES · Open collaboration network
+                    </p>
+                    <p className="hidden font-mono tabular-nums sm:block lg:pb-2 lg:text-right">
                         Field note / 001
                     </p>
                 </div>
 
-                <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.84fr)_minmax(32rem,1.16fr)] lg:gap-12 xl:gap-20">
+                <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.84fr)_minmax(32rem,1.16fr)] lg:gap-10 xl:gap-16">
                     <div className="landing-fade-up max-w-[48rem]">
-                        <p className="mb-5 flex items-center gap-3 text-sm font-semibold text-white/90">
+                        <p className="mb-5 flex items-center gap-3 text-sm font-semibold text-white/90 lg:mb-3">
                             <span className="h-2 w-2 bg-primarygreen" aria-hidden="true" />
                             Built by FASTians, for FASTians
                         </p>
 
-                        <h1 className="text-balance text-[clamp(3.7rem,8vw,7.6rem)] font-black leading-[0.83] tracking-[-0.07em]">
+                        <h1 className="text-balance text-[clamp(3.7rem,8vw,7.6rem)] font-black leading-[0.83] tracking-[-0.07em] lg:text-[clamp(3.35rem,5vw,5.75rem)]">
                             Great projects
                             <br />
                             deserve to be
@@ -63,16 +65,16 @@ const Hero = () => {
                             <span className="text-primarygreen">finished.</span>
                         </h1>
 
-                        <p className="mt-7 max-w-[39rem] text-pretty text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
+                        <p className="mt-7 max-w-[39rem] text-pretty text-base leading-7 text-white/90 sm:text-lg sm:leading-8 lg:mt-4 lg:text-sm lg:leading-6 xl:text-base">
                             Share what you&apos;re building, find contributors who know the
                             missing piece, and turn every collaboration into proof of your
                             skills.
                         </p>
 
-                        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center lg:mt-4">
                             <Link
                                 href="/get-started"
-                                className="group inline-flex min-h-14 items-center justify-center gap-3 bg-primarygreen px-6 text-sm font-bold text-black transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                                className="group inline-flex min-h-14 items-center justify-center gap-3 bg-primarygreen px-6 text-sm font-bold text-black transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white lg:min-h-12"
                             >
                                 Start building together
                                 <ArrowRight
@@ -82,17 +84,17 @@ const Hero = () => {
                             </Link>
                             <Link
                                 href="#usecases"
-                                className="inline-flex min-h-14 items-center justify-center border border-white/30 px-6 text-sm font-semibold text-white transition-[background-color,border-color,transform] duration-200 hover:border-white/70 hover:bg-white/10 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                                className="inline-flex min-h-14 items-center justify-center border border-white/30 px-6 text-sm font-semibold text-white transition-[background-color,border-color,transform] duration-200 hover:border-white/70 hover:bg-white/10 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white lg:min-h-12"
                             >
                                 Browse the field guide
                             </Link>
                         </div>
 
-                        <ul className="mt-8 grid border-t border-white/20 text-xs text-white/90 sm:grid-cols-3">
+                        <ul className="mt-8 grid border-t border-white/20 text-xs text-white/90 sm:grid-cols-3 lg:mt-4">
                             {HERO_POINTS.map((point) => (
                                 <li
                                     key={point}
-                                    className="flex min-h-12 items-center gap-2 border-b border-white/15 py-3 sm:border-b-0 sm:border-r sm:px-3 first:sm:pl-0 last:sm:border-r-0"
+                                    className="flex min-h-12 items-center gap-2 border-b border-white/15 py-3 sm:border-b-0 sm:border-r sm:px-3 first:sm:pl-0 last:sm:border-r-0 lg:min-h-10 lg:py-2"
                                 >
                                     <Check
                                         className="h-3.5 w-3.5 shrink-0 text-primarygreen"
@@ -105,7 +107,7 @@ const Hero = () => {
                         </ul>
                     </div>
 
-                    <div className="landing-fade-up landing-delay-2 relative lg:-translate-y-8">
+                    <div className="landing-fade-up landing-delay-2 relative lg:-translate-y-4">
                         <div
                             className="absolute -left-4 top-8 hidden h-[calc(100%-4rem)] w-4 border-y border-l border-primarygreen/70 lg:block"
                             aria-hidden="true"
@@ -114,25 +116,25 @@ const Hero = () => {
                             aria-label="Example open project ledger"
                             className="border border-white/25 bg-white text-black"
                         >
-                            <header className="flex items-center justify-between gap-5 border-b border-black/15 bg-primarygreen px-4 py-3 text-[0.65rem] font-bold uppercase tracking-[0.18em] sm:px-6 sm:text-xs">
+                            <header className="flex items-center justify-between gap-5 border-b border-black/15 bg-primarygreen px-4 py-3 text-[0.65rem] font-bold uppercase tracking-[0.18em] sm:px-6 sm:text-xs lg:py-2">
                                 <p>Open project ledger</p>
                                 <p className="font-mono tabular-nums">Project / 024</p>
                             </header>
 
                             <div className="grid border-b border-black/15 sm:grid-cols-[1fr_auto]">
-                                <div className="p-5 sm:p-7">
+                                <div className="p-5 sm:p-7 lg:p-4">
                                     <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primarypurple sm:text-xs">
                                         Student utility platform
                                     </p>
-                                    <h2 className="mt-3 text-3xl font-black tracking-[-0.045em] sm:text-4xl">
+                                    <h2 className="mt-3 text-3xl font-black tracking-[-0.045em] sm:text-4xl lg:mt-2 lg:text-3xl">
                                         Campus Navigator
                                     </h2>
-                                    <p className="mt-3 max-w-lg text-sm leading-6 text-black/60">
+                                    <p className="mt-3 max-w-lg text-sm leading-6 text-black/60 lg:mt-2 lg:leading-5">
                                         An accessible campus map with smarter route
                                         recommendations for new students.
                                     </p>
                                 </div>
-                                <div className="flex items-end justify-between gap-4 border-t border-black/15 px-5 py-4 sm:min-w-40 sm:flex-col sm:items-start sm:border-l sm:border-t-0 sm:px-6 sm:py-6">
+                                <div className="flex items-end justify-between gap-4 border-t border-black/15 px-5 py-4 sm:min-w-40 sm:flex-col sm:items-start sm:border-l sm:border-t-0 sm:px-6 sm:py-6 lg:py-4">
                                     <div>
                                         <p className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-black/60">
                                             Status
@@ -155,7 +157,7 @@ const Hero = () => {
                                 {["Next.js", "Django", "PostgreSQL"].map((tag) => (
                                     <span
                                         key={tag}
-                                        className="border-r border-black/15 px-4 py-3 last:border-r-0 sm:px-6"
+                                        className="border-r border-black/15 px-4 py-3 last:border-r-0 sm:px-6 lg:py-2"
                                     >
                                         {tag}
                                     </span>
@@ -166,7 +168,7 @@ const Hero = () => {
                                 {LEDGER_ITEMS.map((item) => (
                                     <li
                                         key={item.number}
-                                        className="group grid grid-cols-[2.2rem_minmax(0,1fr)] gap-x-3 border-b border-black/15 px-4 py-4 transition-colors duration-200 last:border-b-0 hover:bg-primarypurple/[0.055] sm:grid-cols-[2.5rem_minmax(0,1fr)_7rem] sm:items-center sm:px-6"
+                                        className="group grid grid-cols-[2.2rem_minmax(0,1fr)] gap-x-3 border-b border-black/15 px-4 py-4 transition-colors duration-200 last:border-b-0 hover:bg-primarypurple/[0.055] sm:grid-cols-[2.5rem_minmax(0,1fr)_7rem] sm:items-center sm:px-6 lg:py-2"
                                     >
                                         <span className="font-mono text-xs font-bold text-primarypurple">
                                             {item.number}
@@ -186,7 +188,7 @@ const Hero = () => {
                                 ))}
                             </ol>
 
-                            <footer className="flex flex-col gap-4 border-t border-black bg-black px-5 py-5 text-white sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                            <footer className="flex flex-col gap-4 border-t border-black bg-black px-5 py-5 text-white sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:py-3">
                                 <div className="flex items-center gap-3">
                                     <div
                                         className="grid h-10 w-10 place-items-center bg-primarypurple text-xs font-black"

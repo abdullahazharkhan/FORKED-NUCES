@@ -203,7 +203,7 @@ const Features = () => (
             </header>
 
             <div className="pt-16 sm:pt-20">
-                <article className="grid gap-10 border-t border-black/20 pt-8 lg:w-[94%] lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:gap-16 lg:pt-12">
+                <article className="grid w-full gap-10 border-t border-black/20 pt-8 lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:gap-16 lg:pt-12">
                     <div>
                         <p className="font-mono text-sm font-bold text-primarypurple">
                             01 / DISCOVER
@@ -226,7 +226,7 @@ const Features = () => (
                     <DiscoveryRecord />
                 </article>
 
-                <article className="mt-24 grid gap-10 border-t border-black/20 pt-8 lg:ml-auto lg:w-[94%] lg:grid-cols-[1.22fr_0.78fr] lg:items-center lg:gap-16 lg:pt-12">
+                <article className="mt-24 grid w-full gap-10 border-t border-black/20 pt-8 lg:grid-cols-[1.22fr_0.78fr] lg:items-center lg:gap-16 lg:pt-12">
                     <div className="lg:order-2">
                         <p className="font-mono text-sm font-bold text-primarypurple">
                             02 / COLLABORATE
@@ -250,7 +250,7 @@ const Features = () => (
                     </div>
                 </article>
 
-                <article className="mt-24 grid gap-10 border-t border-black/20 pt-8 lg:w-[94%] lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:gap-16 lg:pt-12">
+                <article className="mt-24 grid w-full gap-10 border-t border-black/20 pt-8 lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:gap-16 lg:pt-12">
                     <div>
                         <p className="font-mono text-sm font-bold text-primarypurple">
                             03 / GROW
