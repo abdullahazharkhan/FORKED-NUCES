@@ -1,6 +1,6 @@
 # Runtime lock for Python 3.12. Versions were resolved from PyPI on 2026-07-11.
 # Keep direct and transitive dependencies exact so container builds are repeatable.
-asgiref==3.11.1
+asgiref==3.12.1
 async-timeout==5.0.1
 Django==5.2.16
 django-cors-headers==4.9.0
