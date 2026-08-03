@@ -201,7 +201,7 @@ const RecommendedProjects = () => {
     };
 
     return (
-        <div className="mx-auto w-full max-w-[90rem] space-y-8 px-5 py-8 sm:px-8 lg:space-y-11 lg:py-12">
+        <div className="mx-auto w-full max-w-[90rem] space-y-7 px-4 py-6 sm:px-6 lg:space-y-10 lg:px-8 lg:py-10">
             <PlatformPageHeader
                 eyebrow="Your signal desk"
                 title={<>A shorter route to <span className="text-primarygreen">relevant work.</span></>}
@@ -214,13 +214,13 @@ const RecommendedProjects = () => {
                 }
             />
 
-            <section className="border-y border-black/15 bg-white/75 px-5 py-6 sm:px-6" aria-labelledby="recommendation-mode-heading">
-                <div className="grid gap-7 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-0">
-                    <div className="lg:pr-6">
+            <section className="rounded-3xl border border-black/[0.07] bg-white/80 p-5 shadow-[0_18px_50px_rgba(40,20,90,0.06)] backdrop-blur-sm sm:p-6" aria-labelledby="recommendation-mode-heading">
+                <div className="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
+                    <div className="rounded-2xl bg-primarypurple/[0.035] p-4 lg:p-5">
                         <h2 id="recommendation-mode-heading" className="text-base font-black tracking-[-0.02em]">Tune the feed</h2>
                         <p className="mt-2 max-w-[27ch] text-xs leading-5 text-black/60">Search the loaded set or choose the signal shaping this directory.</p>
                     </div>
-                    <div className="grid gap-5 border-black/10 sm:grid-cols-2 lg:border-l lg:pl-6">
+                    <div className="grid content-center gap-5 sm:grid-cols-2">
                         <label className="block">
                             <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Search loaded results</span>
                             <span className="relative block">
@@ -253,7 +253,7 @@ const RecommendedProjects = () => {
                     </div>
                 </div>
 
-                <div className="mt-7 grid border-l border-t border-black/15 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="mt-6 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
                     {recommendationOptions.map((option) => {
                         const isActive = recommendationMode === option.id;
                         return (
@@ -262,13 +262,13 @@ const RecommendedProjects = () => {
                                 type="button"
                                 aria-pressed={isActive}
                                 onClick={() => selectMode(option.id)}
-                                className={`relative min-h-[5rem] border-b border-r border-black/15 p-3 text-left transition-[background-color,color,transform] duration-200 active:translate-y-px focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-primarypurple ${
+                                className={`relative min-h-[5rem] rounded-2xl border p-3.5 text-left transition-[background-color,color,transform,box-shadow,border-color] duration-200 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple ${
                                     isActive
-                                        ? "bg-primarypurple text-white"
-                                        : "bg-white/50 text-black hover:bg-primarypurple/[0.05] hover:text-primarypurple"
+                                        ? "border-primarypurple/70 bg-[linear-gradient(135deg,#6f3cff,#5d2ee8)] text-white shadow-[0_10px_25px_rgba(111,60,255,0.2)]"
+                                        : "border-black/[0.06] bg-white/70 text-black shadow-sm hover:-translate-y-0.5 hover:border-primarypurple/15 hover:bg-primarypurple/[0.04] hover:text-primarypurple hover:shadow-[0_9px_22px_rgba(40,20,90,0.07)]"
                                 }`}
                             >
-                                {isActive && <span className="absolute inset-x-0 bottom-0 h-1 bg-primarygreen" aria-hidden="true" />}
+                                {isActive && <span className="absolute right-3.5 top-3.5 h-2 w-2 rounded-full bg-primarygreen shadow-[0_0_0_4px_rgba(183,255,0,0.13)]" aria-hidden="true" />}
                                 <span className="block text-sm font-black">
                                     {option.label}
                                 </span>
@@ -280,18 +280,18 @@ const RecommendedProjects = () => {
                     })}
                 </div>
                 {modeMessage && (
-                    <div className="mt-5 border-l-2 border-primarypurple bg-primarypurple/[0.05] px-4 py-3 text-sm font-medium text-primarypurple">
+                    <div className="mt-5 rounded-2xl border border-primarypurple/10 bg-primarypurple/[0.045] px-4 py-3 text-sm font-medium text-primarypurple">
                         {modeMessage}
                     </div>
                 )}
             </section>
 
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/15 pb-5">
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-black/[0.05] bg-white/55 px-5 py-4 shadow-[0_10px_30px_rgba(40,20,90,0.035)] backdrop-blur-sm">
                 <div>
                     <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-primarypurple">Directory / curated feed</p>
                     <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] sm:text-3xl">Recommended projects</h2>
                 </div>
-                <p className="border-l-2 border-primarygreen pl-3 font-mono text-[0.68rem] font-medium tabular-nums text-black/60" role="status" aria-live="polite">
+                <p className="rounded-xl bg-primarypurple/[0.045] px-3.5 py-2.5 font-mono text-[0.68rem] font-medium tabular-nums text-black/60" role="status" aria-live="polite">
                     {isFetching && !isFetchingNextPage
                         ? "Updating recommendations..."
                         : totalCount !== null && totalCount !== undefined
@@ -313,7 +313,7 @@ const RecommendedProjects = () => {
 
             {isFetchNextPageError && (
                 <div
-                    className="flex flex-wrap items-center justify-center gap-3 border-y border-red-200 bg-red-50 p-4 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-red-200/80 bg-red-50/90 p-4 text-sm text-red-700 shadow-[0_10px_28px_rgba(185,28,28,0.07)]"
                     role="alert"
                 >
                     <span>Could not load more recommendations.</span>
@@ -321,7 +321,7 @@ const RecommendedProjects = () => {
                         type="button"
                         onClick={() => void fetchNextPage()}
                         disabled={isFetchingNextPage}
-                        className="font-bold underline underline-offset-4 disabled:opacity-60"
+                        className="inline-flex min-h-11 items-center rounded-lg px-2 font-bold underline underline-offset-4 transition-colors hover:bg-red-100 disabled:opacity-60"
                     >
                         Retry
                     </button>

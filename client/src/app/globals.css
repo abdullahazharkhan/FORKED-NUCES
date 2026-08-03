@@ -5,14 +5,19 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #e8eaec;
+  --background: #f7f7fb;
   --foreground: #17131f;
-  --surface: #f7f7f8;
+  --surface: #f2f1f7;
   --surface-strong: #ffffff;
-  --muted: #6d6875;
-  --line: rgba(23, 19, 31, 0.12);
-  --line-strong: rgba(23, 19, 31, 0.2);
-  --purple-shadow: rgba(45, 23, 102, 0.16);
+  --muted: #625d6d;
+  --line: rgba(23, 19, 31, 0.09);
+  --line-strong: rgba(23, 19, 31, 0.15);
+  --purple-shadow: rgba(74, 45, 160, 0.14);
+  --shadow-sm: 0 1px 2px rgba(23, 19, 31, 0.04), 0 8px 24px rgba(45, 23, 102, 0.05);
+  --shadow-md: 0 18px 50px rgba(45, 23, 102, 0.1);
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
   /* Friendly aliases for components that address the loaded Next fonts directly. */
   --font-geist-sans: var(--font-geist-face);
   --font-geist-mono: var(--font-geist-mono-face);
@@ -21,46 +26,36 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 6rem;
-  scrollbar-color: #c3ff00 #17131f;
-  scrollbar-width: auto;
+  scrollbar-color: rgba(111, 67, 254, 0.7) #f0eef6;
+  scrollbar-width: thin;
 }
 
 *::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
 }
 
 *::-webkit-scrollbar-track {
-  background: #17131f;
-  box-shadow: inset 1px 0 #6f43fe;
+  background: #f0eef6;
 }
 
 *::-webkit-scrollbar-thumb {
-  min-height: 56px;
-  border: 3px solid #17131f;
-  border-radius: 0;
-  background: linear-gradient(
-    to bottom,
-    #c3ff00 0 calc(100% - 10px),
-    #6f43fe calc(100% - 10px) 100%
-  );
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  min-height: 48px;
+  border: 2px solid #f0eef6;
+  border-radius: 999px;
+  background: rgba(111, 67, 254, 0.72);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    to bottom,
-    #6f43fe 0 calc(100% - 10px),
-    #c3ff00 calc(100% - 10px) 100%
-  );
+  background: #6f43fe;
 }
 
 *::-webkit-scrollbar-thumb:active {
-  background: #f2b705;
+  background: #5d32eb;
 }
 
 *::-webkit-scrollbar-corner {
-  background: #17131f;
+  background: #f0eef6;
 }
 
 @theme inline {
@@ -89,8 +84,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-face), ui-sans-serif, system-ui, sans-serif;
-  background-image: radial-gradient(circle at 1px 1px, rgba(111, 67, 254, 0.045) 1px, transparent 0);
-  background-size: 22px 22px;
+  background-image:
+    radial-gradient(circle at 8% -8%, rgba(111, 67, 254, 0.09), transparent 28rem),
+    radial-gradient(circle at 92% 8%, rgba(195, 255, 0, 0.08), transparent 24rem);
+  background-attachment: fixed;
   overflow-x: hidden;
 }
 
@@ -100,7 +97,7 @@ body {
 }
 
 :where(a, button, input, select, textarea, summary):focus-visible {
-  outline: 2px solid #6f43fe;
+  outline: 3px solid rgba(111, 67, 254, 0.82);
   outline-offset: 3px;
 }
 
@@ -110,10 +107,24 @@ body {
 
 .landing-grid {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.075) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.075) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, black, transparent 88%);
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 70% 35%, black, transparent 72%);
+}
+
+.surface-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-sm);
+}
+
+.surface-card-strong {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .editorial-rule {

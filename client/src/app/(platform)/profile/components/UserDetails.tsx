@@ -21,7 +21,7 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
     if (!user) {
         return (
             <div
-                className="relative isolate overflow-hidden border-y border-primarypurple/20 bg-white/80 p-6 sm:p-8"
+                className="relative isolate overflow-hidden rounded-3xl border border-black/[0.06] bg-gradient-to-br from-white via-white to-primarypurple/[0.035] p-6 shadow-[0_18px_55px_rgba(24,15,48,0.07)] sm:p-8"
                 role={
                     sessionStatus === "error" || sessionStatus === "unauthenticated"
                         ? "alert"
@@ -29,11 +29,11 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
                 }
             >
                 <div
-                    className="absolute inset-y-0 left-0 w-1 bg-primarygreen"
+                    className="absolute -left-16 -top-16 -z-10 h-48 w-48 rounded-full bg-primarygreen/10 blur-3xl"
                     aria-hidden="true"
                 />
                 <div className="flex animate-pulse flex-col gap-5 sm:flex-row sm:items-center">
-                    <div className="h-28 w-28 rounded-3xl bg-primarypurple/10" />
+                    <div className="h-28 w-28 rounded-3xl bg-primarypurple/[0.08] shadow-inner" />
                     <div className="flex-1 space-y-3">
                         <div className="h-8 w-48 rounded-full bg-black/10" />
                         <div className="h-4 w-64 max-w-full rounded-full bg-black/[0.06]" />
@@ -60,7 +60,7 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
 
     return (
         <section
-            className="relative isolate overflow-hidden rounded-lg border border-black/10 bg-primarypurple p-6 text-white shadow-[0_18px_55px_rgba(45,19,118,0.2)] sm:p-8 lg:p-10"
+            className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#754cf2] via-primarypurple to-[#4520a8] p-6 text-white shadow-[0_24px_70px_rgba(45,19,118,0.22)] sm:p-8 lg:p-10"
             aria-labelledby="profile-name"
         >
             <div
@@ -68,15 +68,15 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
                 aria-hidden="true"
             />
             <div
-                className="absolute inset-y-0 left-0 w-1.5 bg-primarygreen"
+                className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-primarygreen/80 to-transparent"
                 aria-hidden="true"
             />
             <div
-                className="absolute -right-20 -top-20 -z-10 h-64 w-64 rounded-full border-[44px] border-primarygreen/15"
+                className="absolute -right-20 -top-20 -z-10 h-64 w-64 rounded-full bg-primarygreen/10 blur-3xl"
                 aria-hidden="true"
             />
             <div
-                className="absolute -bottom-28 left-1/3 -z-10 h-60 w-60 rotate-12 border-[2.5rem] border-white/[0.05]"
+                className="absolute -bottom-32 left-1/3 -z-10 h-64 w-64 rounded-full bg-white/[0.07] blur-3xl"
                 aria-hidden="true"
             />
 
@@ -101,11 +101,11 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
                                 alt={`${displayName} avatar`}
                                 width={144}
                                 height={144}
-                                className="h-28 w-28 rounded-lg object-cover shadow-[0_16px_40px_rgba(20,10,50,0.22)] ring-2 ring-white/20 sm:h-36 sm:w-36"
+                                className="h-28 w-28 rounded-3xl object-cover shadow-[0_18px_45px_rgba(20,10,50,0.25)] ring-1 ring-white/25 sm:h-36 sm:w-36"
                             />
                         ) : (
                             <div
-                                className="flex h-28 w-28 items-center justify-center rounded-lg bg-white/10 font-jaro text-5xl text-primarygreen shadow-[0_16px_40px_rgba(20,10,50,0.18)] ring-2 ring-white/15 sm:h-36 sm:w-36"
+                                className="flex h-28 w-28 items-center justify-center rounded-3xl bg-white/10 font-jaro text-5xl text-primarygreen shadow-[0_18px_45px_rgba(20,10,50,0.22)] ring-1 ring-white/20 backdrop-blur-sm sm:h-36 sm:w-36"
                                 aria-hidden="true"
                             >
                                 {avatarInitial}
@@ -133,12 +133,12 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
 
                         <div className="mt-4 flex flex-wrap items-center gap-2">
                             {user.is_email_verified ? (
-                                <span className="inline-flex items-center gap-1.5 rounded-sm bg-primarygreen px-3 py-1.5 text-xs font-black text-black">
+                                <span className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-primarygreen px-3 py-1.5 text-xs font-black text-black shadow-[0_7px_18px_rgba(183,255,0,0.16)]">
                                     <Check className="h-3.5 w-3.5" aria-hidden="true" />
                                     Verified FASTian
                                 </span>
                             ) : (
-                                <span className="inline-flex rounded-sm bg-red-400/20 px-3 py-1.5 text-xs font-bold text-red-100 ring-1 ring-red-300/25">
+                                <span className="inline-flex min-h-9 items-center rounded-xl bg-red-400/20 px-3 py-1.5 text-xs font-bold text-red-100 ring-1 ring-inset ring-red-300/25">
                                     Email not verified
                                 </span>
                             )}
@@ -147,7 +147,7 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
                                     href={`https://github.com/${encodeURIComponent(user.github_username)}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/20 active:translate-y-px"
+                                    className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-white shadow-sm backdrop-blur-sm transition hover:-translate-y-0.5 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/20 active:translate-y-0"
                                 >
                                     <Github className="h-3.5 w-3.5" aria-hidden="true" />
                                     @{user.github_username}
@@ -157,14 +157,14 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
                     </div>
                 </div>
 
-                <div className="border-l border-white/25 bg-[#2d126f]/45 p-5 sm:p-6">
+                <div className="rounded-3xl border border-white/10 bg-[#2d126f]/30 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_14px_35px_rgba(20,10,50,0.12)] backdrop-blur-sm sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                         <h2 className="flex items-center gap-2 font-mono text-sm font-black tracking-[0.13em] text-primarygreen">
                             <Sparkles className="h-4 w-4" aria-hidden="true" />
                             Skills
                         </h2>
                         {user.skills && user.skills.length > 0 && (
-                            <span className="border-l border-primarygreen bg-white/10 px-2.5 py-1 font-mono text-[0.65rem] font-bold text-white/90">
+                            <span className="rounded-xl bg-white/10 px-2.5 py-1 font-mono text-[0.65rem] font-bold text-white/90 ring-1 ring-inset ring-white/10">
                                 {user.skills.length.toLocaleString()}
                             </span>
                         )}
@@ -174,7 +174,7 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
                             user.skills.map((skill) => (
                                 <span
                                     key={skill}
-                                    className="rounded-sm border border-primarygreen/20 bg-primarygreen/10 px-3 py-1.5 text-xs font-bold text-white/90"
+                                    className="rounded-xl border border-primarygreen/15 bg-primarygreen/10 px-3 py-1.5 text-xs font-bold text-white/90"
                                 >
                                     {skill}
                                 </span>
@@ -190,7 +190,7 @@ const UserDetails = ({ user: propUser, page }: UserDetailsProps) => {
                 </div>
             </div>
 
-            <div className="relative mt-8 border-t border-white/20 pt-6">
+            <div className="relative mt-8 rounded-3xl border border-white/[0.08] bg-white/[0.07] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm sm:p-6">
                 <p className="flex items-center gap-2 font-mono text-xs font-black tracking-[0.15em] text-primarygreen">
                     <BookOpenText className="h-4 w-4" aria-hidden="true" />
                     About

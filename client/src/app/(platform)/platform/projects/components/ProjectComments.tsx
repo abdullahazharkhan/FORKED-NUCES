@@ -108,7 +108,7 @@ const CommentsSkeleton = () => {
             {COMMENT_SKELETON_IDS.map((id) => (
                 <div
                     key={id}
-                    className="animate-pulse space-y-3 border-b border-primarypurple/10 bg-white p-4"
+                    className="animate-pulse space-y-3 rounded-2xl bg-[#f7f6fb] p-4 ring-1 ring-black/[0.04]"
                 >
                     <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-xl bg-primarypurple/10" />
@@ -359,16 +359,16 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
 
     return (
         <section
-            className="relative isolate overflow-hidden border-y border-black/15 bg-white/80 p-5 sm:p-7"
+            className="relative isolate overflow-hidden rounded-[1.75rem] border border-black/[0.06] bg-white p-5 shadow-[0_18px_55px_rgba(42,25,86,0.07)] sm:p-7"
             aria-labelledby="project-comments-heading"
         >
             <div
-                className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primarygreen"
+                className="pointer-events-none absolute left-6 top-0 h-1 w-16 rounded-b-full bg-primarygreen"
                 aria-hidden="true"
             />
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primarypurple text-white">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primarypurple text-white shadow-[0_8px_20px_rgba(76,41,178,0.18)]">
                         <MessagesSquare className="h-5 w-5" aria-hidden="true" />
                     </span>
                     <div>
@@ -389,7 +389,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                 </div>
 
                 {!isPending && !initialError && (
-                    <span className="w-fit border-l-2 border-primarygreen bg-primarypurple/[0.06] px-3 py-1.5 font-mono text-xs font-bold text-primarypurple">
+                    <span className="w-fit rounded-xl bg-primarypurple/[0.07] px-3 py-2 font-mono text-xs font-bold text-primarypurple ring-1 ring-primarypurple/10">
                         {comments.length.toLocaleString()} loaded
                     </span>
                 )}
@@ -399,10 +399,10 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
             <form
                 onSubmit={handleSubmit}
                 aria-busy={createCommentMutation.isPending}
-                className="border-l-2 border-primarypurple/25 bg-white p-4 sm:p-5"
+                className="rounded-2xl bg-[#f8f7fc] p-4 ring-1 ring-primarypurple/[0.08] sm:p-5"
             >
                 <div className="mb-3 flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primarygreen text-black">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primarygreen/80 text-black">
                         <MessageCircle className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <label
@@ -430,7 +430,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                 {formError && (
                     <p
                         id="project-comment-error"
-                        className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700"
+                        className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-700"
                         role="alert"
                     >
                         {formError}
@@ -457,7 +457,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                     <button
                         type="submit"
                         disabled={createCommentMutation.isPending}
-                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-primarypurple px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primarypurple px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(76,41,178,0.18)] transition-colors hover:bg-[#382080] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                     >
                         {createCommentMutation.isPending ? (
                             <LoaderCircle
@@ -491,7 +491,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                         type="button"
                         onClick={() => void refetch()}
                         disabled={isFetching}
-                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 font-bold no-underline transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 font-bold no-underline transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <RefreshCw className="h-4 w-4" aria-hidden="true" />
                         Retry
@@ -510,8 +510,8 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
 
             {/* Empty state */}
             {!isPending && !initialError && comments.length === 0 && (
-                <div className="mt-4 border-y border-dashed border-primarypurple/30 bg-white/70 px-5 py-10 text-center">
-                    <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-primarypurple/10 text-primarypurple">
+                <div className="mt-4 rounded-2xl border border-dashed border-primarypurple/25 bg-[#faf9fc] px-5 py-10 text-center">
+                    <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
                         <MessageCircle className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <p className="font-bold text-gray-900">Start the conversation</p>
@@ -524,16 +524,16 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
 
             {/* Comments list */}
             {!isPending && !initialError && comments.length > 0 && (
-                <div className="mt-4 border-t border-black/10">
+                <div className="mt-4 space-y-3">
                     {comments.map((comment) => (
                         <article
                             key={comment.comment_id}
-                            className="border-b border-black/10 bg-white/70 p-4 transition-colors hover:bg-white sm:p-5"
+                            className="rounded-2xl border border-black/[0.05] bg-[#faf9fc] p-4 transition duration-200 hover:border-primarypurple/15 hover:bg-white hover:shadow-[0_10px_28px_rgba(55,34,110,0.06)] sm:p-5"
                         >
                             {/* Meta (optional user info) */}
                             <div className="mb-3 flex items-start justify-between gap-3">
                                 <div className="flex min-w-0 items-center gap-3">
-                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primarypurple/10 text-primarypurple">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primarypurple/10 text-primarypurple">
                                         <UserRound
                                             className="h-4 w-4"
                                             aria-hidden="true"
@@ -579,7 +579,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                                                 )
                                             }
                                             disabled={deleteCommentMutation.isPending}
-                                            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-400 transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-red-600 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white text-gray-400 ring-1 ring-black/[0.05] transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-red-600 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
                                             title="Delete comment"
                                             aria-label={`Delete comment by ${
                                                 comment.user_full_name || "this user"
@@ -610,7 +610,7 @@ const ProjectComments = ({ projectid, projectOwnerId }: ProjectCommentsProps) =>
                                 type="button"
                                 onClick={() => void fetchNextPage()}
                                 disabled={isFetchingNextPage}
-                                className="rounded-lg px-2 py-1 font-bold underline underline-offset-2 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
+                                className="min-h-11 rounded-xl px-3 font-bold underline underline-offset-2 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
                             >
                                 Retry
                             </button>

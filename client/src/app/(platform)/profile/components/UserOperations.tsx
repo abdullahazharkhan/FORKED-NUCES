@@ -60,8 +60,8 @@ const UserOperations = () => {
 
     return (
         <section aria-labelledby="profile-workspace-heading">
-            <div className="mb-5 flex items-start gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primarygreen text-black">
+            <div className="mb-5 flex items-start gap-4 rounded-3xl border border-black/[0.05] bg-white/70 p-5 shadow-[0_12px_38px_rgba(24,15,48,0.045)] backdrop-blur-sm sm:p-6">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarygreen to-[#d8ff72] text-black shadow-[0_9px_24px_rgba(183,255,0,0.18)]">
                     <UserPen className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
@@ -80,12 +80,12 @@ const UserOperations = () => {
                     </p>
                 </div>
             </div>
-            <div className="overflow-x-auto border-b border-primarypurple/20">
+            <div className="overflow-x-auto rounded-2xl border border-black/[0.06] bg-white/75 p-1.5 shadow-[0_10px_30px_rgba(24,15,48,0.05)] backdrop-blur-sm">
                 <div
                     role="tablist"
                     aria-label="Profile operations"
                     aria-orientation="horizontal"
-                    className="flex min-w-max"
+                    className="flex min-w-max gap-1"
                 >
                     {operations.map((operation, index) => {
                         const Icon = operation.icon;
@@ -99,10 +99,10 @@ const UserOperations = () => {
                                 aria-selected={isSelected}
                                 aria-controls="profile-operation-panel"
                                 tabIndex={isSelected ? 0 : -1}
-                                className={`relative inline-flex min-h-12 items-center gap-2 px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/20 active:bg-primarypurple/10 ${
+                                className={`relative inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold transition-[color,background-color,box-shadow] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15 ${
                                     isSelected
-                                        ? "text-primarypurple after:absolute after:inset-x-0 after:-bottom-px after:h-1 after:bg-primarygreen"
-                                        : "text-gray-600 hover:text-primarypurple"
+                                        ? "bg-white text-primarypurple shadow-[0_5px_16px_rgba(24,15,48,0.08)] ring-1 ring-inset ring-black/[0.04]"
+                                        : "text-gray-600 hover:bg-primarypurple/[0.05] hover:text-primarypurple"
                                 }`}
                                 onClick={() => setSelectedOperation(operation.id)}
                                 onKeyDown={(event) => handleTabKeyDown(event, index)}
@@ -119,7 +119,7 @@ const UserOperations = () => {
                 role="tabpanel"
                 aria-labelledby={`profile-tab-${selectedOperation}`}
                 tabIndex={0}
-                className="focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
+                className="rounded-3xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
             >
                 {renderOperation()}
             </div>

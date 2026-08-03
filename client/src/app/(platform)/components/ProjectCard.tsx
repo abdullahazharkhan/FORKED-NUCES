@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, CircleDot, Heart, SearchX } from "lucide-react";
+import { ArrowUpRight, Check, CircleDot, Heart, SearchX } from "lucide-react";
 
 import { RetryAlert } from "./RetryAlert";
 import { UserAvatar } from "./UserAvatar";
@@ -72,7 +72,7 @@ const ProjectCard = ({
 
             {isError && !onRetry && (
                 <div
-                    className="border-y border-r border-red-200 border-l-4 border-l-red-600 bg-white p-5 text-sm text-red-800"
+                    className="rounded-2xl border border-red-200/80 bg-white/90 p-5 text-sm text-red-800 shadow-[0_14px_35px_rgba(185,28,28,0.08)]"
                     role="alert"
                 >
                     {(error as Error)?.message || "Projects could not be loaded. Please try again in a moment."}
@@ -81,7 +81,7 @@ const ProjectCard = ({
 
             {isLoading && (
                 <div
-                    className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-12"
+                    className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 xl:grid-cols-12 xl:gap-6"
                     role="status"
                     aria-label="Loading projects"
                 >
@@ -90,24 +90,24 @@ const ProjectCard = ({
                         return (
                             <div
                                 key={id}
-                                className={`min-h-[19rem] animate-pulse border border-t-2 border-black/10 bg-white p-5 sm:p-6 ${projectGridSpan(index)} ${isWide ? "xl:min-h-[21rem]" : ""}`}
+                                className={`min-h-[19rem] animate-pulse rounded-3xl border border-black/[0.06] bg-white/80 p-5 shadow-[0_14px_38px_rgba(40,20,90,0.05)] sm:p-6 ${projectGridSpan(index)} ${isWide ? "xl:min-h-[21rem]" : ""}`}
                             >
-                                <div className="flex items-center justify-between border-b border-black/[0.06] pb-4">
-                                    <div className="h-2.5 w-28 rounded-sm bg-primarypurple/10" />
-                                    <div className="h-8 w-8 rounded-sm bg-black/[0.06]" />
+                                <div className="flex items-center justify-between">
+                                    <div className="h-2.5 w-28 rounded-full bg-primarypurple/10" />
+                                    <div className="h-9 w-9 rounded-xl bg-black/[0.05]" />
                                 </div>
-                                <div className={`mt-7 h-8 rounded-sm bg-black/10 ${isWide ? "w-3/5" : "w-4/5"}`} />
-                                <div className="mt-3 h-3 w-32 rounded-sm bg-black/[0.06]" />
+                                <div className={`mt-7 h-8 rounded-lg bg-black/10 ${isWide ? "w-3/5" : "w-4/5"}`} />
+                                <div className="mt-3 h-3 w-32 rounded-full bg-black/[0.06]" />
                                 <div className="mt-7 flex gap-2">
                                     <div className="h-6 w-20 rounded-full bg-primarypurple/10" />
                                     <div className="h-6 w-16 rounded-full bg-primarypurple/10" />
                                 </div>
-                                <div className="mt-8 border-t border-black/[0.08] pt-5">
+                                <div className="mt-8 rounded-2xl bg-black/[0.025] p-4">
                                     <div className="flex items-center gap-3">
                                         <div className="h-10 w-10 shrink-0 rounded-lg bg-black/10" />
                                         <div className="flex-1">
-                                            <div className="h-3.5 w-2/5 rounded-sm bg-black/10" />
-                                            <div className="mt-2 h-2.5 w-3/5 rounded-sm bg-black/[0.06]" />
+                                            <div className="h-3.5 w-2/5 rounded-full bg-black/10" />
+                                            <div className="mt-2 h-2.5 w-3/5 rounded-full bg-black/[0.06]" />
                                         </div>
                                     </div>
                                 </div>
@@ -118,8 +118,8 @@ const ProjectCard = ({
             )}
 
             {showEmptyState && (
-                <div className="grid gap-6 border-y border-black/15 bg-white px-6 py-10 sm:grid-cols-[auto_1fr] sm:items-center sm:px-8 sm:py-12">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-md border border-primarypurple/20 bg-primarypurple/[0.07] text-primarypurple">
+                <div className="grid gap-6 rounded-3xl border border-black/[0.07] bg-white/90 px-6 py-10 shadow-[0_18px_50px_rgba(40,20,90,0.06)] sm:grid-cols-[auto_1fr] sm:items-center sm:px-8 sm:py-12">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primarypurple/10 bg-primarypurple/[0.07] text-primarypurple shadow-[0_8px_20px_rgba(111,60,255,0.08)]">
                         <SearchX className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <div>
@@ -133,7 +133,7 @@ const ProjectCard = ({
             )}
 
             {!isLoading && !isError && filteredProjects.length > 0 && (
-                <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-12">
+                <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 xl:grid-cols-12 xl:gap-6">
                     {filteredProjects.map((project, index) => {
                         const issues = project.issues ?? [];
                         const openIssueCount =
@@ -151,18 +151,18 @@ const ProjectCard = ({
                             <Link
                                 key={project.project_id}
                                 href={`${basePath}/${project.project_id}`}
-                                className={`group relative flex min-h-[19rem] flex-col overflow-hidden border border-t-2 border-black/15 bg-white p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-primarypurple/45 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primarypurple sm:p-6 ${projectGridSpan(index)} ${isWide ? "xl:min-h-[21rem]" : ""}`}
+                                className={`group relative flex min-h-[19rem] flex-col overflow-hidden rounded-3xl border border-black/[0.07] bg-white/90 p-5 shadow-[0_16px_45px_rgba(40,20,90,0.07)] backdrop-blur-sm transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-primarypurple/20 hover:shadow-[0_24px_60px_rgba(54,29,117,0.13)] active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primarypurple motion-reduce:transform-none motion-reduce:transition-none sm:p-6 ${projectGridSpan(index)} ${isWide ? "xl:min-h-[21rem]" : ""}`}
                             >
                                 <span
-                                    className="absolute left-0 top-0 h-1 w-12 origin-left scale-x-0 bg-primarygreen transition-transform duration-200 group-hover:scale-x-100"
+                                    className="absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primarypurple/[0.05] blur-2xl transition-colors duration-300 group-hover:bg-primarypurple/[0.1]"
                                     aria-hidden="true"
                                 />
 
-                                <div className="relative flex items-center justify-between gap-4 border-b border-black/[0.08] pb-4">
+                                <div className="relative flex items-center justify-between gap-4">
                                     <p className="font-mono text-[0.63rem] font-semibold uppercase tracking-[0.15em] text-primarypurple">
                                         Build record / {String(index + 1).padStart(2, "0")}
                                     </p>
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-black/10 text-black/35 transition-colors group-hover:border-primarypurple/30 group-hover:text-primarypurple">
+                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-black/[0.07] bg-black/[0.025] text-black/35 transition-[transform,border-color,background-color,color] group-hover:-translate-y-0.5 group-hover:border-primarypurple/15 group-hover:bg-primarypurple/[0.07] group-hover:text-primarypurple">
                                         <ArrowUpRight
                                             className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                                             aria-hidden="true"
@@ -198,7 +198,7 @@ const ProjectCard = ({
                                     )}
                                 </div>
 
-                                <div className="mt-auto flex flex-col gap-5 border-t border-black/[0.08] pt-5 sm:flex-row sm:items-end sm:justify-between">
+                                <div className="mt-auto flex flex-col gap-5 rounded-2xl bg-[linear-gradient(135deg,rgba(111,60,255,0.045),rgba(23,19,31,0.018))] p-4 sm:flex-row sm:items-end sm:justify-between">
                                     <div className="flex min-w-0 items-center gap-3">
                                         <UserAvatar
                                             avatarUrl={project.owner_avatar_url ?? null}
@@ -219,7 +219,7 @@ const ProjectCard = ({
                                             {openIssueCount}
                                         </span>
                                         <span className="inline-flex items-center gap-1" aria-label={`${closedIssueCount} closed issues`} title={`${closedIssueCount} closed issues`}>
-                                            <span aria-hidden="true">✓</span>
+                                            <Check className="h-3.5 w-3.5" aria-hidden="true" />
                                             {closedIssueCount}
                                         </span>
                                         <span className="inline-flex items-center gap-1 text-primarypurple" aria-label={`${project.likes_count ?? 0} likes`} title={`${project.likes_count ?? 0} likes`}>

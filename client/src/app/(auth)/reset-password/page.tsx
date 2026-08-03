@@ -118,12 +118,12 @@ function ResetPasswordFormContent() {
         return (
             <div className={AUTH_PAGE_CLASS}>
                 <div className={AUTH_STATUS_SHELL_CLASS}>
-                    <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                    <div className="flex items-start justify-between gap-5 rounded-2xl border border-red-100/80 bg-gradient-to-r from-red-50/80 via-white to-red-50/40 p-4">
                         <p className={AUTH_ERROR_STEP_CLASS}>
                             <span className={AUTH_ERROR_STEP_NUMBER_CLASS}>ERR</span>
                             Link problem
                         </p>
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-red-50 text-red-600">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-[0_8px_22px_rgba(185,28,28,0.08)] ring-1 ring-inset ring-red-100">
                             <CircleAlert className="h-6 w-6" aria-hidden="true" />
                         </span>
                     </div>
@@ -136,7 +136,7 @@ function ResetPasswordFormContent() {
                         <RotateCcw className="h-4 w-4" aria-hidden="true" />
                         Request a fresh link
                     </Link>
-                    <p className="mt-5 border-t border-black/10 pt-5 text-center text-sm text-black/60">
+                    <p className="mt-5 rounded-2xl bg-black/[0.025] p-4 text-center text-sm text-black/60">
                         <Link href="/login" className={AUTH_TEXT_LINK_CLASS}>
                             Return to login
                         </Link>
@@ -150,12 +150,12 @@ function ResetPasswordFormContent() {
         return (
             <div className={AUTH_PAGE_CLASS}>
                 <div className={AUTH_STATUS_SHELL_CLASS}>
-                    <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                    <div className="flex items-start justify-between gap-5 rounded-2xl border border-black/[0.05] bg-gradient-to-r from-primarypurple/[0.045] via-white to-primarygreen/[0.04] p-4">
                         <p className={AUTH_STEP_CLASS}>
                             <span className={AUTH_STEP_NUMBER_CLASS}>02</span>
                             Reset complete
                         </p>
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-primarygreen text-black">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarygreen to-[#dfff83] text-black shadow-[0_9px_24px_rgba(183,255,0,0.2)]">
                             <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
                         </span>
                     </div>
@@ -189,7 +189,7 @@ function ResetPasswordFormContent() {
 
             <div className={AUTH_FORM_SHELL_CLASS}>
                 <form noValidate className="space-y-6" onSubmit={handleSubmit(submitReset)}>
-                    <div className="flex items-center justify-between gap-4 border-b border-black/10 pb-4">
+                    <div className="flex items-center justify-between gap-4 rounded-2xl border border-black/[0.05] bg-gradient-to-r from-primarypurple/[0.045] via-white to-primarygreen/[0.04] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                         <p className="font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
                             New access key
                         </p>
@@ -219,7 +219,7 @@ function ResetPasswordFormContent() {
                             Use at least 8 characters.
                         </p>
                         {errors.newPassword && (
-                            <p id="reset-new-password-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">
+                            <p id="reset-new-password-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">
                                 {errors.newPassword.message}
                             </p>
                         )}
@@ -244,7 +244,7 @@ function ResetPasswordFormContent() {
                             className={getAuthInputClass(Boolean(errors.confirmPassword))}
                         />
                         {errors.confirmPassword && (
-                            <p id="reset-confirm-password-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">
+                            <p id="reset-confirm-password-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">
                                 {errors.confirmPassword.message}
                             </p>
                         )}
@@ -264,7 +264,7 @@ function ResetPasswordFormContent() {
                     </Button>
 
                     {mutation.isError && (
-                        <div role="alert" className="border border-red-200 bg-red-50 p-3.5 text-sm leading-6 text-red-700">
+                        <div role="alert" className="rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm leading-6 text-red-700 shadow-[0_8px_22px_rgba(185,28,28,0.05)]">
                             {getAuthFormErrorMessage(
                                 mutation.error,
                                 "Unable to reset the password. The link may be invalid or expired."
@@ -289,10 +289,10 @@ export default function ResetPassword() {
             fallback={
                 <div className="mx-auto w-full max-w-[36rem] animate-pulse" role="status">
                     <span className="sr-only">Preparing password reset...</span>
-                    <div className="h-7 w-48 bg-black/[0.06]" />
-                    <div className="mt-5 h-11 w-4/5 bg-black/[0.06]" />
-                    <div className="mt-4 h-5 w-2/3 bg-black/[0.06]" />
-                    <div className="mt-8 h-80 border border-black/[0.06] bg-white/60" />
+                    <div className="h-7 w-48 rounded-xl bg-black/[0.06]" />
+                    <div className="mt-5 h-11 w-4/5 rounded-xl bg-black/[0.06]" />
+                    <div className="mt-4 h-5 w-2/3 rounded-xl bg-black/[0.06]" />
+                    <div className="mt-8 h-80 rounded-3xl border border-black/[0.05] bg-gradient-to-br from-white/80 to-primarypurple/[0.035] shadow-[0_16px_45px_rgba(24,15,48,0.05)]" />
                 </div>
             }
         >

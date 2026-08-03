@@ -89,7 +89,7 @@ export function ReportButton({
                 type="button"
                 aria-haspopup="dialog"
                 onClick={openDialog}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-red-200 bg-white px-3.5 text-xs font-bold text-red-700 transition-colors hover:border-red-300 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-red-200/80 bg-white/85 px-3.5 text-xs font-bold text-red-700 shadow-[0_5px_14px_rgba(185,28,28,0.06)] transition-[transform,border-color,background-color,box-shadow] hover:-translate-y-0.5 hover:border-red-300 hover:bg-red-50 hover:shadow-[0_8px_18px_rgba(185,28,28,0.1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
             >
                 <Flag className="h-3.5 w-3.5" aria-hidden="true" />
                 Report
@@ -112,7 +112,7 @@ export function ReportButton({
                                     type="button"
                                     data-dialog-initial-focus="true"
                                     onClick={closeDialog}
-                                    className="inline-flex min-h-11 items-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                    className="inline-flex min-h-11 items-center rounded-xl bg-[linear-gradient(135deg,#6f3cff,#5d2ee8)] px-5 text-sm font-bold text-white shadow-[0_10px_22px_rgba(111,60,255,0.2)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(111,60,255,0.26)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                 >
                                     Done
                                 </button>
@@ -127,7 +127,7 @@ export function ReportButton({
                                 reportMutation.mutate();
                             }}
                         >
-                            <p className="rounded-xl bg-[#f7f6fb] p-4 text-sm leading-6 text-black/65">
+                            <p className="rounded-2xl border border-primarypurple/[0.07] bg-primarypurple/[0.035] p-4 text-sm leading-6 text-black/65">
                                 Report <span className="font-semibold">{targetLabel}</span> for
                                 moderator review. Reports are private.
                             </p>
@@ -142,7 +142,7 @@ export function ReportButton({
                                     value={reason}
                                     disabled={reportMutation.isPending}
                                     onChange={(event) => setReason(event.target.value as ReportReason)}
-                                    className="min-h-12 w-full rounded-xl border border-black/15 bg-white px-3.5 text-sm text-black outline-none transition focus:border-primarypurple focus:ring-4 focus:ring-primarypurple/10"
+                                    className="min-h-12 w-full rounded-xl border border-black/[0.09] bg-white px-3.5 text-sm text-black shadow-sm outline-none transition focus:border-primarypurple/45 focus:ring-4 focus:ring-primarypurple/10"
                                 >
                                     {reasonOptions.map((option) => (
                                         <option key={option.value} value={option.value}>
@@ -171,7 +171,7 @@ export function ReportButton({
                                     value={details}
                                     onChange={(event) => setDetails(event.target.value)}
                                     placeholder="Describe the concern without including sensitive personal information."
-                                    className="w-full resize-y rounded-xl border border-black/15 px-3.5 py-3 text-sm leading-6 outline-none transition placeholder:text-black/35 focus:border-primarypurple focus:ring-4 focus:ring-primarypurple/10"
+                                    className="w-full resize-y rounded-xl border border-black/[0.09] bg-white px-3.5 py-3 text-sm leading-6 shadow-sm outline-none transition placeholder:text-black/35 focus:border-primarypurple/45 focus:ring-4 focus:ring-primarypurple/10"
                                 />
                             </div>
 

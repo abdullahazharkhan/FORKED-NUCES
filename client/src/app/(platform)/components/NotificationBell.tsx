@@ -37,13 +37,13 @@ export function NotificationBell() {
         <Link
             href="/notifications"
             aria-label={label}
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/25 bg-white/10 text-white transition-[background-color,transform] hover:bg-white/20 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition-[background-color,transform,box-shadow] hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-[0_8px_20px_rgba(21,5,68,0.15)] active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
             <Bell className="h-5 w-5" aria-hidden="true" />
             {unreadCount > 0 && (
                 <span
                     aria-hidden="true"
-                    className="absolute -right-1.5 -top-1.5 min-w-5 rounded-sm border border-white bg-red-500 px-1 text-center font-mono text-[9px] font-black leading-5 text-white"
+                    className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full border-2 border-[#5d2ee8] bg-red-500 px-1 text-center font-mono text-[9px] font-black leading-4 text-white shadow-sm"
                 >
                     {unreadCount > 99 ? "99+" : unreadCount}
                 </span>

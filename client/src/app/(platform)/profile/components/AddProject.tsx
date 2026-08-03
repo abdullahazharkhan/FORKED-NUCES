@@ -20,7 +20,10 @@ import {
 import { authFetch } from "@/lib/authFetch";
 import { queryKeys } from "@/lib/queryKeys";
 import { untrustedMarkdownEditorProps } from "@/lib/markdownSecurity";
-import { PLATFORM_INPUT_CLASS } from "@/lib/platformStyles";
+import {
+    PROFILE_INPUT_CLASS,
+    PROFILE_PRIMARY_BUTTON_CLASS,
+} from "./profileStyles";
 import {
     GITHUB_REPOSITORY_URL_ERROR,
     GITHUB_REPOSITORY_URL_REGEX,
@@ -110,7 +113,7 @@ const AddProject = () => {
         Boolean(errors[field] && (isDirty || isSubmitted));
 
     const getInputClass = (fieldError?: unknown) =>
-        `${PLATFORM_INPUT_CLASS} ${fieldError ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`;
+        `${PROFILE_INPUT_CLASS} ${fieldError ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`;
 
     const createProjectMutation = useMutation({
         mutationFn: async (data: ProjectForm) => {
@@ -184,15 +187,15 @@ const AddProject = () => {
 
     return (
         <section
-            className="relative isolate my-6 overflow-hidden border-y border-primarypurple/20 bg-white/80 p-5 sm:p-7 lg:p-8"
+            className="relative isolate my-6 overflow-hidden rounded-3xl border border-black/[0.06] bg-gradient-to-br from-white via-white to-primarypurple/[0.025] p-5 shadow-[0_18px_55px_rgba(24,15,48,0.07)] sm:p-7 lg:p-8"
             aria-labelledby="add-project-heading"
         >
             <div
-                className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primarygreen"
+                className="pointer-events-none absolute -left-20 -top-20 -z-10 h-56 w-56 rounded-full bg-primarygreen/[0.09] blur-3xl"
                 aria-hidden="true"
             />
             <div className="mb-7 flex items-start gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primarypurple text-white">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarypurple to-[#8b6aff] text-white shadow-[0_10px_26px_rgba(104,67,231,0.22)]">
                     <FolderPlus className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
@@ -217,7 +220,7 @@ const AddProject = () => {
                 onSubmit={handleSubmit(onSubmit)}
                 aria-busy={createProjectMutation.isPending}
             >
-                <div className="grid gap-5 border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5 lg:grid-cols-2">
+                <div className="grid gap-5 rounded-2xl border border-black/[0.055] bg-[#fbfafe]/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-5 lg:grid-cols-2">
                     {/* Project Title */}
                     <div className="flex flex-col">
                         <label
@@ -306,7 +309,7 @@ const AddProject = () => {
                 </div>
 
                 {/* Description (Markdown editor) */}
-                <div className="border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5">
+                <div className="rounded-2xl border border-black/[0.055] bg-[#fbfafe]/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-5">
                     <p
                         id="add-project-description-label"
                         className="flex items-center gap-2 text-sm font-bold text-gray-800"
@@ -340,7 +343,7 @@ const AddProject = () => {
                                     language="en-US"
                                     modelValue={field.value || ""}
                                     onChange={field.onChange}
-                                    className="mt-3 overflow-hidden rounded-md border border-black/10 bg-white"
+                                    className="mt-3 overflow-hidden rounded-2xl border border-black/[0.07] bg-white shadow-[0_8px_24px_rgba(24,15,48,0.04)]"
                                     theme="light"
                                     previewTheme="github"
                                     style={{ height: "320px" }}
@@ -359,7 +362,7 @@ const AddProject = () => {
                 </div>
 
                 {/* Tags (multi-select, design only changed here) */}
-                <div className="border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5">
+                <div className="rounded-2xl border border-black/[0.055] bg-[#fbfafe]/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-5">
                     <p
                         id="add-project-tags-label"
                         className="flex items-center gap-2 text-sm font-bold text-gray-800"
@@ -403,9 +406,9 @@ const AddProject = () => {
                                         return (
                                             <label
                                                 key={tag}
-                                                className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-sm border px-3.5 text-xs font-bold transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primarypurple ${checked
-                                                    ? "border-primarypurple bg-primarypurple text-white"
-                                                    : "border-black/10 bg-[#f8f7fb] text-gray-600 hover:border-primarypurple/30 hover:text-primarypurple"
+                                                className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border px-3.5 text-xs font-bold shadow-sm transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primarypurple ${checked
+                                                    ? "border-primarypurple/20 bg-primarypurple text-white shadow-[0_7px_18px_rgba(104,67,231,0.16)]"
+                                                    : "border-black/[0.07] bg-white text-gray-600 hover:border-primarypurple/25 hover:bg-primarypurple/[0.025] hover:text-primarypurple"
                                                     }`}
                                             >
                                                 <input
@@ -434,12 +437,12 @@ const AddProject = () => {
                     )}
                 </div>
 
-                <div className="flex flex-col-reverse gap-3 border-t border-black/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col-reverse gap-3 rounded-2xl bg-black/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs leading-5 text-gray-500">
                         You can edit project details later from its project page.
                     </p>
                     <Button
-                        className="min-h-12 w-full rounded-md bg-primarypurple px-6 font-bold text-white shadow-none sm:w-auto"
+                        className={`${PROFILE_PRIMARY_BUTTON_CLASS} min-h-12 w-full sm:w-auto`}
                         type="submit"
                         isDisabled={!isValid || createProjectMutation.isPending}
                         startContent={

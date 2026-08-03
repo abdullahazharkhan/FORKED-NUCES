@@ -174,7 +174,7 @@ const CloseIssueForm = ({
 
     return (
         <form className="space-y-6" onSubmit={handleSubmit}>
-            <p className="rounded-xl bg-[#f7f6fb] p-4 text-sm leading-6 text-black/65">
+            <p className="rounded-2xl bg-[#f7f6fb] p-4 text-sm leading-6 text-black/65 ring-1 ring-black/[0.04]">
                 Optionally credit contributors whose collaboration requests were
                 accepted. The issue will be marked as{" "}
                 <span className="font-semibold">Closed</span>.
@@ -184,7 +184,7 @@ const CloseIssueForm = ({
                 <p className="text-sm font-black text-black">
                     Accepted Collaborators
                 </p>
-                <p className="text-xs leading-5 text-black/50">
+                <p className="text-xs leading-5 text-black/60">
                     Only contributors who consented through an accepted request
                     can be credited. You may close the issue without selecting
                     anyone.
@@ -196,7 +196,7 @@ const CloseIssueForm = ({
                 aria-live="polite"
             >
                 {isPending && (
-                    <p className="rounded-xl bg-white p-4 text-xs text-black/50">
+                    <p className="rounded-xl bg-white p-4 text-xs text-black/60">
                         Loading accepted collaborators...
                     </p>
                 )}
@@ -214,7 +214,7 @@ const CloseIssueForm = ({
                             type="button"
                             onClick={() => void refetch()}
                             disabled={isFetching}
-                            className="font-bold underline underline-offset-2 disabled:opacity-60"
+                            className="min-h-11 rounded-xl px-3 font-bold underline underline-offset-2 hover:bg-red-100 disabled:opacity-60"
                         >
                             Retry
                         </button>
@@ -224,7 +224,7 @@ const CloseIssueForm = ({
                 {!isPending &&
                     !initialRequestError &&
                     acceptedRequests.length === 0 && (
-                        <p className="rounded-xl bg-white p-4 text-xs leading-5 text-black/50">
+                        <p className="rounded-xl bg-white p-4 text-xs leading-5 text-black/60">
                             No accepted collaboration requests yet. You can still
                             close this issue without crediting a collaborator.
                         </p>
@@ -242,7 +242,7 @@ const CloseIssueForm = ({
                                 type="button"
                                 aria-pressed={isSelected}
                                 onClick={() => toggleRequest(request)}
-                                className={`group flex min-h-14 w-full items-center gap-3 rounded-xl border px-3 py-2 text-left text-xs transition ${
+                                className={`group flex min-h-14 w-full items-center gap-3 rounded-2xl border px-3 py-2 text-left text-xs transition ${
                                     isSelected
                                         ? "border-primarypurple bg-primarypurple text-white"
                                         : "border-black/[0.06] bg-white text-black hover:border-primarypurple/25"
@@ -259,7 +259,7 @@ const CloseIssueForm = ({
                                     <span className="block font-bold">
                                         {request.user_full_name}
                                     </span>
-                                    <span className={`mt-0.5 block truncate text-[11px] ${isSelected ? "text-white/65" : "text-black/45"}`}>
+                                    <span className={`mt-0.5 block truncate text-[11px] ${isSelected ? "text-white/85" : "text-black/60"}`}>
                                         {request.user_nu_email}
                                     </span>
                                 </span>
@@ -277,7 +277,7 @@ const CloseIssueForm = ({
                             type="button"
                             onClick={() => void fetchNextPage()}
                             disabled={isFetchingNextPage}
-                            className="font-bold underline underline-offset-2 disabled:opacity-60"
+                            className="min-h-11 rounded-xl px-3 font-bold underline underline-offset-2 hover:bg-red-100 disabled:opacity-60"
                         >
                             Retry
                         </button>
@@ -289,7 +289,7 @@ const CloseIssueForm = ({
                         type="button"
                         onClick={() => void fetchNextPage()}
                         disabled={isFetchingNextPage}
-                        className="min-h-11 w-full rounded-xl border border-black/15 bg-white px-3 text-xs font-bold text-black/65 transition-colors hover:border-primarypurple/30 hover:text-primarypurple disabled:opacity-60"
+                        className="min-h-11 w-full rounded-xl border border-black/[0.08] bg-white px-3 text-xs font-bold text-black/65 transition-colors hover:border-primarypurple/30 hover:bg-primarypurple/[0.035] hover:text-primarypurple disabled:opacity-60"
                     >
                         {isFetchingNextPage
                             ? "Loading more..."
@@ -300,21 +300,21 @@ const CloseIssueForm = ({
 
             {activeSelectedRequests.length > 0 && (
                 <div className="space-y-2">
-                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/50">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/60">
                         Credited Collaborators ({activeSelectedRequests.length})
                     </p>
                     <div className="flex flex-wrap gap-2">
                         {activeSelectedRequests.map((request) => (
                             <span
                                 key={request.request_id}
-                                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-primarypurple/10 px-3 text-xs font-bold text-primarypurple"
+                                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primarypurple/10 pl-3 pr-1 text-xs font-bold text-primarypurple"
                             >
                                 {request.user_full_name}
                                 <button
                                     type="button"
                                     aria-label={`Remove ${request.user_full_name} from credited collaborators`}
                                     onClick={() => toggleRequest(request)}
-                                    className="ml-1 flex h-6 w-6 items-center justify-center rounded-full text-primarypurple/60 transition-colors hover:bg-primarypurple hover:text-white"
+                                    className="ml-1 flex h-11 w-11 items-center justify-center rounded-full text-primarypurple/60 transition-colors hover:bg-primarypurple hover:text-white focus-visible:outline-2 focus-visible:outline-primarypurple"
                                 >
                                     <X className="h-3.5 w-3.5" aria-hidden="true" />
                                 </button>
@@ -335,14 +335,14 @@ const CloseIssueForm = ({
                     type="button"
                     onClick={onClose}
                     disabled={isSubmitting}
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 px-4 text-sm font-bold text-black/65 transition hover:bg-black/[0.04] disabled:opacity-60"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/[0.08] px-4 text-sm font-bold text-black/65 transition hover:border-primarypurple/15 hover:bg-primarypurple/[0.04] hover:text-primarypurple disabled:opacity-60"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition hover:bg-black disabled:cursor-wait disabled:opacity-60"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(76,41,178,0.16)] transition hover:bg-[#382080] disabled:cursor-wait disabled:opacity-60"
                 >
                     {isSubmitting ? "Closing..." : "Close Issue"}
                 </button>

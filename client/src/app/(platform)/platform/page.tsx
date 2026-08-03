@@ -105,7 +105,7 @@ const Platform = () => {
     };
 
     return (
-        <div className="mx-auto w-full max-w-[90rem] space-y-8 px-5 py-8 sm:px-8 lg:space-y-11 lg:py-12">
+        <div className="mx-auto w-full max-w-[90rem] space-y-7 px-4 py-6 sm:px-6 lg:space-y-10 lg:px-8 lg:py-10">
             <PlatformPageHeader
                 eyebrow="Campus build index"
                 title={<>Browse the work. <span className="text-primarygreen">Find your place.</span></>}
@@ -123,11 +123,11 @@ const Platform = () => {
             />
 
             <section
-                className="border-y border-black/15 bg-white/75 px-5 py-6 sm:px-6"
+                className="rounded-3xl border border-black/[0.07] bg-white/80 p-5 shadow-[0_18px_50px_rgba(40,20,90,0.06)] backdrop-blur-sm sm:p-6"
                 aria-labelledby="explore-filter-heading"
             >
-                <div className="grid gap-7 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-0">
-                    <div className="flex flex-col items-start justify-between gap-5 lg:pr-6">
+                <div className="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-6">
+                    <div className="flex flex-col items-start justify-between gap-5 rounded-2xl bg-primarypurple/[0.035] p-4 lg:p-5">
                         <div>
                             <h2 id="explore-filter-heading" className="flex items-center gap-2 text-base font-black tracking-[-0.02em]">
                             <SlidersHorizontal className="h-4 w-4 text-primarypurple" aria-hidden="true" />
@@ -139,7 +139,7 @@ const Platform = () => {
                             <button
                                 type="button"
                                 onClick={clearFilters}
-                                className="inline-flex min-h-9 items-center gap-1.5 border-b border-black/20 px-1 text-xs font-bold text-black/60 transition-colors hover:border-primarypurple hover:text-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-black/[0.07] bg-white px-3 text-xs font-bold text-black/60 shadow-sm transition-[transform,border-color,color] hover:-translate-y-0.5 hover:border-primarypurple/20 hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                             >
                                 <X className="h-3.5 w-3.5" aria-hidden="true" />
                                 Clear filters
@@ -147,7 +147,7 @@ const Platform = () => {
                         )}
                     </div>
 
-                    <div className="grid gap-5 border-black/10 sm:grid-cols-2 lg:border-l lg:pl-6 xl:grid-cols-4">
+                    <div className="grid content-center gap-5 sm:grid-cols-2 xl:grid-cols-4">
                     <label className="block">
                         <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Search projects</span>
                         <span className="relative block">
@@ -210,12 +210,12 @@ const Platform = () => {
                 </div>
             </section>
 
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/15 pb-5">
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-black/[0.05] bg-white/55 px-5 py-4 shadow-[0_10px_30px_rgba(40,20,90,0.035)] backdrop-blur-sm">
                 <div>
                     <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-primarypurple">Directory / community work</p>
                     <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] sm:text-3xl">Project directory</h2>
                 </div>
-                <p className="border-l-2 border-primarygreen pl-3 font-mono text-[0.68rem] font-medium tabular-nums text-black/60" role="status" aria-live="polite">
+                <p className="rounded-xl bg-primarypurple/[0.045] px-3.5 py-2.5 font-mono text-[0.68rem] font-medium tabular-nums text-black/60" role="status" aria-live="polite">
                 {isDebouncing || (isFetching && !isFetchingNextPage)
                     ? "Updating project results..."
                     : totalCount !== null && totalCount !== undefined
@@ -236,14 +236,14 @@ const Platform = () => {
 
             {isFetchNextPageError && (
                 <div
-                    className="flex flex-wrap items-center justify-center gap-3 border-y border-red-200 bg-red-50 p-4 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-red-200/80 bg-red-50/90 p-4 text-sm text-red-700 shadow-[0_10px_28px_rgba(185,28,28,0.07)]"
                     role="alert"
                 >
                     <span>Could not load more projects.</span>
                     <button
                         type="button"
                         onClick={() => void fetchNextPage()}
-                        className="font-bold underline underline-offset-4"
+                        className="inline-flex min-h-11 items-center rounded-lg px-2 font-bold underline underline-offset-4 transition-colors hover:bg-red-100"
                     >
                         Retry
                     </button>

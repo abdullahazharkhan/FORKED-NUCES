@@ -166,8 +166,8 @@ export default function CollaborationsPage() {
     if (!currentUser && (sessionStatus === "idle" || sessionStatus === "loading")) {
         return (
             <div className="mx-auto max-w-7xl space-y-4 px-5 py-8 sm:px-8 lg:py-12" role="status" aria-label="Loading collaborations">
-                <div className="h-48 animate-pulse rounded-lg bg-primarypurple/20" />
-                <div className="h-40 animate-pulse border-y border-black/10 bg-black/[0.05]" />
+                <div className="h-48 animate-pulse rounded-[2rem] bg-primarypurple/20" />
+                <div className="h-40 animate-pulse rounded-[1.75rem] border border-black/[0.05] bg-white shadow-[0_18px_55px_rgba(42,25,86,0.06)]" />
             </div>
         );
     }
@@ -180,23 +180,25 @@ export default function CollaborationsPage() {
                 title={<>Collaboration <span className="text-primarygreen">desk.</span></>}
                 description="Keep every request in one place, from the first invitation to the final decision."
                 actions={
-                    <div className="flex items-center gap-3 border-l border-white/25 pl-5 text-white">
-                        <UserRoundCheck className="h-5 w-5 text-primarygreen" aria-hidden="true" />
+                    <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-white ring-1 ring-white/15">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primarygreen/15 text-primarygreen">
+                            <UserRoundCheck className="h-5 w-5" aria-hidden="true" />
+                        </span>
                         <span className="text-sm font-semibold">Requests & invitations</span>
                     </div>
                 }
             />
 
-            <div role="group" aria-label="Collaboration request direction" className="flex w-full border-b border-black/15 sm:w-fit">
+            <div role="group" aria-label="Collaboration request direction" className="flex w-full gap-1 rounded-2xl border border-black/[0.06] bg-white p-1.5 shadow-[0_10px_30px_rgba(42,25,86,0.06)] sm:w-fit">
                 {dashboardTabs.map(({ id, label, Icon }) => (
                     <button
                         key={id}
                         type="button"
                         aria-pressed={activeTab === id}
                         onClick={() => setActiveTab(id)}
-                        className={`relative inline-flex min-h-12 flex-1 items-center justify-center gap-2 px-5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:bg-primarypurple/10 sm:flex-none ${activeTab === id
-                            ? "text-primarypurple after:absolute after:inset-x-0 after:-bottom-px after:h-1 after:bg-primarygreen"
-                            : "text-black/60 hover:text-primarypurple"
+                        className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px sm:flex-none ${activeTab === id
+                            ? "bg-primarypurple text-white shadow-[0_8px_20px_rgba(76,41,178,0.2)]"
+                            : "text-black/60 hover:bg-primarypurple/[0.06] hover:text-primarypurple"
                             }`}
                     >
                         <Icon className="h-4 w-4" aria-hidden="true" />
@@ -220,11 +222,11 @@ export default function CollaborationsPage() {
                 className="space-y-4"
             >
                 {requests.isPending && (
-                    <div className="space-y-3" role="status" aria-label="Loading collaboration requests">
+                    <div className="space-y-3 rounded-[1.75rem] border border-black/[0.05] bg-white p-3 shadow-[0_16px_45px_rgba(42,25,86,0.05)]" role="status" aria-label="Loading collaboration requests">
                         {collaborationSkeletonIds.map((id) => (
                             <div
                                 key={id}
-                            className="h-44 animate-pulse border-b border-black/10 bg-white/75"
+                            className="h-44 animate-pulse rounded-2xl bg-[#f7f6fa]"
                             />
                         ))}
                     </div>
@@ -242,7 +244,7 @@ export default function CollaborationsPage() {
                             type="button"
                             onClick={() => void requests.refetch()}
                             disabled={requests.isFetching}
-                            className="min-h-10 rounded-lg px-3 font-bold underline transition hover:bg-red-100 disabled:opacity-60"
+                            className="min-h-11 rounded-xl px-3 font-bold underline transition hover:bg-red-100 disabled:opacity-60"
                         >
                             Retry
                         </button>
@@ -250,8 +252,8 @@ export default function CollaborationsPage() {
                 )}
 
                 {!requests.isPending && !requests.isError && visibleRequests.length === 0 && (
-                    <div className="border-y border-dashed border-primarypurple/35 bg-white/70 p-10 text-center">
-                        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-md bg-primarypurple/10 text-primarypurple">
+                    <div className="rounded-[1.75rem] border border-dashed border-primarypurple/25 bg-white p-10 text-center shadow-[0_16px_45px_rgba(42,25,86,0.05)]">
+                        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
                             {activeTab === "incoming" ? (
                                 <Inbox className="h-7 w-7" aria-hidden="true" />
                             ) : (
@@ -269,10 +271,11 @@ export default function CollaborationsPage() {
 
                 {visibleRequests.length > 0 && (
                     <>
-                        <p className="px-1 text-xs font-medium text-black/50" aria-live="polite">
+                        <p className="px-1 text-xs font-medium text-black/60" aria-live="polite">
                             Loaded {allRequests.length}
                             {typeof totalCount === "number" ? ` of ${totalCount}` : ""} total requests
                         </p>
+                        <div className="space-y-3 rounded-[1.75rem] border border-black/[0.06] bg-white p-3 shadow-[0_18px_55px_rgba(42,25,86,0.06)] sm:p-4">
                         {visibleRequests.map((request) => {
                             const actions = currentUser
                                 ? getCollaborationActions(request, currentUser.user_id)
@@ -283,7 +286,7 @@ export default function CollaborationsPage() {
                             return (
                                 <article
                                     key={request.request_id}
-                                    className="group relative space-y-5 overflow-hidden border-b border-black/10 bg-white/80 p-5 transition-colors duration-200 hover:bg-white active:bg-primarypurple/[0.035] sm:p-6"
+                                    className="group relative space-y-5 overflow-hidden rounded-2xl border border-black/[0.045] bg-[#faf9fc] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-primarypurple/15 hover:bg-white hover:shadow-[0_12px_30px_rgba(55,34,110,0.07)] active:translate-y-0 sm:p-6"
                                 >
                                     {request.status === "pending" && (
                                         <span className="absolute inset-y-0 left-0 w-1 bg-primarygreen" aria-hidden="true" />
@@ -317,7 +320,7 @@ export default function CollaborationsPage() {
                                         </time>
                                     </div>
 
-                                    <div className="border-l-2 border-primarypurple/25 bg-primarypurple/[0.035] p-4 text-sm">
+                                    <div className="rounded-2xl bg-primarypurple/[0.045] p-4 text-sm ring-1 ring-primarypurple/[0.08]">
                                         <div className="flex min-w-0 items-center gap-3">
                                             <UserAvatar
                                                 avatarUrl={request.user_avatar_url}
@@ -334,7 +337,7 @@ export default function CollaborationsPage() {
                                             <div className="mt-4 flex items-start gap-2 border-t border-black/[0.07] pt-4 text-gray-700">
                                                 <MessageSquareText className="mt-0.5 h-4 w-4 shrink-0 text-primarypurple" aria-hidden="true" />
                                                 <p className="whitespace-pre-wrap leading-6">
-                                                    “{request.message}”
+                                                    &ldquo;{request.message}&rdquo;
                                                 </p>
                                             </div>
                                         )}
@@ -353,11 +356,11 @@ export default function CollaborationsPage() {
                                                             action,
                                                         })
                                                     }
-                                                    className={`min-h-11 rounded-md px-5 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 ${action === "accept"
-                                                        ? "bg-primarypurple text-white hover:bg-black focus-visible:outline-primarypurple"
+                                                    className={`min-h-11 rounded-xl px-5 text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 ${action === "accept"
+                                                        ? "bg-primarypurple text-white shadow-[0_8px_20px_rgba(76,41,178,0.16)] hover:bg-[#382080] focus-visible:outline-primarypurple"
                                                         : action === "reject"
                                                             ? "bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600"
-                                                            : "border border-black/15 text-gray-700 hover:border-primarypurple/30 hover:bg-primarypurple/[0.05] hover:text-primarypurple focus-visible:outline-primarypurple"
+                                                            : "border border-black/[0.08] bg-white text-gray-700 hover:border-primarypurple/20 hover:bg-primarypurple/[0.05] hover:text-primarypurple focus-visible:outline-primarypurple"
                                                         }`}
                                                 >
                                                     {pendingAction && actionMutation.variables?.action === action
@@ -370,6 +373,7 @@ export default function CollaborationsPage() {
                                 </article>
                             );
                         })}
+                        </div>
                     </>
                 )}
             </section>
@@ -380,7 +384,7 @@ export default function CollaborationsPage() {
                         type="button"
                         onClick={() => void requests.fetchNextPage()}
                         disabled={requests.isFetchingNextPage}
-                        className="min-h-12 rounded-md bg-primarypurple px-6 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primarypurple active:translate-y-px disabled:opacity-60"
+                        className="min-h-12 rounded-xl bg-primarypurple px-6 text-sm font-bold text-white shadow-[0_10px_24px_rgba(76,41,178,0.18)] transition-colors hover:bg-[#382080] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primarypurple active:translate-y-px disabled:opacity-60"
                     >
                         {requests.isFetchingNextPage ? "Loading..." : "Load more"}
                     </button>

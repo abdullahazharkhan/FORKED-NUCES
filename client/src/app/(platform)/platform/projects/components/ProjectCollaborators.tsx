@@ -50,16 +50,16 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
 
     return (
         <section
-            className="relative isolate overflow-hidden border-y border-black/15 bg-white/80 p-5 sm:p-7"
+            className="relative isolate overflow-hidden rounded-[1.75rem] border border-black/[0.06] bg-white p-5 shadow-[0_18px_55px_rgba(42,25,86,0.07)] sm:p-7"
             aria-labelledby="project-collaborators-heading"
         >
             <div
-                className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primarygreen"
+                className="pointer-events-none absolute left-6 top-0 h-1 w-16 rounded-b-full bg-primarygreen"
                 aria-hidden="true"
             />
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-start gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primarypurple text-white">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primarypurple text-white shadow-[0_8px_20px_rgba(76,41,178,0.18)]">
                         <UsersRound className="h-5 w-5" aria-hidden="true" />
                     </span>
                     <div>
@@ -80,7 +80,7 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                 </div>
 
                 {!collaboratorsQuery.isPending && !initialError && (
-                    <span className="w-fit border-l-2 border-primarygreen bg-primarypurple/[0.06] px-3 py-1.5 font-mono text-xs font-bold text-primarypurple">
+                    <span className="w-fit rounded-xl bg-primarypurple/[0.07] px-3 py-2 font-mono text-xs font-bold text-primarypurple ring-1 ring-primarypurple/10">
                         {collaborators.length.toLocaleString()} loaded
                     </span>
                 )}
@@ -95,9 +95,9 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                     {SKELETON_IDS.map((id) => (
                         <div
                             key={id}
-                            className="flex animate-pulse items-center gap-3 border-b border-primarypurple/10 bg-white p-4"
+                            className="flex animate-pulse items-center gap-3 rounded-2xl bg-[#f7f6fb] p-4 ring-1 ring-black/[0.04]"
                         >
-                            <div className="h-11 w-11 shrink-0 rounded-md bg-primarypurple/10" />
+                            <div className="h-11 w-11 shrink-0 rounded-2xl bg-primarypurple/10" />
                             <div className="flex min-w-0 flex-1 flex-col gap-2">
                                 <div className="h-3 w-2/3 rounded-full bg-gray-200" />
                                 <div className="h-2.5 w-4/5 rounded-full bg-gray-100" />
@@ -122,7 +122,7 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                         type="button"
                         onClick={() => void collaboratorsQuery.refetch()}
                         disabled={collaboratorsQuery.isFetching}
-                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 font-bold no-underline transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 font-bold no-underline transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <RefreshCw className="h-4 w-4" aria-hidden="true" />
                         Retry
@@ -133,8 +133,8 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
             {!collaboratorsQuery.isPending &&
                 !initialError &&
                 collaborators.length === 0 && (
-                    <div className="border-y border-dashed border-primarypurple/30 bg-white/70 px-5 py-10 text-center">
-                        <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-primarypurple/10 text-primarypurple">
+                    <div className="rounded-2xl border border-dashed border-primarypurple/25 bg-[#faf9fc] px-5 py-10 text-center">
+                        <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
                             <UsersRound className="h-6 w-6" aria-hidden="true" />
                         </span>
                         <p className="font-bold text-gray-900">
@@ -148,12 +148,12 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                 )}
 
             {collaborators.length > 0 && (
-                <div className="grid border-t border-black/10 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {collaborators.map((collaborator) => (
                         <Link
                             href={`/platform/users/${collaborator.user_id}`}
                             key={collaborator.user_id}
-                            className="group flex min-w-0 items-center gap-3 border-b border-black/10 bg-white/70 p-3.5 transition-colors duration-200 hover:bg-primarypurple/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:bg-primarypurple/[0.08]"
+                            className="group flex min-w-0 items-center gap-3 rounded-2xl border border-black/[0.045] bg-[#faf9fc] p-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-primarypurple/15 hover:bg-white hover:shadow-[0_10px_25px_rgba(55,34,110,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-0 active:bg-primarypurple/[0.08]"
                         >
                             <span className="shrink-0 rounded-full ring-2 ring-primarypurple/10 ring-offset-2 transition group-hover:ring-primarypurple/25">
                                 <UserAvatar
@@ -185,7 +185,7 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                         type="button"
                         onClick={() => void collaboratorsQuery.fetchNextPage()}
                         disabled={collaboratorsQuery.isFetchingNextPage}
-                        className="rounded-lg px-2 py-1 font-bold underline underline-offset-2 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
+                        className="min-h-11 rounded-xl px-3 font-bold underline underline-offset-2 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
                     >
                         Retry
                     </button>
@@ -199,7 +199,7 @@ const ProjectCollaborators = ({ projectid }: { projectid: number }) => {
                             type="button"
                             onClick={() => void collaboratorsQuery.fetchNextPage()}
                             disabled={collaboratorsQuery.isFetchingNextPage}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primarypurple px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primarypurple px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(76,41,178,0.18)] transition-colors hover:bg-[#382080] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {collaboratorsQuery.isFetchingNextPage && (
                                 <LoaderCircle

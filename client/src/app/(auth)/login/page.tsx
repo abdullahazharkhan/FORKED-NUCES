@@ -156,7 +156,7 @@ const LoginForm = () => {
             </div>
 
             {securityNotice && (
-                <div role="status" className="mb-4 flex gap-3 border border-green-200 bg-green-50 p-3.5 text-sm leading-6 text-green-800">
+                <div role="status" className="mb-4 flex gap-3 rounded-2xl border border-green-200/80 bg-green-50/80 p-4 text-sm leading-6 text-green-800 shadow-[0_8px_22px_rgba(22,101,52,0.06)]">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     {securityNotice}
                 </div>
@@ -164,12 +164,12 @@ const LoginForm = () => {
 
             <div className={AUTH_FORM_SHELL_CLASS}>
                 <form noValidate className="space-y-6" onSubmit={handleSubmit((data) => loginMutation.mutate(data))}>
-                    <div className="flex items-center justify-between gap-4 border-b border-black/10 pb-4">
+                    <div className="flex items-center justify-between gap-4 rounded-2xl border border-black/[0.05] bg-gradient-to-r from-primarypurple/[0.045] via-white to-primarygreen/[0.04] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                         <p className="font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
                             NU credentials
                         </p>
                         <span className="flex items-center gap-2 text-xs text-black/60">
-                            <span className="h-2 w-2 bg-primarygreen ring-1 ring-black/10" aria-hidden="true" />
+                            <span className="h-2 w-2 rounded-full bg-primarygreen ring-4 ring-primarygreen/15" aria-hidden="true" />
                             Secure sign-in
                         </span>
                     </div>
@@ -188,7 +188,7 @@ const LoginForm = () => {
                             className={getAuthInputClass(Boolean(errors.nuemail))}
                         />
                         {errors.nuemail && (
-                            <p id="login-email-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">{errors.nuemail.message}</p>
+                            <p id="login-email-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">{errors.nuemail.message}</p>
                         )}
                     </div>
 
@@ -210,7 +210,7 @@ const LoginForm = () => {
                             className={getAuthInputClass(Boolean(errors.password))}
                         />
                         {errors.password && (
-                            <p id="login-password-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">{errors.password.message}</p>
+                            <p id="login-password-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">{errors.password.message}</p>
                         )}
                     </div>
 
@@ -230,7 +230,7 @@ const LoginForm = () => {
                     {message && (
                         <div
                             role={isError ? "alert" : "status"}
-                            className={`border p-3.5 text-sm leading-6 ${
+                            className={`rounded-2xl border p-4 text-sm leading-6 shadow-[0_8px_22px_rgba(24,15,48,0.05)] ${
                                 isError
                                     ? "border-red-200 bg-red-50 text-red-700"
                                     : "border-green-200 bg-green-50 text-green-700"
@@ -257,10 +257,10 @@ const Login = () => (
         fallback={
             <div className="mx-auto w-full max-w-[36rem] animate-pulse" role="status">
                 <span className="sr-only">Loading login...</span>
-                <div className="h-7 w-40 bg-black/[0.06]" />
-                <div className="mt-5 h-11 w-4/5 bg-black/[0.06]" />
-                <div className="mt-4 h-5 w-3/5 bg-black/[0.06]" />
-                <div className="mt-8 h-72 border border-black/[0.06] bg-white/60" />
+                <div className="h-7 w-40 rounded-xl bg-black/[0.06]" />
+                <div className="mt-5 h-11 w-4/5 rounded-xl bg-black/[0.06]" />
+                <div className="mt-4 h-5 w-3/5 rounded-xl bg-black/[0.06]" />
+                <div className="mt-8 h-72 rounded-3xl border border-black/[0.05] bg-gradient-to-br from-white/80 to-primarypurple/[0.035] shadow-[0_16px_45px_rgba(24,15,48,0.05)]" />
             </div>
         }
     >

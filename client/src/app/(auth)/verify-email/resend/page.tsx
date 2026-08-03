@@ -127,7 +127,7 @@ export default function ResendEmail() {
 
             <div className={AUTH_FORM_SHELL_CLASS}>
                 <form noValidate className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="flex items-center justify-between gap-4 border-b border-black/10 pb-4">
+                    <div className="flex items-center justify-between gap-4 rounded-2xl border border-black/[0.05] bg-gradient-to-r from-primarypurple/[0.045] via-white to-primarygreen/[0.04] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                         <p className="font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
                             NU address
                         </p>
@@ -157,7 +157,7 @@ export default function ResendEmail() {
                             Use the @nu.edu.pk address from your registration.
                         </p>
                         {errors.nuemail && (
-                            <p id="resend-email-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">
+                            <p id="resend-email-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">
                                 {errors.nuemail.message}
                             </p>
                         )}
@@ -179,7 +179,7 @@ export default function ResendEmail() {
                     {message && (
                         <div
                             role={mutation.isError ? "alert" : "status"}
-                            className={`flex gap-3 border p-3.5 text-sm leading-6 ${mutation.isError
+                            className={`flex gap-3 rounded-2xl border p-4 text-sm leading-6 shadow-[0_8px_22px_rgba(24,15,48,0.05)] ${mutation.isError
                                 ? "border-red-200 bg-red-50 text-red-700"
                                 : "border-green-200 bg-green-50 text-green-800"
                             }`}

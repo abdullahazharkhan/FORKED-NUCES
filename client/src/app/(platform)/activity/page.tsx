@@ -130,15 +130,17 @@ export default function ActivityPage() {
                 title={<>Community <span className="text-primarygreen">activity.</span></>}
                 description="See how your work is adding up, then catch up on the projects and conversations moving the community forward."
                 actions={
-                    <div className="flex items-center gap-3 border-l border-white/25 pl-4 text-white">
-                        <ActivityIcon className="h-5 w-5 text-primarygreen" aria-hidden="true" />
+                    <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-white ring-1 ring-white/15">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primarygreen/15 text-primarygreen">
+                            <ActivityIcon className="h-5 w-5" aria-hidden="true" />
+                        </span>
                         <span className="text-sm font-semibold">Live community log</span>
                     </div>
                 }
             />
 
             <section className="space-y-4" aria-labelledby="your-stats-heading">
-                <div className="flex items-end justify-between gap-3 border-b border-black/15 pb-4">
+                <div className="flex items-end justify-between gap-3 px-1">
                     <h2 id="your-stats-heading" className="text-2xl font-black tracking-[-0.03em] text-black sm:text-3xl">
                         Your contribution summary
                     </h2>
@@ -151,12 +153,12 @@ export default function ActivityPage() {
 
                 {stats.isPending && (
                     <div
-                        className="border-y border-black/15 bg-white/80 p-6"
+                        className="rounded-[1.75rem] border border-black/[0.06] bg-white p-6 shadow-[0_18px_55px_rgba(42,25,86,0.07)]"
                         role="status"
                         aria-label="Loading your contribution summary"
                     >
                         <div className="mb-5 flex animate-pulse items-center gap-3">
-                            <div className="h-16 w-16 rounded-lg bg-gray-200" />
+                            <div className="h-16 w-16 rounded-2xl bg-gray-200" />
                             <div className="space-y-2">
                                 <div className="h-5 w-40 rounded bg-gray-200" />
                                 <div className="h-3 w-52 rounded bg-gray-100" />
@@ -166,7 +168,7 @@ export default function ActivityPage() {
                             {statsSkeletonIds.map((id) => (
                                 <div
                                     key={id}
-                                    className="h-20 animate-pulse border-l-2 border-primarypurple/20 bg-black/[0.04]"
+                                    className="h-20 animate-pulse rounded-2xl bg-black/[0.04]"
                                 />
                             ))}
                         </div>
@@ -183,8 +185,8 @@ export default function ActivityPage() {
                 )}
 
                 {stats.data && !stats.isPending && (
-                    <div className="overflow-hidden border-y border-black/15 bg-white/85">
-                        <div className="grid gap-6 border-b border-black/10 p-6 sm:grid-cols-[1fr_auto] sm:items-center lg:p-8">
+                    <div className="overflow-hidden rounded-[1.75rem] border border-black/[0.06] bg-white p-3 shadow-[0_18px_55px_rgba(42,25,86,0.07)] sm:p-4">
+                        <div className="grid gap-6 rounded-2xl bg-gradient-to-br from-[#faf9fd] to-primarypurple/[0.045] p-5 sm:grid-cols-[1fr_auto] sm:items-center lg:p-7">
                             <div className="flex min-w-0 items-center gap-4">
                                 <UserAvatar
                                     avatarUrl={stats.data.avatar_url}
@@ -214,7 +216,7 @@ export default function ActivityPage() {
                                     </p>
                                 </div>
                             </div>
-                            <div className="w-fit border-l-4 border-primarygreen bg-primarypurple px-5 py-3 text-white sm:min-w-40 sm:text-right">
+                            <div className="w-fit rounded-2xl bg-primarypurple px-5 py-3 text-white shadow-[0_12px_28px_rgba(74,42,170,0.2)] sm:min-w-40 sm:text-right">
                                 <p className="text-xs font-semibold tracking-wide text-white/90">
                                     Activity score
                                 </p>
@@ -224,9 +226,9 @@ export default function ActivityPage() {
                             </div>
                         </div>
 
-                        <dl className="grid grid-cols-2 gap-px bg-black/[0.07] sm:grid-cols-3 lg:grid-cols-6">
+                        <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                             {statMetrics.map(({ Icon, key, label }) => (
-                                    <div key={key} className="group bg-white p-4 text-left transition-colors hover:bg-primarypurple/[0.035] sm:p-5">
+                                <div key={key} className="group rounded-2xl bg-[#f7f6fb] p-4 text-left ring-1 ring-black/[0.035] transition duration-200 hover:-translate-y-0.5 hover:bg-primarypurple/[0.055] sm:p-5">
                                     <Icon
                                         className="h-5 w-5 text-primarypurple transition-transform group-hover:translate-x-0.5"
                                         aria-hidden="true"
@@ -245,7 +247,7 @@ export default function ActivityPage() {
             </section>
 
             <section className="space-y-4" aria-labelledby="recent-activity-heading">
-                <div className="flex flex-col gap-4 border-y border-black/15 bg-white/65 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
+                <div className="flex flex-col gap-4 rounded-[1.75rem] border border-black/[0.06] bg-white p-5 shadow-[0_16px_45px_rgba(42,25,86,0.055)] sm:flex-row sm:items-end sm:justify-between sm:p-6">
                     <div>
                         <h2
                             id="recent-activity-heading"
@@ -283,7 +285,7 @@ export default function ActivityPage() {
                                     Number(event.target.value) as ActivityLimit
                                 )
                             }
-                            className="min-h-11 w-full rounded-md border border-black/20 bg-white px-3 py-2 text-sm font-semibold outline-none transition hover:border-primarypurple/40 focus:border-primarypurple focus:ring-4 focus:ring-primarypurple/10 sm:w-48"
+                            className="min-h-11 w-full rounded-xl border border-black/10 bg-[#f8f7fb] px-3 py-2 text-sm font-semibold outline-none transition hover:border-primarypurple/30 hover:bg-white focus:border-primarypurple focus:bg-white focus:ring-4 focus:ring-primarypurple/10 sm:w-48"
                         >
                             {activityLimits.map((option) => (
                                 <option key={option} value={option}>
@@ -296,16 +298,16 @@ export default function ActivityPage() {
 
                 {activity.isPending && (
                     <div
-                        className="space-y-3"
+                        className="space-y-3 rounded-[1.75rem] border border-black/[0.05] bg-white p-3 shadow-[0_16px_45px_rgba(42,25,86,0.05)]"
                         role="status"
                         aria-label="Loading recent community activity"
                     >
                         {activitySkeletonIds.map((id) => (
                             <div
                                 key={id}
-                                className="flex animate-pulse gap-4 border-b border-black/10 bg-white/70 p-5"
+                                className="flex animate-pulse gap-4 rounded-2xl bg-[#f7f6fa] p-5"
                             >
-                                <div className="h-11 w-11 shrink-0 rounded-md bg-gray-200" />
+                                <div className="h-11 w-11 shrink-0 rounded-xl bg-gray-200" />
                                 <div className="flex-1 space-y-2">
                                     <div className="h-4 w-2/3 rounded bg-gray-200" />
                                     <div className="h-3 w-32 rounded bg-gray-100" />
@@ -327,11 +329,10 @@ export default function ActivityPage() {
                 {!activity.isPending &&
                     !initialActivityError &&
                     activities.length === 0 && (
-                        <div className="border-y border-dashed border-primarypurple/35 bg-white/70 p-10 text-center">
-                            <ActivityIcon
-                                className="mx-auto h-9 w-9 text-gray-400"
-                                aria-hidden="true"
-                            />
+                        <div className="rounded-[1.75rem] border border-dashed border-primarypurple/25 bg-white p-10 text-center shadow-[0_16px_45px_rgba(42,25,86,0.05)]">
+                            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primarypurple/[0.08] text-primarypurple">
+                                <ActivityIcon className="h-7 w-7" aria-hidden="true" />
+                            </span>
                             <h3 className="mt-3 text-lg font-semibold">
                                 No recent activity
                             </h3>
@@ -344,7 +345,7 @@ export default function ActivityPage() {
                 {!activity.isPending &&
                     !initialActivityError &&
                     activities.length > 0 && (
-                        <ol className="relative border-l border-black/15" aria-label="Recent community activity">
+                        <ol className="space-y-3 rounded-[1.75rem] border border-black/[0.06] bg-white p-3 shadow-[0_18px_55px_rgba(42,25,86,0.06)] sm:p-4" aria-label="Recent community activity">
                             {activities.map((event) => {
                                 const presentation =
                                     activityPresentation[event.activity_type];
@@ -355,9 +356,9 @@ export default function ActivityPage() {
                                     <li
                                         key={`${event.activity_type}-${event.entity_id}`}
                                     >
-                                        <article className="group flex gap-4 border-b border-black/10 bg-white/75 p-5 transition-colors duration-200 hover:bg-white active:bg-primarypurple/[0.04] sm:p-6">
+                                        <article className="group flex gap-4 rounded-2xl border border-black/[0.045] bg-[#faf9fc] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-primarypurple/15 hover:bg-white hover:shadow-[0_12px_30px_rgba(55,34,110,0.07)] active:translate-y-0 sm:p-6">
                                             <div
-                                                className={`-ml-[2.9rem] flex h-11 w-11 shrink-0 items-center justify-center rounded-md ring-4 ring-[#f4f3f8] sm:-ml-[3.05rem] ${presentation.tone}`}
+                                                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-4 ring-white ${presentation.tone}`}
                                             >
                                                 <EventIcon
                                                     className="h-5 w-5"
@@ -398,7 +399,7 @@ export default function ActivityPage() {
                                                 </p>
                                                 <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
                                                     <span>{presentation.label}</span>
-                                                    <span aria-hidden="true">•</span>
+                                                    <span aria-hidden="true">&bull;</span>
                                                     <time dateTime={event.activity_date}>
                                                         {formatUtcDate(
                                                             event.activity_date

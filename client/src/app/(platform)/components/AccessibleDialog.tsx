@@ -133,7 +133,7 @@ export function AccessibleDialog({
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-[#0d0b12]/70 px-4 py-5 backdrop-blur-sm sm:py-8"
+            className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-[#160a36]/60 px-4 py-5 backdrop-blur-md sm:py-8"
             onMouseDown={handleBackdropMouseDown}
         >
             <div
@@ -142,9 +142,9 @@ export function AccessibleDialog({
                 aria-modal="true"
                 aria-labelledby={titleId}
                 tabIndex={-1}
-                className={`max-h-[calc(100svh-2.5rem)] w-full overflow-y-auto rounded-[1.5rem] border border-white/20 bg-white p-5 shadow-[0_32px_90px_rgba(22,9,60,0.35)] outline-none sm:max-h-[calc(100vh-4rem)] sm:rounded-[1.75rem] sm:p-7 ${className}`}
+                className={`max-h-[calc(100svh-2.5rem)] w-full overflow-y-auto rounded-[1.75rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.99),rgba(249,247,253,0.99))] p-5 shadow-[0_32px_100px_rgba(35,13,86,0.32)] outline-none sm:max-h-[calc(100vh-4rem)] sm:rounded-[2rem] sm:p-7 ${className}`}
             >
-                <div className="mb-6 flex items-center justify-between gap-4 border-b border-black/[0.07] pb-5">
+                <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl bg-primarypurple/[0.035] px-4 py-3.5">
                     <div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primarypurple">
                             FORK&apos;D NUCES
@@ -158,7 +158,7 @@ export function AccessibleDialog({
                         aria-label="Close dialog"
                         onClick={() => onCloseRef.current()}
                         disabled={closeDisabled}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/[0.035] text-black/55 transition-colors hover:bg-black hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-black/[0.08] bg-white text-black/55 shadow-sm transition-[transform,background-color,color] hover:-translate-y-0.5 hover:bg-primarypurple hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <X className="h-5 w-5" aria-hidden="true" />
                     </button>

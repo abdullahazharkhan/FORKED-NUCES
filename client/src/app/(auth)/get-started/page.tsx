@@ -123,12 +123,12 @@ const GetStarted = () => {
         return (
             <div className={AUTH_PAGE_CLASS}>
                 <div className={AUTH_STATUS_SHELL_CLASS} role="status">
-                    <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                    <div className="flex items-start justify-between gap-5 rounded-2xl border border-black/[0.05] bg-gradient-to-r from-primarypurple/[0.045] via-white to-primarygreen/[0.04] p-4">
                         <p className={AUTH_STEP_CLASS}>
                             <span className={AUTH_STEP_NUMBER_CLASS}>02</span>
                             Verify address
                         </p>
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-primarygreen text-black">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarygreen to-[#dfff83] text-black shadow-[0_9px_24px_rgba(183,255,0,0.2)]">
                             <MailCheck className="h-6 w-6" aria-hidden="true" />
                         </span>
                     </div>
@@ -141,7 +141,7 @@ const GetStarted = () => {
                         response protects existing accounts from discovery.
                     </p>
 
-                    <div className="mt-6 flex items-start gap-3 border-l-2 border-primarypurple bg-primarypurple/[0.04] px-4 py-3.5 text-sm leading-6 text-black/60">
+                    <div className="mt-6 flex items-start gap-3 rounded-2xl border border-primarypurple/10 bg-primarypurple/[0.045] p-4 text-sm leading-6 text-black/60 shadow-[0_7px_20px_rgba(104,67,231,0.045)]">
                         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primarypurple" aria-hidden="true" />
                         <p>
                             The link expires in 24 hours. Check your spam folder or{" "}
@@ -183,8 +183,8 @@ const GetStarted = () => {
 
             <div className={AUTH_FORM_SHELL_CLASS}>
                 <form noValidate className="space-y-7" onSubmit={handleSubmit(onSubmit)}>
-                    <fieldset className="space-y-5">
-                        <legend className="mb-5 flex w-full items-center gap-3 border-b border-black/10 pb-4 font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
+                    <fieldset className="space-y-5 rounded-2xl border border-black/[0.055] bg-[#fbfafe]/80 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-5">
+                        <legend className="mb-1 flex w-full items-center gap-3 font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
                             <span className="text-primarypurple">A</span>
                             Identity
                         </legend>
@@ -203,7 +203,7 @@ const GetStarted = () => {
                                     className={getAuthInputClass(Boolean(errors.fullName))}
                                 />
                                 {errors.fullName && (
-                                    <p id="full-name-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">{errors.fullName.message}</p>
+                                    <p id="full-name-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">{errors.fullName.message}</p>
                                 )}
                             </div>
 
@@ -221,14 +221,14 @@ const GetStarted = () => {
                                     className={getAuthInputClass(Boolean(errors.nuemail))}
                                 />
                                 {errors.nuemail && (
-                                    <p id="registration-email-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">{errors.nuemail.message}</p>
+                                    <p id="registration-email-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">{errors.nuemail.message}</p>
                                 )}
                             </div>
                         </div>
                     </fieldset>
 
-                    <fieldset className="space-y-5">
-                        <legend className="mb-5 flex w-full items-center gap-3 border-b border-black/10 pb-4 font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
+                    <fieldset className="space-y-5 rounded-2xl border border-black/[0.055] bg-[#fbfafe]/80 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-5">
+                        <legend className="mb-1 flex w-full items-center gap-3 font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-black/60">
                             <span className="text-primarypurple">B</span>
                             Access key
                         </legend>
@@ -249,7 +249,7 @@ const GetStarted = () => {
                                     At least 8 characters.
                                 </p>
                                 {errors.password && (
-                                    <p id="registration-password-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">{errors.password.message}</p>
+                                    <p id="registration-password-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">{errors.password.message}</p>
                                 )}
                             </div>
 
@@ -266,13 +266,13 @@ const GetStarted = () => {
                                     className={getAuthInputClass(Boolean(errors.confirmPassword))}
                                 />
                                 {errors.confirmPassword && (
-                                    <p id="registration-confirm-password-error" className="border-l-2 border-red-500 pl-2.5 text-sm text-red-600">{errors.confirmPassword.message}</p>
+                                    <p id="registration-confirm-password-error" className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-sm text-red-700">{errors.confirmPassword.message}</p>
                                 )}
                             </div>
                         </div>
                     </fieldset>
 
-                    <p className="border-t border-black/10 pt-5 text-xs leading-5 text-black/60">
+                    <p className="rounded-2xl bg-black/[0.025] p-4 text-xs leading-5 text-black/60">
                         By creating an account, you agree to the{" "}
                         <Link href="/terms" className={AUTH_TEXT_LINK_CLASS}>terms of use</Link>
                         {" "}and acknowledge the{" "}
@@ -293,7 +293,7 @@ const GetStarted = () => {
                     </Button>
 
                     {errorMessage && (
-                        <div role="alert" className="border border-red-200 bg-red-50 p-3.5 text-sm leading-6 text-red-700">
+                        <div role="alert" className="rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm leading-6 text-red-700 shadow-[0_8px_22px_rgba(185,28,28,0.05)]">
                             {errorMessage}
                         </div>
                     )}

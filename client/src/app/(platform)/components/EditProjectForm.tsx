@@ -120,7 +120,7 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
         "min-h-12 w-full rounded-xl border bg-white px-3.5 text-sm outline-none transition focus:border-primarypurple focus:ring-4 focus:ring-primarypurple/10";
 
     const getInputClass = (fieldError?: unknown) =>
-        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-black/15"
+        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-black/[0.08]"
         }`;
 
     return (
@@ -162,7 +162,7 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
                                     ? "edit-project-description-error"
                                     : undefined
                             }
-                            className={`overflow-hidden rounded-xl border bg-white ${errors.description ? "border-red-500" : "border-black/15"}`}
+                            className={`overflow-hidden rounded-2xl border bg-white ${errors.description ? "border-red-500" : "border-black/[0.08]"}`}
                         >
                             <MdEditor
                                 {...untrustedMarkdownEditorProps}
@@ -206,7 +206,7 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
                     className={getInputClass(errors.github_url)}
                 />
                 {!errors.github_url && (
-                    <p id="edit-project-github-url-help" className="text-xs text-black/50">
+                    <p id="edit-project-github-url-help" className="text-xs text-black/60">
                         Required format: https://github.com/username/project_name
                     </p>
                 )}
@@ -251,9 +251,9 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
                                     return (
                                         <label
                                             key={tag}
-                                            className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-colors ${checked
-                                                ? "border-primarypurple bg-primarypurple text-white"
-                                                : "border-black/15 bg-white text-black/60 hover:border-primarypurple/40 hover:text-primarypurple"
+                                            className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-colors ${checked
+                                                ? "border-primarypurple bg-primarypurple text-white shadow-[0_6px_16px_rgba(76,41,178,0.14)]"
+                                                : "border-black/[0.08] bg-white text-black/60 hover:border-primarypurple/30 hover:bg-primarypurple/[0.035] hover:text-primarypurple"
                                                 }`}
                                         >
                                             <input
@@ -283,14 +283,14 @@ const EditProjectForm = ({ project, onClose }: EditProjectFormProps) => {
                     type="button"
                     onClick={onClose}
                     disabled={updateMutation.isPending}
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 px-4 text-sm font-bold text-black/65 transition hover:bg-black/[0.04]"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/[0.08] px-4 text-sm font-bold text-black/65 transition hover:border-primarypurple/15 hover:bg-primarypurple/[0.04] hover:text-primarypurple"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     disabled={!isValid || isSubmitting || updateMutation.isPending}
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(76,41,178,0.16)] transition hover:bg-[#382080] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {updateMutation.isPending ? "Saving..." : "Save Changes"}
                 </button>
