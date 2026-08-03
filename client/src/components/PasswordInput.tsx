@@ -26,7 +26,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                     aria-controls={id}
                     title={actionLabel}
                     onClick={() => setIsVisible((visible) => !visible)}
-                    className="absolute right-1.5 top-1/2 flex h-9 w-10 -translate-y-1/2 items-center justify-center rounded-[0.25rem] text-black/60 transition-[background-color,color,transform] duration-200 hover:bg-primarypurple/[0.08] hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primarypurple active:scale-95"
+                    className="absolute right-0.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-black/60 transition-[background-color,color,transform] duration-200 hover:bg-primarypurple/[0.08] hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primarypurple active:scale-95"
                 >
                     {isVisible ? (
                         <EyeOff aria-hidden="true" size={19} />

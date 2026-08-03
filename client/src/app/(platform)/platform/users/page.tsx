@@ -100,7 +100,7 @@ const Users = () => {
     };
 
     return (
-        <div className="mx-auto w-full max-w-[90rem] space-y-8 px-5 py-8 sm:px-8 lg:space-y-11 lg:py-12">
+        <div className="mx-auto w-full max-w-[90rem] space-y-7 px-4 py-6 sm:px-6 lg:space-y-10 lg:px-8 lg:py-10">
             <PlatformPageHeader
                 eyebrow="Campus contributor index"
                 title={<>Find the people behind <span className="text-primarygreen">the work.</span></>}
@@ -115,21 +115,21 @@ const Users = () => {
                 }
             />
 
-            <section className="border-y border-black/15 bg-white/75 px-5 py-6 sm:px-6" aria-labelledby="people-filter-heading">
-                <div className="grid gap-7 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-0">
-                    <div className="flex flex-col items-start justify-between gap-5 lg:pr-6">
+            <section className="rounded-3xl border border-black/[0.07] bg-white/80 p-5 shadow-[0_18px_50px_rgba(40,20,90,0.06)] backdrop-blur-sm sm:p-6" aria-labelledby="people-filter-heading">
+                <div className="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
+                    <div className="flex flex-col items-start justify-between gap-5 rounded-2xl bg-primarypurple/[0.035] p-4 lg:p-5">
                         <div>
                             <h2 id="people-filter-heading" className="text-base font-black tracking-[-0.02em]">Search the community</h2>
                             <p className="mt-2 max-w-[28ch] text-xs leading-5 text-black/60">Try a craft such as React, Django, or machine learning.</p>
                         </div>
                         {hasActiveFilters && (
-                            <button type="button" onClick={clearFilters} className="inline-flex min-h-9 items-center gap-1.5 border-b border-black/20 px-1 text-xs font-bold text-black/60 transition-colors hover:border-primarypurple hover:text-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple">
+                            <button type="button" onClick={clearFilters} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-black/[0.07] bg-white px-3 text-xs font-bold text-black/60 shadow-sm transition-[transform,border-color,color] hover:-translate-y-0.5 hover:border-primarypurple/20 hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple">
                                 <X className="h-3.5 w-3.5" aria-hidden="true" />
                                 Clear filters
                             </button>
                         )}
                     </div>
-                    <div className="grid gap-5 border-black/10 sm:grid-cols-3 lg:border-l lg:pl-6">
+                    <div className="grid content-center gap-5 sm:grid-cols-3">
                     <label className="block">
                         <span className="mb-2 block font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-black/60">Name or NU email</span>
                         <span className="relative block">
@@ -172,12 +172,12 @@ const Users = () => {
                 </div>
             </section>
 
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/15 pb-5">
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-black/[0.05] bg-white/55 px-5 py-4 shadow-[0_10px_30px_rgba(40,20,90,0.035)] backdrop-blur-sm">
                 <div>
                     <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-primarypurple">Directory / people</p>
                     <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] sm:text-3xl">Community members</h2>
                 </div>
-                <p className="border-l-2 border-primarygreen pl-3 font-mono text-[0.68rem] font-medium tabular-nums text-black/60" role="status" aria-live="polite">
+                <p className="rounded-xl bg-primarypurple/[0.045] px-3.5 py-2.5 font-mono text-[0.68rem] font-medium tabular-nums text-black/60" role="status" aria-live="polite">
                     {isDebouncing || (isFetching && !isFetchingNextPage)
                         ? "Updating user results..."
                         : totalCount !== null && totalCount !== undefined
@@ -196,21 +196,21 @@ const Users = () => {
             )}
 
             {isPending && (
-                <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-12" role="status" aria-label="Loading people">
+                <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 xl:grid-cols-12 xl:gap-6" role="status" aria-label="Loading people">
                     {USER_SKELETON_IDS.map((id, index) => (
                         <div
                             key={id}
-                            className={`min-h-[13.5rem] animate-pulse border border-t-2 border-black/10 bg-white p-5 ${userGridSpan(index)}`}
+                            className={`min-h-[13.5rem] animate-pulse rounded-3xl border border-black/[0.06] bg-white/80 p-5 shadow-[0_14px_38px_rgba(40,20,90,0.05)] ${userGridSpan(index)}`}
                         >
-                            <div className="flex items-center justify-between border-b border-black/[0.06] pb-3">
-                                <div className="h-2.5 w-24 rounded-sm bg-primarypurple/10" />
-                                <div className="h-7 w-7 rounded-sm bg-black/[0.06]" />
+                            <div className="flex items-center justify-between">
+                                <div className="h-2.5 w-24 rounded-full bg-primarypurple/10" />
+                                <div className="h-9 w-9 rounded-xl bg-black/[0.05]" />
                             </div>
                             <div className="mt-5 flex gap-4">
                                 <div className="h-20 w-20 shrink-0 rounded-lg bg-black/10" />
                                 <div className="flex flex-1 flex-col gap-2 pt-1">
-                                    <div className="h-5 w-2/3 rounded-sm bg-black/10" />
-                                    <div className="h-3 w-1/2 rounded-sm bg-black/[0.06]" />
+                                    <div className="h-5 w-2/3 rounded-lg bg-black/10" />
+                                    <div className="h-3 w-1/2 rounded-full bg-black/[0.06]" />
                                     <div className="mt-3 flex gap-2">
                                         <div className="h-6 w-20 rounded-full bg-primarypurple/10" />
                                         <div className="h-6 w-16 rounded-full bg-primarypurple/10" />
@@ -223,8 +223,8 @@ const Users = () => {
             )}
 
             {showEmptyState && (
-                <div className="grid gap-6 border-y border-black/15 bg-white px-6 py-10 sm:grid-cols-[auto_1fr] sm:items-center sm:px-8 sm:py-12">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-md border border-primarypurple/20 bg-primarypurple/[0.07] text-primarypurple">
+                <div className="grid gap-6 rounded-3xl border border-black/[0.07] bg-white/90 px-6 py-10 shadow-[0_18px_50px_rgba(40,20,90,0.06)] sm:grid-cols-[auto_1fr] sm:items-center sm:px-8 sm:py-12">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primarypurple/10 bg-primarypurple/[0.07] text-primarypurple shadow-[0_8px_20px_rgba(111,60,255,0.08)]">
                         <UsersRound className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <div>
@@ -236,22 +236,22 @@ const Users = () => {
             )}
 
             {!isPending && !initialError && users.length > 0 && (
-                <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-12">
+                <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 xl:grid-cols-12 xl:gap-6">
                     {users.map((user, index) => (
                         <article
                             key={user.user_id}
-                            className={`group relative flex min-h-[13.5rem] flex-col overflow-hidden border border-t-2 border-black/15 bg-white p-5 transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-primarypurple/45 ${userGridSpan(index)}`}
+                            className={`group relative flex min-h-[13.5rem] flex-col overflow-hidden rounded-3xl border border-black/[0.07] bg-white/90 p-5 shadow-[0_16px_45px_rgba(40,20,90,0.07)] backdrop-blur-sm transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-primarypurple/20 hover:shadow-[0_24px_60px_rgba(54,29,117,0.13)] motion-reduce:transform-none motion-reduce:transition-none ${userGridSpan(index)}`}
                         >
-                            <span className="absolute left-0 top-0 h-1 w-12 origin-left scale-x-0 bg-primarygreen transition-transform duration-200 group-hover:scale-x-100" aria-hidden="true" />
+                            <span className="absolute -right-12 -top-14 h-36 w-36 rounded-full bg-primarypurple/[0.05] blur-2xl transition-colors duration-300 group-hover:bg-primarypurple/[0.1]" aria-hidden="true" />
                             <Link
                                 href={`/platform/users/${user.user_id}`}
-                                className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primarypurple"
+                                className="relative rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primarypurple"
                             >
-                                <div className="flex items-center justify-between border-b border-black/[0.08] pb-3">
+                                <div className="flex items-center justify-between">
                                     <p className="font-mono text-[0.63rem] font-semibold uppercase tracking-[0.14em] text-primarypurple">
                                         Contributor / {String(index + 1).padStart(2, "0")}
                                     </p>
-                                    <span className="flex h-7 w-7 items-center justify-center rounded-sm border border-black/10 text-black/30 transition-colors group-hover:border-primarypurple/30 group-hover:text-primarypurple">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/[0.07] bg-black/[0.025] text-black/30 transition-[transform,border-color,background-color,color] group-hover:-translate-y-0.5 group-hover:border-primarypurple/15 group-hover:bg-primarypurple/[0.07] group-hover:text-primarypurple">
                                         <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
                                     </span>
                                 </div>
@@ -260,7 +260,7 @@ const Users = () => {
                                         <Image
                                             loader={passthroughImageLoader}
                                             unoptimized
-                                            className="h-20 w-20 shrink-0 rounded-lg border border-primarypurple/15 object-cover"
+                                            className="h-20 w-20 shrink-0 rounded-2xl border border-primarypurple/10 object-cover shadow-[0_10px_24px_rgba(54,29,117,0.1)]"
                                             src={user.avatar_url}
                                             alt={
                                                 user.full_name ||
@@ -271,7 +271,7 @@ const Users = () => {
                                         />
                                     ) : (
                                         <div
-                                            className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-primarypurple/15 bg-primarypurple/[0.08] font-mono text-2xl font-black text-primarypurple"
+                                            className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-primarypurple/10 bg-[linear-gradient(145deg,rgba(111,60,255,0.14),rgba(111,60,255,0.06))] font-mono text-2xl font-black text-primarypurple shadow-[0_10px_24px_rgba(54,29,117,0.08)]"
                                             aria-hidden="true"
                                         >
                                             {(user.full_name || user.nu_email || "U")
@@ -308,7 +308,7 @@ const Users = () => {
                                     href={`https://github.com/${encodeURIComponent(user.github_username)}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="mt-auto inline-flex w-fit items-center gap-1.5 border-b border-transparent pt-4 font-mono text-[0.68rem] font-semibold text-black/60 transition-colors hover:border-primarypurple hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                    className="relative mt-auto inline-flex min-h-11 w-fit items-center gap-1.5 rounded-xl bg-black/[0.025] px-3 font-mono text-[0.68rem] font-semibold text-black/60 transition-[background-color,color] hover:bg-primarypurple/[0.06] hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                 >
                                     <Github className="h-3.5 w-3.5" aria-hidden="true" />
                                     @{user.github_username}
@@ -321,14 +321,14 @@ const Users = () => {
 
             {isFetchNextPageError && (
                 <div
-                    className="flex flex-wrap items-center justify-center gap-3 border-y border-red-200 bg-red-50 p-4 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-red-200/80 bg-red-50/90 p-4 text-sm text-red-700 shadow-[0_10px_28px_rgba(185,28,28,0.07)]"
                     role="alert"
                 >
                     <span>Could not load more users.</span>
                     <button
                         type="button"
                         onClick={() => void fetchNextPage()}
-                        className="font-bold underline underline-offset-4"
+                        className="inline-flex min-h-11 items-center rounded-lg px-2 font-bold underline underline-offset-4 transition-colors hover:bg-red-100"
                     >
                         Retry
                     </button>

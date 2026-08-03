@@ -17,11 +17,11 @@ import { useAuthStore } from "@/stores";
 import { MAX_PASSWORD_INPUT_LENGTH } from "@/lib/authValidation";
 import { PasswordInput } from "@/components/PasswordInput";
 import {
-    PLATFORM_INPUT_CLASS,
-    PLATFORM_PANEL_CLASS,
-    PLATFORM_PRIMARY_BUTTON_CLASS,
-    PLATFORM_SECONDARY_BUTTON_CLASS,
-} from "@/lib/platformStyles";
+    PROFILE_INPUT_CLASS,
+    PROFILE_PANEL_CLASS,
+    PROFILE_PRIMARY_BUTTON_CLASS,
+    PROFILE_SECONDARY_BUTTON_CLASS,
+} from "./profileStyles";
 
 const deletionSchema = z.object({
     currentPassword: z
@@ -116,11 +116,11 @@ export default function AccountDataControls() {
 
     return (
         <div className="space-y-6 pt-6">
-            <section className={`${PLATFORM_PANEL_CLASS} overflow-hidden`} aria-labelledby="download-data-heading">
-                <div className="h-1.5 bg-primarygreen" aria-hidden="true" />
+            <section className={`${PROFILE_PANEL_CLASS} relative isolate overflow-hidden`} aria-labelledby="download-data-heading">
+                <div className="pointer-events-none absolute -right-16 -top-20 -z-10 h-52 w-52 rounded-full bg-primarygreen/[0.1] blur-3xl" aria-hidden="true" />
                 <div className="p-5 sm:p-7">
                 <div className="flex items-start gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarygreen/25 text-black">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarygreen/35 to-primarygreen/10 text-black shadow-[0_8px_22px_rgba(183,255,0,0.14)]">
                         <Database className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <div>
@@ -140,7 +140,7 @@ export default function AccountDataControls() {
                     type="button"
                     disabled={exportData.isPending}
                     onClick={() => exportData.mutate()}
-                    className={`${PLATFORM_PRIMARY_BUTTON_CLASS} mt-6 gap-2`}
+                    className={`${PROFILE_PRIMARY_BUTTON_CLASS} mt-6 gap-2`}
                 >
                     <Download className="h-4 w-4" aria-hidden="true" />
                     {exportData.isPending ? "Preparing export..." : "Download data"}
@@ -161,11 +161,11 @@ export default function AccountDataControls() {
                 </div>
             </section>
 
-            <section className={`${PLATFORM_PANEL_CLASS} overflow-hidden`} aria-labelledby="delete-account-heading">
-                <div className="h-1.5 bg-red-600" aria-hidden="true" />
+            <section className={`${PROFILE_PANEL_CLASS} relative isolate overflow-hidden border-red-100/80`} aria-labelledby="delete-account-heading">
+                <div className="pointer-events-none absolute -right-16 -top-20 -z-10 h-52 w-52 rounded-full bg-red-100/80 blur-3xl" aria-hidden="true" />
                 <div className="p-5 sm:p-7">
                 <div className="flex items-start gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-red-100 to-red-50 text-red-600 shadow-[0_8px_22px_rgba(220,38,38,0.1)]">
                         <ShieldAlert className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <div>
@@ -191,7 +191,7 @@ export default function AccountDataControls() {
                             deleteAccount.reset();
                             setShowDeletion(true);
                         }}
-                        className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-100"
+                        className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700 shadow-[0_7px_18px_rgba(220,38,38,0.08)] transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-[0_10px_22px_rgba(220,38,38,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-100"
                     >
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
                         Start account deletion
@@ -220,7 +220,7 @@ export default function AccountDataControls() {
                                         : undefined
                                 }
                                 {...register("currentPassword")}
-                                className={`${PLATFORM_INPUT_CLASS} focus:border-red-600 focus:ring-red-100 ${errors.currentPassword ? "border-red-500" : ""}`}
+                                className={`${PROFILE_INPUT_CLASS} focus:border-red-600 focus:ring-red-100 ${errors.currentPassword ? "border-red-500" : ""}`}
                             />
                             {errors.currentPassword && (
                                 <p
@@ -248,7 +248,7 @@ export default function AccountDataControls() {
                                         : undefined
                                 }
                                 {...register("confirmation")}
-                                className={`${PLATFORM_INPUT_CLASS} font-mono tracking-[0.15em] focus:border-red-600 focus:ring-red-100 ${errors.confirmation ? "border-red-500" : ""}`}
+                                className={`${PROFILE_INPUT_CLASS} font-mono tracking-[0.15em] focus:border-red-600 focus:ring-red-100 ${errors.confirmation ? "border-red-500" : ""}`}
                             />
                             {errors.confirmation && (
                                 <p
@@ -269,19 +269,19 @@ export default function AccountDataControls() {
                             </p>
                         )}
 
-                        <div className="flex flex-col-reverse gap-2 border-t border-red-200 pt-5 sm:flex-row sm:justify-end">
+                        <div className="flex flex-col-reverse gap-2 rounded-2xl bg-red-100/50 p-3 sm:flex-row sm:justify-end">
                             <button
                                 type="button"
                                 disabled={deleteAccount.isPending}
                                 onClick={cancelDeletion}
-                                className={PLATFORM_SECONDARY_BUTTON_CLASS}
+                                className={PROFILE_SECONDARY_BUTTON_CLASS}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={!isValid || deleteAccount.isPending}
-                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-200 disabled:pointer-events-none disabled:opacity-55"
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(220,38,38,0.18)] transition hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-[0_11px_25px_rgba(220,38,38,0.24)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-200 disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-55 disabled:shadow-none"
                             >
                                 {deleteAccount.isPending ? "Deleting account..." : "Permanently delete account"}
                             </button>

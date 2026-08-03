@@ -3,7 +3,7 @@ import UserOperations from "./components/UserOperations";
 
 const Profile = () => {
     return (
-        <div className="flex flex-col gap-9">
+        <div className="flex flex-col gap-8">
             <UserDetails page="profile" />
             <UserOperations />
         </div>

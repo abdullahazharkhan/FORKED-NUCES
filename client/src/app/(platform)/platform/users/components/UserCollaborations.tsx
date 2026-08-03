@@ -8,10 +8,11 @@ import { ArrowUpRight, GitPullRequest, UsersRound } from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
 import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
 import { queryKeys } from "@/lib/queryKeys";
-import { PLATFORM_PRIMARY_BUTTON_CLASS } from "@/lib/platformStyles";
 
 const PAGE_SIZE = 20;
 const SKELETON_IDS = ["first", "second", "third"] as const;
+const USER_PRIMARY_BUTTON_CLASS =
+    "inline-flex min-h-11 items-center justify-center rounded-xl border border-primarypurple/10 bg-primarypurple px-5 text-sm font-bold text-white shadow-[0_8px_22px_rgba(104,67,231,0.2)] transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#5d32eb] hover:shadow-[0_12px_28px_rgba(104,67,231,0.26)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/20 disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-55 disabled:shadow-none";
 
 type Project = {
     owner_full_name: string;
@@ -49,7 +50,7 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
 
     return (
         <section
-            className="space-y-6 rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-7"
+            className="space-y-6 rounded-3xl border border-black/[0.06] bg-gradient-to-br from-white via-white to-primarypurple/[0.025] p-5 shadow-[0_18px_55px_rgba(24,15,48,0.07)] sm:p-7"
             aria-labelledby="collaborated-projects-heading"
         >
             <div>
@@ -72,11 +73,11 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
                     {SKELETON_IDS.map((id) => (
                         <div
                             key={id}
-                            className="min-h-40 animate-pulse space-y-3 rounded-3xl border border-black/[0.06] bg-[#f8f7fb] p-5"
+                            className="min-h-40 animate-pulse space-y-3 rounded-3xl border border-black/[0.05] bg-gradient-to-br from-white to-primarypurple/[0.035] p-5 shadow-[0_10px_28px_rgba(24,15,48,0.045)]"
                         >
-                            <div className="h-5 w-2/3 rounded bg-black/10" />
-                            <div className="h-4 w-1/2 rounded bg-black/[0.06]" />
-                            <div className="h-3 w-3/4 rounded bg-black/[0.06]" />
+                            <div className="h-5 w-2/3 rounded-xl bg-black/10" />
+                            <div className="h-4 w-1/2 rounded-xl bg-black/[0.06]" />
+                            <div className="h-3 w-3/4 rounded-xl bg-black/[0.06]" />
                         </div>
                     ))}
                 </div>
@@ -96,7 +97,7 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
                         type="button"
                         onClick={() => void projectsQuery.refetch()}
                         disabled={projectsQuery.isFetching}
-                        className="font-bold underline underline-offset-4 disabled:opacity-60"
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-200 bg-white px-4 font-bold shadow-sm transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-100 disabled:opacity-60"
                     >
                         Retry
                     </button>
@@ -104,7 +105,7 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
             )}
 
             {!projectsQuery.isPending && !initialError && projects.length === 0 && (
-                <div className="rounded-3xl border border-dashed border-primarypurple/25 bg-[#faf9fc] px-6 py-12 text-center">
+                <div className="rounded-3xl border border-dashed border-primarypurple/20 bg-gradient-to-br from-white to-primarypurple/[0.03] px-6 py-12 text-center shadow-[0_12px_35px_rgba(24,15,48,0.045)]">
                     <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primarypurple/[0.08] text-primarypurple">
                         <UsersRound className="h-5 w-5" aria-hidden="true" />
                     </span>
@@ -119,7 +120,7 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
                         <Link
                             href={`/platform/projects/${project.project_id}`}
                             key={project.project_id}
-                            className="group flex min-h-44 flex-col rounded-3xl border border-black/[0.07] bg-[#faf9fc] p-5 transition duration-300 hover:-translate-y-1 hover:border-primarypurple/25 hover:bg-white hover:shadow-[0_18px_45px_rgba(58,35,126,0.1)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
+                            className="group flex min-h-44 flex-col rounded-3xl border border-black/[0.06] bg-gradient-to-br from-white to-primarypurple/[0.03] p-5 shadow-[0_10px_28px_rgba(24,15,48,0.045)] transition duration-300 hover:-translate-y-1 hover:border-primarypurple/20 hover:bg-white hover:shadow-[0_18px_45px_rgba(58,35,126,0.1)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/15"
                         >
                             <div className="flex items-start justify-between gap-3">
                                 <h3 className="text-lg font-black tracking-tight text-black transition group-hover:text-primarypurple">
@@ -127,7 +128,7 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
                                 </h3>
                                 <ArrowUpRight className="h-4 w-4 shrink-0 text-black/25 transition group-hover:text-primarypurple" aria-hidden="true" />
                             </div>
-                            <p className="mt-auto border-t border-black/[0.06] pt-4 text-xs text-black/50">
+                            <p className="mt-auto rounded-2xl bg-white/75 p-3 text-xs text-black/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                                 by{" "}
                                 <span className="font-bold text-black/70">
                                     {project.owner_full_name}
@@ -148,7 +149,7 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
                         type="button"
                         onClick={() => void projectsQuery.fetchNextPage()}
                         disabled={projectsQuery.isFetchingNextPage}
-                        className="font-bold underline underline-offset-4 disabled:opacity-60"
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-200 bg-white px-4 font-bold shadow-sm transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-100 disabled:opacity-60"
                     >
                         Retry
                     </button>
@@ -161,7 +162,7 @@ const UserCollaborations = ({ userid }: { userid: string }) => {
                         type="button"
                         onClick={() => void projectsQuery.fetchNextPage()}
                         disabled={projectsQuery.isFetchingNextPage}
-                        className={PLATFORM_PRIMARY_BUTTON_CLASS}
+                        className={USER_PRIMARY_BUTTON_CLASS}
                     >
                         {projectsQuery.isFetchingNextPage
                             ? "Loading..."

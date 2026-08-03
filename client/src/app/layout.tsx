@@ -53,9 +53,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${jaro.variable}`}
     >
-      <body
-        className="min-h-screen bg-[#E8EAEC] font-sans antialiased"
-      >
+      <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>
           {children}
         </Providers>

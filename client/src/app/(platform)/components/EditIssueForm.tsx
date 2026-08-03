@@ -101,7 +101,7 @@ const EditIssueForm = ({
     const baseInputClasses =
         "min-h-12 w-full rounded-xl border bg-white px-3.5 text-sm outline-none transition focus:border-primarypurple focus:ring-4 focus:ring-primarypurple/10";
     const getInputClass = (fieldError?: unknown) =>
-        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-black/15"
+        `${baseInputClasses} ${fieldError ? "border-red-500" : "border-black/[0.08]"
         }`;
 
     return (
@@ -145,7 +145,7 @@ const EditIssueForm = ({
                                     ? "edit-issue-description-error"
                                     : undefined
                             }
-                            className={`overflow-hidden rounded-xl border bg-white ${errors.description ? "border-red-500" : "border-black/15"}`}
+                            className={`overflow-hidden rounded-2xl border bg-white ${errors.description ? "border-red-500" : "border-black/[0.08]"}`}
                         >
                             <MdEditor
                                 {...untrustedMarkdownEditorProps}
@@ -172,7 +172,7 @@ const EditIssueForm = ({
                     type="button"
                     onClick={onClose}
                     disabled={updateMutation.isPending}
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 px-4 text-sm font-bold text-black/65 transition hover:bg-black/[0.04]"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/[0.08] px-4 text-sm font-bold text-black/65 transition hover:border-primarypurple/15 hover:bg-primarypurple/[0.04] hover:text-primarypurple"
                 >
                     Cancel
                 </button>
@@ -181,7 +181,7 @@ const EditIssueForm = ({
                     disabled={
                         !isValid || isSubmitting || updateMutation.isPending
                     }
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primarypurple px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(76,41,178,0.16)] transition hover:bg-[#382080] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {updateMutation.isPending ? "Saving..." : "Save Changes"}
                 </button>

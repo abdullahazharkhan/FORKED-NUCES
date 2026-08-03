@@ -125,25 +125,27 @@ const Navbar = () => {
         <>
             <nav
                 aria-label="Primary navigation"
-                className={`fixed inset-x-0 top-0 z-50 h-20 border-b font-sans transition-[background-color,border-color,backdrop-filter] duration-300 motion-reduce:transition-none ${
-                    solidNavigation
-                        ? "border-white/20 bg-primarypurple/95 backdrop-blur-lg supports-[backdrop-filter]:bg-primarypurple/90"
-                        : "border-white/15 bg-transparent"
-                }`}
+                className="fixed inset-x-0 top-0 z-50 h-20 px-3 py-2 font-sans sm:px-5 lg:px-7"
             >
-                <div className="mx-auto flex h-full w-full max-w-[90rem] items-center justify-between px-5 sm:px-8 lg:px-12">
-                    <div className="flex h-full items-center gap-10">
+                <div
+                    className={`mx-auto flex h-full w-full max-w-[90rem] items-center justify-between rounded-2xl border px-3 shadow-[0_12px_40px_rgba(24,10,58,0.14)] transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 motion-reduce:transition-none sm:px-5 lg:px-6 ${
+                        solidNavigation
+                            ? "border-white/15 bg-primarypurple/95 shadow-[0_16px_48px_rgba(24,10,58,0.24)] backdrop-blur-xl supports-[backdrop-filter]:bg-primarypurple/90"
+                            : "border-white/10 bg-primarypurple/40 backdrop-blur-md supports-[backdrop-filter]:bg-primarypurple/30"
+                    }`}
+                >
+                    <div className="flex h-full items-center gap-6">
                         <Link
                             href="/"
                             aria-label="FORKED NUCES home"
-                            className="flex items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                            className="flex min-h-11 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                         >
                             <Image
                                 src="/logos/forkednuces-logo-bw-invert.png"
                                 alt=""
                                 width={48}
                                 height={48}
-                                className="h-10 w-10"
+                                className="h-10 w-10 rounded-xl shadow-sm"
                                 priority
                             />
                             <span className="text-base font-black tracking-[-0.04em] text-white sm:text-lg">
@@ -151,7 +153,7 @@ const Navbar = () => {
                             </span>
                         </Link>
 
-                        <div className="hidden h-full items-center gap-8 lg:flex">
+                        <div className="hidden items-center gap-1 rounded-xl border border-white/10 bg-white/[0.06] p-1 lg:flex">
                             {PUBLIC_NAV_LINKS.map((link) => {
                                 const isCurrent =
                                     pathname === "/" && activeSection === link.section;
@@ -162,10 +164,10 @@ const Navbar = () => {
                                         key={link.href}
                                         aria-current={isCurrent ? "location" : undefined}
                                         onClick={(event) => handleNavClick(event, link.href)}
-                                        className={`relative flex h-full items-center text-sm font-semibold transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:bg-primarygreen after:transition-transform after:duration-200 hover:text-white active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${
+                                        className={`relative flex items-center rounded-lg px-4 py-2 text-sm font-semibold transition-[background-color,color,transform,box-shadow] duration-200 after:absolute after:bottom-1 after:left-1/2 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-primarygreen after:transition-opacity after:duration-200 hover:bg-white/10 hover:text-white active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                                             isCurrent
-                                                ? "text-white after:scale-x-100"
-                                                : "text-white/90 after:scale-x-0 hover:after:scale-x-100"
+                                                ? "bg-white/15 text-white shadow-sm after:opacity-100"
+                                                : "text-white/80 after:opacity-0 hover:after:opacity-100"
                                         }`}
                                     >
                                         {link.name}
@@ -178,13 +180,13 @@ const Navbar = () => {
                     <div className="hidden items-center gap-2 lg:flex">
                         <Link
                             href="/login"
-                            className="inline-flex h-11 items-center justify-center border border-white/30 px-5 text-sm font-semibold text-white transition-[background-color,border-color,transform] duration-200 hover:border-white/70 hover:bg-white/10 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                            className="inline-flex h-11 items-center justify-center rounded-xl border border-white/20 bg-white/[0.06] px-5 text-sm font-semibold text-white shadow-sm transition-[background-color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/15 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                         >
                             Log in
                         </Link>
                         <Link
                             href="/get-started"
-                            className="inline-flex h-11 items-center justify-center bg-primarygreen px-5 text-sm font-bold text-black transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                            className="inline-flex h-11 items-center justify-center rounded-xl bg-primarygreen px-5 text-sm font-bold text-black shadow-[0_8px_24px_rgba(190,255,0,0.2)] transition-[background-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_10px_28px_rgba(255,255,255,0.2)] active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                         >
                             Get started
                         </Link>
@@ -198,7 +200,7 @@ const Navbar = () => {
                         }
                         aria-expanded={isMenuOpen}
                         aria-controls="public-mobile-drawer"
-                        className="flex h-11 w-11 items-center justify-center border border-white/30 bg-white/5 text-white transition-[background-color,transform] duration-200 hover:bg-white/15 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white lg:hidden"
+                        className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white shadow-sm transition-[background-color,border-color,transform] duration-200 hover:border-white/40 hover:bg-white/15 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white lg:hidden"
                         onClick={() => setIsMenuOpen((open) => !open)}
                     >
                         <Menu className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
@@ -210,93 +212,105 @@ const Navbar = () => {
                 <>
                     <button
                         type="button"
-                        className="landing-overlay-in fixed inset-0 z-40 bg-black/65 backdrop-blur-sm lg:hidden"
+                        className="landing-overlay-in fixed inset-0 z-40 bg-primarypurple/50 backdrop-blur-sm lg:hidden"
                         aria-label="Close navigation menu"
                         onClick={() => setIsMenuOpen(false)}
                     />
                     <aside
                         ref={drawerRef}
                         id="public-mobile-drawer"
-                        className="landing-drawer-in fixed right-0 top-0 z-[60] h-dvh w-[88vw] max-w-[390px] border-l border-black bg-white font-sans lg:hidden"
+                        className="landing-drawer-in fixed inset-y-3 right-3 z-[60] h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-[390px] overflow-hidden rounded-3xl border border-white/60 bg-white font-sans shadow-[0_24px_80px_rgba(24,10,58,0.32)] lg:hidden"
                         role="dialog"
                         aria-modal="true"
                         aria-label="Mobile navigation"
                         tabIndex={-1}
                     >
-                        <div className="flex h-20 items-center justify-between border-b border-black px-5">
-                            <div>
-                                <p className="text-[0.6rem] font-bold uppercase tracking-[0.18em] text-primarypurple">
-                                    Navigation index
-                                </p>
-                                <p className="mt-1 text-lg font-black tracking-tight">
-                                    FORK&apos;D NUCES
-                                </p>
+                        <div className="flex h-full min-h-0 flex-col">
+                            <div className="flex h-20 shrink-0 items-center justify-between border-b border-primarypurple/10 bg-white/90 px-5 backdrop-blur-lg">
+                                <div>
+                                    <p className="text-[0.6rem] font-bold uppercase tracking-[0.18em] text-primarypurple/70">
+                                        Navigation index
+                                    </p>
+                                    <p className="mt-1 text-lg font-black tracking-tight text-black">
+                                        FORK&apos;D <span className="text-primarypurple">NUCES</span>
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    aria-label="Close navigation menu"
+                                    aria-controls="public-mobile-drawer"
+                                    className="flex h-11 w-11 items-center justify-center rounded-xl border border-primarypurple/10 bg-primarypurple/5 text-primarypurple shadow-sm transition-[background-color,transform] duration-200 hover:bg-primarypurple/10 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    <X className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
+                                </button>
                             </div>
-                            <button
-                                type="button"
-                                aria-label="Close navigation menu"
-                                aria-controls="public-mobile-drawer"
-                                className="flex h-10 w-10 items-center justify-center border border-black/20 text-black transition-[background-color,transform] duration-200 hover:bg-black/5 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                <X className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
-                            </button>
-                        </div>
 
-                        <div className="flex h-[calc(100dvh-5rem)] flex-col px-5 py-7">
-                            <nav aria-label="Mobile navigation links">
-                                <ol className="border-t border-black/20">
-                                    {PUBLIC_NAV_LINKS.map((link, index) => {
-                                        const isCurrent =
-                                            pathname === "/" &&
-                                            activeSection === link.section;
+                            <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain px-5 py-6">
+                                <nav aria-label="Mobile navigation links">
+                                    <ol className="space-y-2">
+                                        {PUBLIC_NAV_LINKS.map((link, index) => {
+                                            const isCurrent =
+                                                pathname === "/" &&
+                                                activeSection === link.section;
 
-                                        return (
-                                            <li key={link.href}>
-                                                <Link
-                                                    href={link.href}
-                                                    aria-current={
-                                                        isCurrent ? "location" : undefined
-                                                    }
-                                                    onClick={(event) =>
-                                                        handleNavClick(event, link.href)
-                                                    }
-                                                    className={`grid min-h-16 grid-cols-[2.25rem_1fr_auto] items-center border-b border-black/20 text-lg font-bold tracking-tight transition-colors duration-200 active:bg-primarygreen/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple ${
-                                                        isCurrent
-                                                            ? "text-primarypurple"
-                                                            : "text-black hover:text-primarypurple"
-                                                    }`}
-                                                >
-                                                    <span className="font-mono text-xs text-black/60">
-                                                        {String(index + 1).padStart(2, "0")}
-                                                    </span>
-                                                    {link.name}
-                                                    <span aria-hidden="true">↗</span>
-                                                </Link>
-                                            </li>
-                                        );
-                                    })}
-                                </ol>
-                            </nav>
+                                            return (
+                                                <li key={link.href}>
+                                                    <Link
+                                                        href={link.href}
+                                                        aria-current={
+                                                            isCurrent
+                                                                ? "location"
+                                                                : undefined
+                                                        }
+                                                        onClick={(event) =>
+                                                            handleNavClick(event, link.href)
+                                                        }
+                                                        className={`grid min-h-14 grid-cols-[2.25rem_1fr_auto] items-center rounded-2xl border px-4 text-base font-bold tracking-tight transition-[background-color,border-color,color,transform] duration-200 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple ${
+                                                            isCurrent
+                                                                ? "border-primarypurple/15 bg-primarypurple/10 text-primarypurple"
+                                                                : "border-black/[0.06] bg-black/[0.025] text-black hover:border-primarypurple/10 hover:bg-primarypurple/[0.06] hover:text-primarypurple"
+                                                        }`}
+                                                    >
+                                                        <span className="font-mono text-xs text-black/60">
+                                                            {String(index + 1).padStart(
+                                                                2,
+                                                                "0"
+                                                            )}
+                                                        </span>
+                                                        {link.name}
+                                                        <span
+                                                            className="text-primarypurple/60"
+                                                            aria-hidden="true"
+                                                        >
+                                                            ↗
+                                                        </span>
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
+                                    </ol>
+                                </nav>
 
-                            <div className="mt-auto grid gap-3 border-t border-black/20 pt-6">
-                                <Link
-                                    href="/login"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex h-12 items-center justify-center border border-black/25 bg-white px-6 text-sm font-bold text-black transition-[background-color,transform] duration-200 hover:bg-black/5 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
-                                >
-                                    Log in
-                                </Link>
-                                <Link
-                                    href="/get-started"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex h-12 items-center justify-center bg-primarypurple px-6 text-sm font-bold text-white transition-[background-color,transform] duration-200 hover:bg-black active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
-                                >
-                                    Get started
-                                </Link>
-                                <p className="mt-2 text-center font-mono text-[0.65rem] uppercase tracking-[0.12em] text-black/60">
-                                    Verified FAST NUCES community
-                                </p>
+                                <div className="mt-auto grid gap-3 rounded-2xl border border-primarypurple/10 bg-primarypurple/[0.04] p-4 shadow-sm">
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex h-12 items-center justify-center rounded-xl border border-primarypurple/15 bg-white px-6 text-sm font-bold text-primarypurple shadow-sm transition-[background-color,transform] duration-200 hover:bg-primarypurple/5 active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                    >
+                                        Log in
+                                    </Link>
+                                    <Link
+                                        href="/get-started"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex h-12 items-center justify-center rounded-xl bg-primarypurple px-6 text-sm font-bold text-white shadow-[0_10px_28px_rgba(95,45,220,0.2)] transition-[background-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(95,45,220,0.28)] active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                    >
+                                        Get started
+                                    </Link>
+                                    <p className="mt-2 text-center font-mono text-[0.65rem] uppercase tracking-[0.12em] text-black/60">
+                                        Verified FAST NUCES community
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </aside>

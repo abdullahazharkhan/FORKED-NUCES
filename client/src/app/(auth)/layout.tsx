@@ -20,10 +20,10 @@ export default function AuthLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <div className="min-h-svh bg-[#f4f3f8] font-[family-name:var(--font-geist-sans)] lg:grid lg:grid-cols-[19rem_minmax(0,1fr)] xl:grid-cols-[22rem_minmax(0,1fr)]">
+        <div className="min-h-svh bg-[radial-gradient(circle_at_90%_8%,rgba(195,255,0,0.10),transparent_24rem),radial-gradient(circle_at_58%_100%,rgba(111,67,254,0.08),transparent_28rem),#f7f6fb] font-[family-name:var(--font-geist-sans)] lg:grid lg:grid-cols-[20rem_minmax(0,1fr)] xl:grid-cols-[23rem_minmax(0,1fr)]">
             <a
                 href="#auth-main"
-                className="fixed left-4 top-4 z-50 -translate-y-24 bg-black px-4 py-2 text-sm font-semibold text-white transition-transform focus:translate-y-0 focus:outline-2 focus:outline-offset-2 focus:outline-primarygreen"
+                className="fixed left-4 top-4 z-50 -translate-y-24 rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0 focus:outline-2 focus:outline-offset-2 focus:outline-primarygreen"
             >
                 Skip to authentication content
             </a>
@@ -45,7 +45,7 @@ export default function AuthLayout({
                                 alt="FORKED NUCES logo"
                                 width={40}
                                 height={40}
-                                className="h-9 w-9 rounded-[0.25rem] bg-primarypurple"
+                                className="h-9 w-9 rounded-xl bg-primarypurple shadow-sm"
                             />
                             <span className="font-[family-name:var(--font-jaro)] text-xl tracking-[-0.02em] text-black">
                                 FORK&apos;D <span className="text-primarypurple">NUCES</span>
@@ -63,7 +63,7 @@ export default function AuthLayout({
                 </div>
             </main>
 
-            <aside className="relative isolate hidden overflow-hidden bg-primarypurple px-8 py-8 text-white lg:col-start-1 lg:row-start-1 lg:flex lg:min-h-svh lg:flex-col xl:px-10 xl:py-10">
+            <aside className="relative isolate m-3 hidden overflow-hidden rounded-3xl border border-white/15 bg-primarypurple px-7 py-7 text-white shadow-[0_24px_70px_rgba(45,20,115,0.24)] lg:col-start-1 lg:row-start-1 lg:flex lg:min-h-[calc(100svh-1.5rem)] lg:flex-col xl:px-9 xl:py-9">
                 <div
                     className="landing-grid pointer-events-none absolute inset-0 opacity-20"
                     aria-hidden="true"
@@ -75,7 +75,7 @@ export default function AuthLayout({
                     F/N
                 </div>
 
-                <div className="relative flex items-center justify-between gap-3 border-b border-white/20 pb-7">
+                <div className="relative flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.07] p-3 backdrop-blur-sm">
                     <Link
                         href="/"
                         aria-label="FORKED NUCES home"
@@ -86,13 +86,13 @@ export default function AuthLayout({
                             alt="FORKED NUCES logo"
                             width={42}
                             height={42}
-                            className="h-10 w-10 rounded-[0.25rem]"
+                            className="h-10 w-10 rounded-xl shadow-sm"
                         />
                         <span className="font-[family-name:var(--font-jaro)] text-xl tracking-[-0.02em]">
                             FORK&apos;D <span className="text-primarygreen">NUCES</span>
                         </span>
                     </Link>
-                    <span className="h-2.5 w-2.5 bg-primarygreen" aria-hidden="true" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-primarygreen shadow-[0_0_0_5px_rgba(195,255,0,0.12)]" aria-hidden="true" />
                 </div>
 
                 <div className="relative my-auto py-12">
@@ -107,11 +107,11 @@ export default function AuthLayout({
                         contribution history.
                     </p>
 
-                    <ul className="mt-10 border-b border-white/20 text-sm">
+                    <ul className="mt-9 grid gap-2 text-sm">
                         {COMMUNITY_BENEFITS.map(([number, benefit]) => (
                             <li
                                 key={benefit}
-                                className="grid grid-cols-[2rem_1fr] gap-3 border-t border-white/20 py-4 text-white/90"
+                                className="grid grid-cols-[2rem_1fr] gap-3 rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3.5 text-white/90 backdrop-blur-sm"
                             >
                                 <span className="font-[family-name:var(--font-geist-mono)] text-[0.6875rem] font-semibold text-primarygreen">
                                     {number}
@@ -122,7 +122,7 @@ export default function AuthLayout({
                     </ul>
                 </div>
 
-                <div className="relative border-t border-white/20 pt-6">
+                <div className="relative rounded-2xl border border-white/10 bg-black/10 p-4">
                     <p className="font-[family-name:var(--font-geist-mono)] text-[0.625rem] uppercase tracking-[0.16em] text-white/90">
                         FAST NUCES access only
                     </p>

@@ -233,7 +233,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                 <nav aria-label="Project breadcrumb">
                     <Link
                         href="/platform"
-                        className="group inline-flex min-h-10 items-center gap-2 rounded-md text-sm font-bold text-black/60 transition-colors hover:text-primarypurple focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px"
+                        className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-white/70 px-3 text-sm font-bold text-black/60 ring-1 ring-black/[0.05] transition hover:bg-white hover:text-primarypurple hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple active:translate-y-px"
                     >
                         <ArrowLeft
                             className="h-4 w-4 transition-transform group-hover:-translate-x-1"
@@ -243,13 +243,13 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                     </Link>
                 </nav>
 
-                <header className="relative isolate overflow-hidden rounded-lg border border-black/10 bg-primarypurple p-6 text-white shadow-[0_18px_50px_rgba(45,23,102,0.16)] sm:p-8 lg:p-10">
+                <header className="relative isolate overflow-hidden rounded-[2rem] border border-white/15 bg-[linear-gradient(135deg,#4d1fc9_0%,#6f3cff_55%,#7d51ff_100%)] p-6 text-white shadow-[0_24px_65px_rgba(62,25,154,0.2)] sm:p-8 lg:p-10">
                     <div
                         className="landing-grid pointer-events-none absolute inset-0 opacity-20"
                         aria-hidden="true"
                     />
                     <div
-                        className="pointer-events-none absolute -right-14 -top-24 h-56 w-56 rotate-12 border-[2.5rem] border-primarygreen/15"
+                        className="pointer-events-none absolute -right-14 -top-24 h-56 w-56 rotate-12 rounded-[4rem] border-[2.5rem] border-primarygreen/15"
                         aria-hidden="true"
                     />
 
@@ -271,7 +271,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     {project.owner_nu_email && (
                                         <Link
                                             href={`mailto:${project.owner_nu_email}`}
-                                            className="inline-flex items-center gap-1.5 rounded-md font-semibold text-primarygreen underline decoration-primarygreen/35 underline-offset-4 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-1 font-semibold text-primarygreen underline decoration-primarygreen/35 underline-offset-4 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                                         >
                                             <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                                             {project.owner_nu_email}
@@ -287,7 +287,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                             <button
                                                 type="button"
                                                 onClick={() => setIsEditOpen(true)}
-                                                className="inline-flex min-h-10 items-center gap-2 rounded-md border border-white/25 bg-white/10 px-3.5 text-xs font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px"
+                                                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px"
                                             >
                                                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                                                 Edit project
@@ -296,7 +296,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                                 type="button"
                                                 onClick={handleDeleteClick}
                                                 disabled={deleteMutation.isPending}
-                                                className="inline-flex min-h-10 items-center gap-2 rounded-md border border-red-200/30 bg-red-500/15 px-3.5 text-xs font-bold text-white transition-colors hover:bg-red-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px disabled:cursor-wait disabled:opacity-60"
+                                                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-red-200/25 bg-red-500/15 px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-red-500/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px disabled:cursor-wait disabled:opacity-60"
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                                                 {deleteMutation.isPending ? "Deleting..." : "Delete"}
@@ -313,8 +313,8 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                             )}
                         </div>
 
-                        <dl className="mt-10 grid gap-px border-y border-white/20 bg-white/20 sm:grid-cols-2 lg:grid-cols-4">
-                            <div className="bg-primarypurple p-4">
+                        <dl className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
                                 <dt className="flex items-center gap-2 text-xs font-semibold text-white/90">
                                     <CalendarDays className="h-4 w-4 text-primarygreen" aria-hidden="true" />
                                     Created
@@ -323,7 +323,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     {createdAt || "Not available"}
                                 </dd>
                             </div>
-                            <div className="bg-primarypurple p-4">
+                            <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
                                 <dt className="flex items-center gap-2 text-xs font-semibold text-white/90">
                                     <CalendarDays className="h-4 w-4 text-primarygreen" aria-hidden="true" />
                                     Last updated
@@ -332,16 +332,16 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     {updatedAt || "Not available"}
                                 </dd>
                             </div>
-                            <div className="bg-primarypurple p-4">
+                            <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
                                 <dt className="flex items-center gap-2 text-xs font-semibold text-white/90">
                                     <CircleDot className="h-4 w-4 text-primarygreen" aria-hidden="true" />
                                     Issues
                                 </dt>
                                 <dd className="mt-2 text-sm font-bold text-white">
-                                    {openIssues.length} open · {closedIssues.length} closed
+                                    {openIssues.length} open &middot; {closedIssues.length} closed
                                 </dd>
                             </div>
-                            <div className="bg-primarypurple p-4">
+                            <div className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
                                 <dt className="flex items-center gap-2 text-xs font-semibold text-white/90">
                                     <Heart
                                         className={`h-4 w-4 text-primarygreen ${hasLiked ? "fill-primarygreen" : ""}`}
@@ -359,7 +359,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                         onClick={handleLikeClick}
                                         disabled={likeMutation.isPending || !loggedInUser || isOwner}
                                         title={isOwner ? "You cannot like your own project" : undefined}
-                                        className="rounded-md bg-primarygreen px-3 py-1.5 text-xs font-black text-black transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/45"
+                                        className="min-h-11 rounded-xl bg-primarygreen px-4 py-2 text-xs font-black text-black shadow-[0_8px_20px_rgba(188,255,0,0.16)] transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/45 disabled:shadow-none"
                                     >
                                         {hasLiked ? "Unlike" : "Like"}
                                     </button>
@@ -368,7 +368,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                         </dl>
 
                         {likeError && (
-                            <p className="mt-4 border-l-2 border-red-200 bg-red-500/15 px-4 py-3 text-xs font-semibold text-white" role="alert">
+                            <p className="mt-4 rounded-2xl border border-red-200/20 bg-red-500/15 px-4 py-3 text-xs font-semibold text-white" role="alert">
                                 {likeError}
                             </p>
                         )}
@@ -396,7 +396,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                                     href={project.github_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-white px-4 text-sm font-black text-black transition-colors hover:bg-primarygreen focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-y-px"
+                                    className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-black text-black shadow-[0_10px_24px_rgba(28,12,70,0.16)] transition-colors hover:bg-primarygreen focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white active:translate-y-px"
                                 >
                                     View repository
                                     <ExternalLink className="h-4 w-4" aria-hidden="true" />
@@ -406,8 +406,8 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                     </div>
                 </header>
 
-                <section className="border-y border-black/15 bg-white/80 p-5 sm:p-8">
-                    <div className="mb-6 grid gap-2 border-b border-black/10 pb-5 sm:grid-cols-[10rem_1fr] sm:items-end">
+                <section className="rounded-[1.75rem] border border-black/[0.06] bg-white p-5 shadow-[0_18px_55px_rgba(42,25,86,0.07)] sm:p-8">
+                    <div className="mb-6 grid gap-2 sm:grid-cols-[10rem_1fr] sm:items-end">
                         <p className="font-mono text-xs font-bold tracking-[0.14em] text-primarypurple">
                             Project overview
                         </p>
@@ -415,7 +415,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                             About this project
                         </h2>
                     </div>
-                    <div className="overflow-hidden border-l-2 border-primarypurple/25 bg-[#fbfaff] p-3 sm:p-5">
+                    <div className="overflow-hidden rounded-2xl bg-[#f8f7fc] p-3 ring-1 ring-primarypurple/[0.07] sm:p-5">
                         <MdPreview
                             {...untrustedMarkdownPreviewProps}
                             editorId={`project-description-${project.project_id ?? "preview"}`}
@@ -483,7 +483,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsData }) => {
                             data-dialog-initial-focus="true"
                             disabled={deleteMutation.isPending}
                             onClick={() => setIsDeleteOpen(false)}
-                            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/15 px-4 text-sm font-bold text-black/65 transition hover:bg-black/[0.04] disabled:opacity-60"
+                            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/[0.08] px-4 text-sm font-bold text-black/65 transition hover:border-primarypurple/15 hover:bg-primarypurple/[0.04] hover:text-primarypurple disabled:opacity-60"
                         >
                             Cancel
                         </button>

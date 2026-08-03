@@ -37,15 +37,15 @@ export default function PublicDocument({
     );
 
     return (
-        <article className="bg-[#E8EAEC] font-sans text-black">
-            <header className="relative overflow-hidden border-b border-black bg-primarypurple px-5 pb-16 pt-32 text-white sm:px-8 sm:pb-20 sm:pt-36 lg:px-12">
+        <article className="bg-[#f7f6fb] font-sans text-black">
+            <header className="relative overflow-hidden bg-[radial-gradient(circle_at_82%_18%,rgba(195,255,0,0.14),transparent_24rem),linear-gradient(145deg,#7043fe,#5b30e4)] px-5 pb-16 pt-32 text-white sm:px-8 sm:pb-20 sm:pt-36 lg:px-12">
                 <div
                     className="landing-grid pointer-events-none absolute inset-0 opacity-20"
                     aria-hidden="true"
                 />
 
                 <div className="landing-fade-up relative mx-auto max-w-[90rem]">
-                    <div className="flex items-center justify-between gap-6 border-b border-white/20 pb-4">
+                    <div className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-white/[0.07] px-4 py-3 backdrop-blur-sm">
                         <Link
                             href="/"
                             className="group inline-flex items-center gap-2 text-sm font-semibold text-white/90 transition-colors duration-200 hover:text-white active:text-primarygreen focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
@@ -64,7 +64,7 @@ export default function PublicDocument({
                     <div className="grid gap-10 pt-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end lg:gap-16 lg:pt-14">
                         <div className="max-w-4xl">
                             <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-primarygreen">
-                                <span className="h-2 w-2 bg-primarygreen" aria-hidden="true" />
+                                <span className="h-2 w-2 rounded-full bg-primarygreen shadow-[0_0_0_5px_rgba(195,255,0,0.12)]" aria-hidden="true" />
                                 Community standards
                             </p>
                             <h1 className="mt-6 text-balance text-5xl font-black leading-[0.9] tracking-[-0.06em] sm:text-6xl lg:text-7xl">
@@ -75,8 +75,8 @@ export default function PublicDocument({
                             </p>
                         </div>
 
-                        <dl className="grid grid-cols-2 border-y border-white/25 lg:grid-cols-1 lg:border-b-0 lg:border-l lg:border-t lg:pl-6">
-                            <div className="py-4 pr-4 lg:border-b lg:border-white/20 lg:pr-0">
+                        <dl className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+                            <div className="rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3 backdrop-blur-sm">
                                 <dt className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
                                     Effective
                                 </dt>
@@ -84,7 +84,7 @@ export default function PublicDocument({
                                     {effectiveDate}
                                 </dd>
                             </div>
-                            <div className="border-l border-white/20 py-4 pl-4 lg:border-l-0 lg:pl-0">
+                            <div className="rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3 backdrop-blur-sm">
                                 <dt className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
                                     Reading time
                                 </dt>
@@ -97,9 +97,9 @@ export default function PublicDocument({
                 </div>
             </header>
 
-            <div className="mx-auto grid max-w-[90rem] items-start px-5 pb-20 sm:px-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:px-12 lg:pb-28">
-                <aside className="border-x border-b border-black/15 bg-white lg:sticky lg:top-20 lg:border-l lg:border-r-0">
-                    <div className="border-b border-black/15 p-5 sm:p-6">
+            <div className="mx-auto grid max-w-[90rem] items-start gap-6 px-5 py-8 sm:px-8 sm:py-10 lg:grid-cols-[17rem_minmax(0,1fr)] lg:px-12 lg:pb-28">
+                <aside className="overflow-hidden rounded-3xl border border-black/[0.07] bg-white/90 shadow-[0_18px_50px_rgba(45,23,102,0.08)] lg:sticky lg:top-24">
+                    <div className="border-b border-black/[0.07] p-5 sm:p-6">
                         <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primarypurple sm:text-xs">
                             Document library
                         </p>
@@ -112,7 +112,7 @@ export default function PublicDocument({
                                             aria-current={
                                                 link.label === title ? "page" : undefined
                                             }
-                                            className="group grid min-h-11 grid-cols-[1.75rem_1fr_auto] items-center gap-2 border border-black/15 px-3 text-sm font-semibold text-black/55 transition-[background-color,color,border-color,transform] duration-200 hover:border-primarypurple/40 hover:text-primarypurple active:translate-y-px aria-[current=page]:border-primarypurple aria-[current=page]:bg-primarypurple aria-[current=page]:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple lg:border-transparent"
+                                            className="group grid min-h-11 grid-cols-[1.75rem_1fr_auto] items-center gap-2 rounded-xl border border-black/[0.06] bg-black/[0.02] px-3 text-sm font-semibold text-black/60 transition-[background-color,color,border-color,transform] duration-200 hover:border-primarypurple/20 hover:bg-primarypurple/[0.05] hover:text-primarypurple active:translate-y-px aria-[current=page]:border-primarypurple aria-[current=page]:bg-primarypurple aria-[current=page]:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                         >
                                             <span className="font-mono text-[0.65rem] opacity-55">
                                                 0{index + 1}
@@ -133,7 +133,7 @@ export default function PublicDocument({
 
                     <nav
                         aria-label={`Sections in ${title}`}
-                        className="hidden border-b border-black/15 p-6 lg:block"
+                        className="hidden border-b border-black/[0.07] p-6 lg:block"
                     >
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primarypurple">
                             On this page
@@ -143,7 +143,7 @@ export default function PublicDocument({
                                 <li key={section.id}>
                                     <a
                                         href={`#${section.id}`}
-                                        className="grid min-h-10 grid-cols-[1.75rem_1fr] items-start gap-2 py-2 text-sm font-medium leading-5 text-black/60 transition-[color,transform] duration-200 hover:translate-x-1 hover:text-primarypurple active:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                        className="grid min-h-11 grid-cols-[1.75rem_1fr] items-start gap-2 py-2 text-sm font-medium leading-5 text-black/60 transition-[color,transform] duration-200 hover:translate-x-1 hover:text-primarypurple active:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                     >
                                         <span className="font-mono text-[0.65rem] font-bold text-primarypurple">
                                             {String(index + 1).padStart(2, "0")}
@@ -155,14 +155,14 @@ export default function PublicDocument({
                         </ol>
                     </nav>
 
-                    <div className="bg-primarygreen p-5 text-black sm:p-6">
+                    <div className="m-3 rounded-2xl bg-primarygreen/35 p-5 text-black sm:p-6">
                         <p className="text-sm font-bold">Questions or concerns?</p>
                         <p className="mt-2 text-xs leading-5 text-black/55">
                             Contact the project team for help understanding these standards.
                         </p>
                         <Link
                             href="mailto:k230544@nu.edu.pk"
-                            className="mt-5 inline-flex min-h-11 w-full items-center justify-between bg-black px-4 text-xs font-bold text-white transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                            className="mt-5 inline-flex min-h-11 w-full items-center justify-between rounded-xl bg-black px-4 text-xs font-bold text-white shadow-sm transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
                         >
                             Contact the team
                             <span aria-hidden="true">↗</span>
@@ -170,10 +170,10 @@ export default function PublicDocument({
                     </div>
                 </aside>
 
-                <div className="border-x border-b border-black/15 bg-white">
+                <div className="overflow-hidden rounded-3xl border border-black/[0.07] bg-white shadow-[0_18px_50px_rgba(45,23,102,0.08)]">
                     <nav
                         aria-label={`Sections in ${title}`}
-                        className="border-b border-black/15 p-5 lg:hidden"
+                        className="border-b border-black/[0.07] bg-[#faf9fd] p-5 lg:hidden"
                     >
                         <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primarypurple">
                             On this page
@@ -183,7 +183,7 @@ export default function PublicDocument({
                                 <li key={section.id} className="shrink-0">
                                     <a
                                         href={`#${section.id}`}
-                                        className="inline-flex min-h-10 items-center border border-black/15 px-3 text-sm font-semibold text-black/55 transition-[border-color,color,transform] duration-200 hover:border-primarypurple/40 hover:text-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
+                                        className="inline-flex min-h-11 items-center rounded-xl border border-black/[0.07] bg-white px-3 text-sm font-semibold text-black/60 transition-[border-color,color,transform] duration-200 hover:border-primarypurple/30 hover:text-primarypurple active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primarypurple"
                                     >
                                         <span className="mr-2 font-mono text-[0.65rem] text-primarypurple">
                                             {String(index + 1).padStart(2, "0")}
@@ -195,7 +195,7 @@ export default function PublicDocument({
                         </ol>
                     </nav>
 
-                    <div className="divide-y divide-black/15 px-5 sm:px-8 lg:px-12">
+                    <div className="divide-y divide-black/[0.07] px-5 sm:px-8 lg:px-12">
                         {sections.map((section, index) => (
                             <section
                                 id={section.id}
@@ -221,7 +221,7 @@ export default function PublicDocument({
                     </div>
 
                     {closing && (
-                        <footer className="border-t border-black bg-primarygreen/25 px-5 py-7 sm:px-8 lg:px-12">
+                        <footer className="border-t border-black/[0.07] bg-primarygreen/20 px-5 py-7 sm:px-8 lg:px-12">
                             <div className="max-w-[68ch] text-sm leading-7 text-black/60 [&_a]:font-bold [&_a]:text-primarypurple [&_a]:underline [&_a]:decoration-primarypurple/30 [&_a]:underline-offset-4 [&_a]:transition-colors hover:[&_a]:text-black">
                                 {closing}
                             </div>

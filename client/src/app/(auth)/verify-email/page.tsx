@@ -113,12 +113,12 @@ function VerifyEmailInner() {
     if (!token || !nu_email) {
         content = (
             <>
-                <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                <div className="flex items-start justify-between gap-5 rounded-2xl border border-red-100/80 bg-gradient-to-r from-red-50/80 via-white to-red-50/40 p-4">
                     <p className={AUTH_ERROR_STEP_CLASS}>
                         <span className={AUTH_ERROR_STEP_NUMBER_CLASS}>ERR</span>
                         Link problem
                     </p>
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-red-50 text-red-600">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-[0_8px_22px_rgba(185,28,28,0.08)] ring-1 ring-inset ring-red-100">
                         <CircleAlert className="h-6 w-6" aria-hidden="true" />
                     </span>
                 </div>
@@ -139,12 +139,12 @@ function VerifyEmailInner() {
     } else if (mutation.isIdle || mutation.isPending) {
         content = (
             <>
-                <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                <div className="flex items-start justify-between gap-5 rounded-2xl border border-black/[0.05] bg-gradient-to-r from-primarypurple/[0.045] via-white to-primarygreen/[0.04] p-4">
                     <p className={AUTH_STEP_CLASS}>
                         <span className={AUTH_STEP_NUMBER_CLASS}>02</span>
                         Checking token
                     </p>
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-primarypurple/10 text-primarypurple">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarypurple/[0.08] text-primarypurple shadow-[0_8px_22px_rgba(104,67,231,0.1)] ring-1 ring-inset ring-primarypurple/10">
                         <Spinner color="secondary" size="sm" />
                     </span>
                 </div>
@@ -154,8 +154,8 @@ function VerifyEmailInner() {
                     <span className="font-semibold text-black">{nu_email}</span>. This
                     should only take a few seconds.
                 </p>
-                <div className="mt-7 h-1 w-full overflow-hidden bg-black/[0.06]" aria-hidden="true">
-                    <div className="h-full w-2/3 animate-pulse bg-primarypurple" />
+                <div className="mt-7 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]" aria-hidden="true">
+                    <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-primarypurple to-[#9a80ff]" />
                 </div>
             </>
         );
@@ -163,12 +163,12 @@ function VerifyEmailInner() {
         if (isAlreadyVerifiedError(mutation.error)) {
             content = (
                 <>
-                    <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                    <div className="flex items-start justify-between gap-5 rounded-2xl border border-black/[0.05] bg-gradient-to-r from-primarypurple/[0.045] via-white to-primarygreen/[0.04] p-4">
                         <p className={AUTH_STEP_CLASS}>
                             <span className={AUTH_STEP_NUMBER_CLASS}>OK</span>
                             Already verified
                         </p>
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-primarygreen text-black">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarygreen to-[#dfff83] text-black shadow-[0_9px_24px_rgba(183,255,0,0.2)]">
                             <BadgeCheck className="h-6 w-6" aria-hidden="true" />
                         </span>
                     </div>
@@ -191,20 +191,20 @@ function VerifyEmailInner() {
 
             content = (
                 <>
-                    <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                    <div className="flex items-start justify-between gap-5 rounded-2xl border border-red-100/80 bg-gradient-to-r from-red-50/80 via-white to-red-50/40 p-4">
                         <p className={AUTH_ERROR_STEP_CLASS}>
                             <span className={AUTH_ERROR_STEP_NUMBER_CLASS}>ERR</span>
                             Verification failed
                         </p>
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-red-50 text-red-600">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-[0_8px_22px_rgba(185,28,28,0.08)] ring-1 ring-inset ring-red-100">
                             <CircleAlert className="h-6 w-6" aria-hidden="true" />
                         </span>
                     </div>
                     <h1 className={AUTH_TITLE_CLASS}>We couldn&apos;t verify this link.</h1>
-                    <div className="mt-5 border border-red-200 bg-red-50 p-3.5 text-sm leading-6 text-red-700" role="alert">
+                    <div className="mt-5 rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm leading-6 text-red-700 shadow-[0_8px_22px_rgba(185,28,28,0.05)]" role="alert">
                         {msg}
                     </div>
-                    <div className="mt-4 flex items-start gap-3 border-l-2 border-primarypurple bg-primarypurple/[0.04] px-4 py-3.5 text-sm leading-6 text-black/60">
+                    <div className="mt-4 flex items-start gap-3 rounded-2xl border border-primarypurple/10 bg-primarypurple/[0.045] p-4 text-sm leading-6 text-black/60 shadow-[0_7px_20px_rgba(104,67,231,0.045)]">
                         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primarypurple" aria-hidden="true" />
                         <p>
                             Verification links can expire or be used only once. A
@@ -228,12 +228,12 @@ function VerifyEmailInner() {
 
         content = (
             <>
-                <div className="flex items-start justify-between gap-5 border-b border-black/10 pb-6">
+                <div className="flex items-start justify-between gap-5 rounded-2xl border border-black/[0.05] bg-gradient-to-r from-primarypurple/[0.045] via-white to-primarygreen/[0.04] p-4">
                     <p className={AUTH_STEP_CLASS}>
                         <span className={AUTH_STEP_NUMBER_CLASS}>02</span>
                         Verification complete
                     </p>
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-primarygreen text-black">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarygreen to-[#dfff83] text-black shadow-[0_9px_24px_rgba(183,255,0,0.2)]">
                         <MailCheck className="h-6 w-6" aria-hidden="true" />
                     </span>
                 </div>
@@ -270,10 +270,10 @@ const VerifyEmail = () => (
         fallback={
             <div className="mx-auto w-full max-w-[36rem] animate-pulse" role="status">
                 <span className="sr-only">Preparing verification...</span>
-                <div className="h-[22rem] border border-black/[0.06] bg-white/60 p-8">
-                    <div className="h-7 w-44 bg-black/[0.06]" />
-                    <div className="mt-12 h-11 w-4/5 bg-black/[0.06]" />
-                    <div className="mt-5 h-5 w-2/3 bg-black/[0.06]" />
+                <div className="h-[22rem] rounded-3xl border border-black/[0.05] bg-gradient-to-br from-white/80 to-primarypurple/[0.035] p-8 shadow-[0_16px_45px_rgba(24,15,48,0.05)]">
+                    <div className="h-7 w-44 rounded-xl bg-black/[0.06]" />
+                    <div className="mt-12 h-11 w-4/5 rounded-xl bg-black/[0.06]" />
+                    <div className="mt-5 h-5 w-2/3 rounded-xl bg-black/[0.06]" />
                 </div>
             </div>
         }

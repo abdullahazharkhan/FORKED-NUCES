@@ -10,7 +10,10 @@ import { authFetch } from "@/lib/authFetch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UserType } from "@/stores/auth/useAuthStore";
 import { queryKeys } from "@/lib/queryKeys";
-import { PLATFORM_INPUT_CLASS } from "@/lib/platformStyles";
+import {
+    PROFILE_INPUT_CLASS,
+    PROFILE_PRIMARY_BUTTON_CLASS,
+} from "./profileStyles";
 import {
     AlertCircle,
     CheckCircle2,
@@ -90,7 +93,7 @@ const EditProfile = () => {
     const [skillInput, setSkillInput] = useState("");
 
     const getInputClass = (fieldError?: unknown) =>
-        `${PLATFORM_INPUT_CLASS} ${fieldError ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`;
+        `${PROFILE_INPUT_CLASS} ${fieldError ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`;
 
     const updateProfileMutation = useMutation<ProfileUpdateResponse, unknown, ProfileForm>({
         mutationFn: async (data: ProfileForm) => {
@@ -201,15 +204,15 @@ const EditProfile = () => {
 
     return (
         <section
-            className="relative isolate my-6 overflow-hidden border-y border-primarypurple/20 bg-white/80 p-5 sm:p-7 lg:p-8"
+            className="relative isolate my-6 overflow-hidden rounded-3xl border border-black/[0.06] bg-gradient-to-br from-white via-white to-primarypurple/[0.025] p-5 shadow-[0_18px_55px_rgba(24,15,48,0.07)] sm:p-7 lg:p-8"
             aria-labelledby="edit-profile-heading"
         >
             <div
-                className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primarygreen"
+                className="pointer-events-none absolute -left-20 -top-20 -z-10 h-56 w-56 rounded-full bg-primarygreen/[0.09] blur-3xl"
                 aria-hidden="true"
             />
             <div className="mb-7 flex items-start gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primarypurple text-white">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarypurple to-[#8b6aff] text-white shadow-[0_10px_26px_rgba(104,67,231,0.22)]">
                     <CircleUserRound className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
@@ -234,7 +237,7 @@ const EditProfile = () => {
                 onSubmit={handleSubmit(onSubmit)}
                 aria-busy={updateProfileMutation.isPending}
             >
-                <div className="grid gap-5 border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+                <div className="grid gap-5 rounded-2xl border border-black/[0.055] bg-[#fbfafe]/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
                     {/* Name */}
                     <div className="flex flex-col">
                         <label
@@ -321,7 +324,7 @@ const EditProfile = () => {
                 </div>
 
                 {/* Skills */}
-                <div className="border-l-2 border-primarypurple/20 bg-white p-4 sm:p-5">
+                <div className="rounded-2xl border border-black/[0.055] bg-[#fbfafe]/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:p-5">
                     <div className="mb-3">
                         <p
                             id="edit-profile-skills-label"
@@ -353,10 +356,10 @@ const EditProfile = () => {
                             value={skillInput}
                             onChange={(e) => setSkillInput(e.target.value)}
                             onKeyDown={handleSkillKeyDown}
-                            className={PLATFORM_INPUT_CLASS}
+                            className={PROFILE_INPUT_CLASS}
                         />
                         <Button
-                            className="min-h-12 w-full rounded-md bg-primarygreen px-6 font-black text-black shadow-none sm:w-auto"
+                            className="min-h-12 w-full rounded-xl bg-gradient-to-br from-primarygreen to-[#d8ff72] px-6 font-black text-black shadow-[0_8px_20px_rgba(183,255,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_11px_25px_rgba(183,255,0,0.24)] sm:w-auto"
                             type="button"
                             isDisabled={
                                 !skillInput.trim() ||
@@ -376,7 +379,7 @@ const EditProfile = () => {
                     </div>
 
                     <div
-                        className="mt-4 flex min-h-10 flex-wrap items-center gap-2 rounded-xl border border-dashed border-primarypurple/20 bg-primarypurple/[0.025] p-3"
+                        className="mt-4 flex min-h-12 flex-wrap items-center gap-2 rounded-2xl border border-dashed border-primarypurple/15 bg-primarypurple/[0.025] p-3.5"
                         aria-label="Selected skills"
                     >
                         {skills.length > 0 ? (
@@ -386,7 +389,7 @@ const EditProfile = () => {
                                     onClose={() => removeSkill(skill)}
                                     variant="flat"
                                     color="secondary"
-                                    className="border border-primarypurple/15 bg-primarypurple/[0.08] font-bold text-primarypurple"
+                                    className="min-h-11 rounded-xl border border-primarypurple/10 bg-primarypurple/[0.08] font-bold text-primarypurple"
                                 >
                                     {skill}
                                 </Chip>
@@ -408,12 +411,12 @@ const EditProfile = () => {
                     )}
                 </div>
 
-                <div className="flex flex-col-reverse gap-3 border-t border-black/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col-reverse gap-3 rounded-2xl bg-black/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs leading-5 text-gray-500">
                         Changes are visible to other signed-in community members.
                     </p>
                     <Button
-                        className="min-h-12 w-full rounded-md bg-primarypurple px-6 font-bold text-white shadow-none sm:w-auto"
+                        className={`${PROFILE_PRIMARY_BUTTON_CLASS} min-h-12 w-full sm:w-auto`}
                         type="submit"
                         isDisabled={!isValid || updateProfileMutation.isPending}
                         startContent={

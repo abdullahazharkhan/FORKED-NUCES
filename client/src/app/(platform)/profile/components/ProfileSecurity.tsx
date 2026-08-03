@@ -20,11 +20,11 @@ import {
 import { useAuthStore } from "@/stores";
 import { PasswordInput } from "@/components/PasswordInput";
 import {
-    PLATFORM_INPUT_CLASS,
-    PLATFORM_PANEL_CLASS,
-    PLATFORM_PRIMARY_BUTTON_CLASS,
-    PLATFORM_SECONDARY_BUTTON_CLASS,
-} from "@/lib/platformStyles";
+    PROFILE_INPUT_CLASS,
+    PROFILE_PANEL_CLASS,
+    PROFILE_PRIMARY_BUTTON_CLASS,
+    PROFILE_SECONDARY_BUTTON_CLASS,
+} from "./profileStyles";
 
 const passwordChangeSchema = z
     .object({
@@ -117,11 +117,11 @@ export default function ProfileSecurity() {
 
     return (
         <div className="space-y-6 pt-6">
-            <section className={`${PLATFORM_PANEL_CLASS} overflow-hidden`} aria-labelledby="change-password-heading">
-                <div className="h-1.5 bg-primarypurple" aria-hidden="true" />
+            <section className={`${PROFILE_PANEL_CLASS} relative isolate overflow-hidden`} aria-labelledby="change-password-heading">
+                <div className="pointer-events-none absolute -right-16 -top-20 -z-10 h-52 w-52 rounded-full bg-primarypurple/[0.08] blur-3xl" aria-hidden="true" />
                 <div className="p-5 sm:p-7">
                 <div className="flex items-start gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primarypurple/10 text-primarypurple">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primarypurple/15 to-primarypurple/[0.06] text-primarypurple shadow-[0_8px_22px_rgba(104,67,231,0.1)]">
                         <KeyRound className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <div>
@@ -150,7 +150,7 @@ export default function ProfileSecurity() {
                                     : undefined
                             }
                             {...register("currentPassword")}
-                            className={`${PLATFORM_INPUT_CLASS} ${errors.currentPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
+                            className={`${PROFILE_INPUT_CLASS} ${errors.currentPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                         />
                         {errors.currentPassword && (
                             <p id="security-current-password-error" className="text-xs font-medium text-red-600">
@@ -174,7 +174,7 @@ export default function ProfileSecurity() {
                                         : undefined
                                 }
                                 {...register("newPassword")}
-                                className={`${PLATFORM_INPUT_CLASS} ${errors.newPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
+                                className={`${PROFILE_INPUT_CLASS} ${errors.newPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                             />
                             {errors.newPassword && (
                                 <p id="security-new-password-error" className="text-xs font-medium text-red-600">
@@ -197,7 +197,7 @@ export default function ProfileSecurity() {
                                         : undefined
                                 }
                                 {...register("confirmPassword")}
-                                className={`${PLATFORM_INPUT_CLASS} ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
+                                className={`${PROFILE_INPUT_CLASS} ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                             />
                             {errors.confirmPassword && (
                                 <p id="security-confirm-password-error" className="text-xs font-medium text-red-600">
@@ -207,14 +207,14 @@ export default function ProfileSecurity() {
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 border-t border-black/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-xs leading-5 text-black/45">
+                    <div className="flex flex-col gap-3 rounded-2xl bg-black/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-xs leading-5 text-black/60">
                             Use at least 8 characters. Changing your password signs you out everywhere.
                         </p>
                         <button
                             type="submit"
                             disabled={!isValid || passwordChange.isPending}
-                            className={`${PLATFORM_PRIMARY_BUTTON_CLASS} shrink-0`}
+                            className={`${PROFILE_PRIMARY_BUTTON_CLASS} shrink-0`}
                         >
                             {passwordChange.isPending ? "Changing..." : "Change password"}
                         </button>
@@ -232,15 +232,15 @@ export default function ProfileSecurity() {
                 </div>
             </section>
 
-            <section className={`${PLATFORM_PANEL_CLASS} overflow-hidden`} aria-labelledby="sign-out-everywhere-heading">
-                <div className="h-1.5 bg-[#0d0b12]" aria-hidden="true" />
+            <section className={`${PROFILE_PANEL_CLASS} relative isolate overflow-hidden`} aria-labelledby="sign-out-everywhere-heading">
+                <div className="pointer-events-none absolute -right-16 -top-20 -z-10 h-52 w-52 rounded-full bg-primarygreen/[0.08] blur-3xl" aria-hidden="true" />
                 <div className="p-5 sm:p-7">
                 <div className="flex items-start gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-black/[0.06] text-black">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-black/[0.08] to-black/[0.025] text-black shadow-[0_8px_22px_rgba(24,15,48,0.08)]">
                         <ShieldCheck className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <div>
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-black/40">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-black/60">
                         Session control
                     </p>
                     <h2 id="sign-out-everywhere-heading" className="mt-1 text-2xl font-black tracking-[-0.03em] text-black">
@@ -262,7 +262,7 @@ export default function ProfileSecurity() {
                             logoutAll.reset();
                             setConfirmLogoutAll(true);
                         }}
-                        className={`${PLATFORM_SECONDARY_BUTTON_CLASS} mt-6 gap-2`}
+                        className={`${PROFILE_SECONDARY_BUTTON_CLASS} mt-6 gap-2`}
                     >
                         <LogOut className="h-4 w-4" aria-hidden="true" />
                         Sign out all devices
@@ -280,7 +280,7 @@ export default function ProfileSecurity() {
                                     logoutAll.reset();
                                     setConfirmLogoutAll(false);
                                 }}
-                                className={PLATFORM_SECONDARY_BUTTON_CLASS}
+                                className={PROFILE_SECONDARY_BUTTON_CLASS}
                             >
                                 Cancel
                             </button>
@@ -288,7 +288,7 @@ export default function ProfileSecurity() {
                                 type="button"
                                 disabled={logoutAll.isPending}
                                 onClick={() => logoutAll.mutate()}
-                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-200 disabled:pointer-events-none disabled:opacity-55"
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(220,38,38,0.18)] transition hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-[0_11px_25px_rgba(220,38,38,0.24)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-200 disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-55 disabled:shadow-none"
                             >
                                 {logoutAll.isPending ? "Signing out..." : "Confirm sign out"}
                             </button>

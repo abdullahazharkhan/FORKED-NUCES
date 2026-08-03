@@ -11,10 +11,10 @@ import { authFetch } from "@/lib/authFetch";
 import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
 import { queryKeys } from "@/lib/queryKeys";
 import {
-    PLATFORM_INPUT_CLASS,
-    PLATFORM_PRIMARY_BUTTON_CLASS,
-    PLATFORM_SELECT_CLASS,
-} from "@/lib/platformStyles";
+    PROFILE_INPUT_CLASS,
+    PROFILE_PRIMARY_BUTTON_CLASS,
+    PROFILE_SELECT_CLASS,
+} from "./profileStyles";
 
 const PAGE_SIZE = 20;
 
@@ -70,7 +70,7 @@ const YourProjects = () => {
 
     return (
         <section
-            className="my-6 space-y-6 border-y border-black/15 bg-white/80 p-5 sm:p-7"
+            className="my-6 space-y-6 rounded-3xl border border-black/[0.06] bg-gradient-to-br from-white via-white to-primarypurple/[0.025] p-5 shadow-[0_18px_55px_rgba(24,15,48,0.07)] sm:p-7"
             aria-labelledby="your-projects-heading"
         >
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -82,7 +82,7 @@ const YourProjects = () => {
                     <h2 id="your-projects-heading" className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
                         Projects you own
                     </h2>
-                    <p className="mt-1 text-sm text-black/45">Open a project to manage its details, issues, and collaborators.</p>
+                    <p className="mt-1 text-sm text-black/60">Open a project to manage its details, issues, and collaborators.</p>
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row">
@@ -96,7 +96,7 @@ const YourProjects = () => {
                                 placeholder="Search your projects"
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
-                                className={`${PLATFORM_INPUT_CLASS} pl-11`}
+                                className={`${PROFILE_INPUT_CLASS} pl-11`}
                             />
                         </span>
                     </label>
@@ -106,7 +106,7 @@ const YourProjects = () => {
                             id="your-project-tag"
                             value={selectedTag}
                             onChange={(event) => setSelectedTag(event.target.value)}
-                            className={PLATFORM_SELECT_CLASS}
+                            className={PROFILE_SELECT_CLASS}
                         >
                             {allTags.map((tag) => (
                                 <option key={tag} value={tag}>
@@ -118,7 +118,7 @@ const YourProjects = () => {
                 </div>
             </div>
 
-            <p className="text-xs font-medium text-black/45" role="status" aria-live="polite">
+            <p className="text-xs font-medium text-black/60" role="status" aria-live="polite">
                 {projects.length} projects loaded; {filteredProjects.length} match
                 the current filters.
             </p>
@@ -139,7 +139,7 @@ const YourProjects = () => {
 
             {projectsQuery.isFetchNextPageError && (
                 <div
-                    className="flex items-center justify-center gap-3 text-sm text-red-700"
+                    className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm text-red-700 sm:flex-row"
                     role="alert"
                 >
                     <span>Could not load more projects.</span>
@@ -147,7 +147,7 @@ const YourProjects = () => {
                         type="button"
                         onClick={() => void projectsQuery.fetchNextPage()}
                         disabled={projectsQuery.isFetchingNextPage}
-                        className="font-semibold underline disabled:opacity-60"
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-200 bg-white px-4 font-bold shadow-sm transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-100 disabled:opacity-60"
                     >
                         Retry
                     </button>
@@ -162,7 +162,7 @@ const YourProjects = () => {
                             type="button"
                             onClick={() => void projectsQuery.fetchNextPage()}
                             disabled={projectsQuery.isFetchingNextPage}
-                            className={PLATFORM_PRIMARY_BUTTON_CLASS}
+                            className={PROFILE_PRIMARY_BUTTON_CLASS}
                         >
                             {projectsQuery.isFetchingNextPage
                                 ? "Loading..."

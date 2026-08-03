@@ -10,9 +10,10 @@ import ProjectCard, {
 import { authFetch } from "@/lib/authFetch";
 import { readPaginatedArray, type PaginatedPage } from "@/lib/pagination";
 import { queryKeys } from "@/lib/queryKeys";
-import { PLATFORM_PRIMARY_BUTTON_CLASS } from "@/lib/platformStyles";
 
 const PAGE_SIZE = 20;
+const USER_PRIMARY_BUTTON_CLASS =
+    "inline-flex min-h-11 items-center justify-center rounded-xl border border-primarypurple/10 bg-primarypurple px-5 text-sm font-bold text-white shadow-[0_8px_22px_rgba(104,67,231,0.2)] transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#5d32eb] hover:shadow-[0_12px_28px_rgba(104,67,231,0.26)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primarypurple/20 disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-55 disabled:shadow-none";
 
 const UserProjects = ({ userid }: { userid: string }) => {
     const projectsQuery = useInfiniteQuery<PaginatedPage<ProjectSummary>>({
@@ -44,7 +45,7 @@ const UserProjects = ({ userid }: { userid: string }) => {
 
     return (
         <section
-            className="space-y-6 rounded-3xl border border-black/[0.07] bg-white p-5 shadow-[0_18px_60px_rgba(24,15,48,0.06)] sm:p-7"
+            className="space-y-6 rounded-3xl border border-black/[0.06] bg-gradient-to-br from-white via-white to-primarypurple/[0.025] p-5 shadow-[0_18px_55px_rgba(24,15,48,0.07)] sm:p-7"
             aria-labelledby="owned-projects-heading"
         >
             <div>
@@ -74,7 +75,7 @@ const UserProjects = ({ userid }: { userid: string }) => {
 
             {projectsQuery.isFetchNextPageError && (
                 <div
-                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-red-50 p-4 text-sm text-red-700"
+                    className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-red-200/80 bg-red-50/80 p-4 text-sm text-red-700"
                     role="alert"
                 >
                     <span>Could not load more owned projects.</span>
@@ -82,7 +83,7 @@ const UserProjects = ({ userid }: { userid: string }) => {
                         type="button"
                         onClick={() => void projectsQuery.fetchNextPage()}
                         disabled={projectsQuery.isFetchingNextPage}
-                        className="font-bold underline underline-offset-4 disabled:opacity-60"
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-200 bg-white px-4 font-bold shadow-sm transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-100 disabled:opacity-60"
                     >
                         Retry
                     </button>
@@ -97,7 +98,7 @@ const UserProjects = ({ userid }: { userid: string }) => {
                             type="button"
                             onClick={() => void projectsQuery.fetchNextPage()}
                             disabled={projectsQuery.isFetchingNextPage}
-                            className={PLATFORM_PRIMARY_BUTTON_CLASS}
+                            className={USER_PRIMARY_BUTTON_CLASS}
                         >
                             {projectsQuery.isFetchingNextPage
                                 ? "Loading..."
