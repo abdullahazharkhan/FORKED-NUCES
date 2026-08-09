@@ -2,7 +2,7 @@
 # Keep direct and transitive dependencies exact so container builds are repeatable.
 asgiref==3.11.1
 async-timeout==5.0.1
-Django==5.2.16
+Django==6.1
 django-cors-headers==4.9.0
 django-redis==7.0.0
 djangorestframework==3.17.1
